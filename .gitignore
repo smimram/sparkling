@@ -4,3 +4,11 @@
 *.aux
 *.log
 *.pdf
+*.cma
+*.cmi
+*.cmo
+*.cmx
+*.cmxa
+*.o
+._d
+._ncdi

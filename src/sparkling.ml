@@ -8,10 +8,10 @@ let () =
   let lexbuf =
     let fi = open_in !fname in
     let flen = in_channel_length fi in
-    let buf = String.create flen in
+    let buf = Bytes.create flen in
       really_input fi buf 0 flen;
       close_in fi;
-      Lexing.from_string buf
+      Lexing.from_string (Bytes.to_string buf)
   in
   let decls =
     try
