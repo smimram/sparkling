@@ -1,0 +1,47 @@
+int pendingIo;
+bool stoppingFlag;
+bool stoppingEvent;
+bool stopped;
+
+void add()
+{
+int status;
+status = increment();
+if (status == 0)
+{
+assert(!stopped);
+}
+else {};
+decrement();
+}
+
+void stop()
+{
+stoppingFlag = true;
+decrement();
+//assume(stoppingEvent);
+stopped = true;
+}
+
+int increment()
+{
+if (stoppingFlag) {return -1;} else {};
+pendingIo = pendingIo + 1;
+return 0;
+}
+
+void decrement()
+{
+//TODO: atomic!
+pendingIo = pendingIo - 1;
+if (pendingIo == 0) {stoppingEvent = true;} else {};
+}
+
+void main()
+{
+pendingIo = 1;
+stoppingFlag = false;
+stoppingEvent = false;
+stopped = false;
+stop()|add();
+}

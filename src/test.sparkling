@@ -1,0 +1,347 @@
+void main()
+{
+mutex m;
+mutex n;
+
+{
+  while(e<=10)
+  {
+  lock(n);
+  lock(m);
+  unlock(m);
+  unlock(n);
+  };
+}|{
+  while(e<=10)
+  {
+  lock(m);
+  lock(n);
+  unlock(n);
+  unlock(m);
+  };
+};
+}
+
+
+
+
+
+
+void main_()
+{
+mutex m;
+
+{
+  while(e<=10)
+  {
+  lock(m);
+  unlock(m);
+  };
+}|{
+  while(e<=10)
+  {
+  lock(m);
+  unlock(m);
+  };
+};
+}
+
+void main_()
+{
+mutex m;
+mutex n;
+
+{
+lock(m);
+lock(n);
+unlock(n);
+unlock(m);
+}|{
+lock(n);
+lock(m);
+unlock(m);
+unlock(n);
+};
+}
+
+
+
+
+
+
+void main_()
+{
+mutex m;
+mutex n;
+
+if (x == 0)
+{
+lock(m);
+lock(n);
+unlock(n);
+unlock(m);
+}
+else
+{
+lock(n);
+lock(m);
+unlock(m);
+unlock(n);
+};
+}
+
+void main_()
+{
+mutex m;
+int x;
+
+x = 0;
+
+{
+z = 8;
+while(x <= 10)
+{
+lock(m);
+x++;
+unlock(m);
+};
+}|{
+z = 7;
+while(x <= 5)
+{
+lock(m);
+x++;
+unlock(m);
+};
+};
+}
+
+void main_()
+{
+int x;
+int y;
+mutex m;
+
+x = 0;
+y = 0;
+
+while(x <= 10)
+{
+x++;
+};
+while(y <= 4)
+{
+x++;
+y++;
+};
+}
+
+void main_()
+{
+int x;
+int y;
+mutex m;
+
+x = 0;
+y = 0;
+
+{
+while(x <= 10)
+{
+lock(m);
+x++;
+unlock(m);
+};
+}|{
+while(y <= 5)
+{
+lock(m);
+x++;
+y++;
+unlock(m);
+};
+};
+}
+
+void main_()
+{
+int x;
+mutex m;
+
+x = 0;
+{
+lock(m);
+x = 1;
+unlock(m);
+}|{
+lock(m);
+if (x == 0)
+{
+x = 5;
+}
+else
+{
+x = 6;
+};
+unlock(m);
+};
+}
+
+void main_()
+{
+int x;
+mutex m;
+
+x = 1;
+
+{
+lock(m);
+x = 2 * x;
+unlock(m);
+}|{
+lock(m);
+x = x + 1;
+unlock(m);
+};
+}
+
+void main_()
+{
+mutex m;
+mutex n;
+
+{
+lock(m);
+unlock(m);
+lock(n);
+unlock(n);
+}|{
+lock(n);
+unlock(n);
+lock(m);
+unlock(m);
+};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void main_()
+{
+mutex m;
+mutex n;
+
+{
+lock(m);
+if (3 == 2)
+{
+lock(n);
+unlock(n);
+}
+else
+{
+};
+unlock(m);
+}|{
+lock(n);
+lock(m);
+unlock(m);
+unlock(n);
+}|{};
+}
+
+int incr(int x)
+{
+return (x+1);
+}
+
+void main7()
+{
+mutex m;
+{
+lock(m);
+z=5;
+unlock(m);
+}|{
+lock(m);
+z=6;
+unlock(m);
+};
+}
+
+void main5()
+{
+mutex m;
+mutex n;
+
+{
+lock(m);
+//z=1;
+lock(n);
+//z=2;
+unlock(n);
+unlock(m);
+}|{
+lock(n);
+lock(m);
+unlock(m);
+unlock(n);
+};
+}
+
+void main3()
+{
+mutex m;
+
+z=z+2;
+z=incr(z);
+
+{
+if (x == 3)
+{
+lock(m);
+unlock(m);
+}
+else
+{
+};
+}|{
+lock(m);
+unlock(m);
+};
+}
+
+void main2()
+{
+mutex m;
+
+{
+lock(m);
+unlock(m);
+}|
+{
+lock(m);
+unlock(m);
+};
+
+mutex n;
+}
