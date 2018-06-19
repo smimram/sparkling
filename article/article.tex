@@ -1,10 +1,80 @@
 \documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{mathpartir}
+\usepackage{macros}
 
 \title{Syntactic regions}
-\author{Samuel Mimram}
+\author{Emmanuel Haucourt \and Samuel Mimram}
+
+\theoremstyle{theorem}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
 
 \begin{document}
 \maketitle
 
+Suppose given a set $\actions$ of actions. A \emph{process} is
+\[
+  P
+  \qquad::=\qquad
+  A
+  \quad|\quad
+  \pseq PP
+  \quad|\quad
+  \por PP
+  \quad|\quad
+  \ppar PP
+  \quad|\quad
+  \ploop P
+\]
+with $A\in\actions$. A \emph{position} is
+\[
+  \pi
+  \qquad::=\qquad
+  \pbot
+  \quad|\quad
+  \ptop
+  \quad|\quad
+  \pseq \pi\pi
+  \quad|\quad
+  \por \pi\pi
+  \quad|\quad
+  \ppar \pi\pi
+  \quad|\quad
+  \ploop \pi
+\]
+A position~$\pi$ is \emph{valid} for a program~$P$ when the judgment
+$\vpos\pi P$ is derivable by the following rules
+\begin{align*}
+  &
+  \inferrule{\null}{\vpos\pbot P}
+  &&
+  \inferrule{\null}{\vpos\ptop A}
+  &&
+  \inferrule{\vpos\pi P}{\vpos{\pseq\pi\pbot}{P;Q}}
+  &&
+  \inferrule{\mpos\pi P\\\vpos\rho Q}{\vpos{\pseq\pi\rho}{P;Q}}
+  \\
+  &
+  \inferrule{\vpos\pi P}{\vpos{\por\pi\bot}{\por PQ}}
+  &&
+  \inferrule{\vpos\pi Q}{\vpos{\por\bot\pi}{\por PQ}}
+  &&
+  \inferrule{\vpos\pi P\\\vpos\rho Q}{\vpos{\ppar\pi\rho}{\ppar PQ}}
+  &&
+  \inferrule{\vpos\pi P}{\vpos{\ploop\pi}{\ploop P}}
+\end{align*}
+where the judgment $\mpos\pi P$ means that $\pi$ is a \emph{maximal position}
+of~$P$, inferred by the following rules
+\begin{align*}
+  ...
+\end{align*}
 
+\begin{lemma}
+  $\mpos\pi P$ implies $\vpos\pi P$.
+\end{lemma}
 \end{document}
