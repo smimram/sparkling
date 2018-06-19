@@ -1,14 +1,14 @@
 % Programs
 \newcommand{\actions}{\mathcal{A}}
-\newcommand{\pseq}[2]{#1;#2}
-\newcommand{\por}[2]{#1+#2}
-\newcommand{\ppar}[2]{#1\|#2}
-\newcommand{\ploop}[1]{#1^*}
+\newcommand{\pseq}[2]{#1\texttt{;}#2}
+\newcommand{\por}[2]{#1\texttt{+}#2}
+\newcommand{\ppar}[2]{#1\texttt{|\!\!|}#2}
+\newcommand{\ploop}[1]{#1^{\texttt{*}}}
 \newcommand{\pbot}{\bot}
 \newcommand{\ptop}{\top}
 \let\P\undefined
-\newcommand{\P}[1]{P_{#1}}
-\newcommand{\V}[1]{V_{#1}}
+\newcommand{\P}[1]{\texttt{P}_{#1}}
+\newcommand{\V}[1]{\texttt{V}_{#1}}
 
 % Regions
 \newcommand{\vpos}[2]{\vdash #1:#2} % valid position

@@ -14,10 +14,14 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
 
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
 \begin{document}
 \maketitle
 
-Suppose given a set $\actions$ of actions. A \emph{process} is
+Suppose given a set $\actions$ of actions containing $\P a$ and $\V a$. A
+\emph{process} is
 \[
   P
   \qquad::=\qquad
@@ -53,11 +57,11 @@ $\vpos\pi P$ is derivable by the following rules
   &
   \inferrule{\null}{\vpos\pbot P}
   &&
-  \inferrule{\null}{\vpos\ptop A}
+  \inferrule{\null}{\vpos\ptop P}
   &&
-  \inferrule{\vpos\pi P}{\vpos{\pseq\pi\pbot}{P;Q}}
+  \inferrule{\vpos\pi P}{\vpos{\pseq\pi\pbot}{\pseq PQ}}
   &&
-  \inferrule{\mpos\pi P\\\vpos\rho Q}{\vpos{\pseq\pi\rho}{P;Q}}
+  \inferrule{\vpos\pi Q}{\vpos{\pseq\ptop\pi}{\pseq PQ}}
   \\
   &
   \inferrule{\vpos\pi P}{\vpos{\por\pi\bot}{\por PQ}}
@@ -68,6 +72,13 @@ $\vpos\pi P$ is derivable by the following rules
   &&
   \inferrule{\vpos\pi P}{\vpos{\ploop\pi}{\ploop P}}
 \end{align*}
+
+\begin{remark}
+  For loops, we need to have left and right variant of $+$ position (we could do
+  the same for sequence).
+\end{remark}
+
+
 where the judgment $\mpos\pi P$ means that $\pi$ is a \emph{maximal position}
 of~$P$, inferred by the following rules
 \begin{align*}
