@@ -55,10 +55,16 @@ with $A\in\actions$.
 
 \section{Operational semantics}
 We write~$\B=\set{\Bfalse,\Btrue}$ for the set of \emph{booleans}. An
-\emph{environment} is a function $\nu:\variables\to\B$. The \emph{initial
-  valuation} $\nu_0$ is such that $\nu_0(x)=\Bfalse$ for every
-$x\in\variables$. We abuse notations and write $\nu(\Bfalse)=\Bfalse$ and
-$\nu(\Btrue)=\Btrue$, so that $\nu(e)$ is defined for any expression~$e$.
+\emph{environment} is a function
+\[
+  \nu:\variables\sqcup\mutexes\to\B
+\]
+which to every variable associates its value, and to every mutex whether it has
+been taken or not ($\Btrue$ means taken). The \emph{initial valuation} $\nu_0$
+is such that $\nu_0(x)=\Bfalse$ for every $x\in\variables$ and
+$\nu_0(a)=\Bfalse$ for $a\in\mutexes$. We abuse notations and write
+$\nu(\Bfalse)=\Bfalse$ and $\nu(\Btrue)=\Btrue$, so that $\nu(e)$ is defined for
+any expression~$e$.
 
 The operational semantics is given by evaluating programs in
 environments, \ie judgments of the form $\nu\vdash P$ using the following rules:
@@ -165,5 +171,8 @@ $\vpos\pi P$ is derivable by the following rules
 \end{theorem}
 
 \section{Intervals}
-We write $\leq$ for the smallest congruence on positions such that $\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$.
+We write $\leq$ for the smallest congruence on positions such that
+$\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$. An \emph{interval}
+is a pair of positions~$\intv\pi\rho$ such that $\pi\leq\rho$. Such an interval
+is valid for a program~$P$ when both $\pi$ and $\rho$ are valid for~$P$.
 \end{document}
