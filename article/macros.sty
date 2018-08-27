@@ -1,15 +1,38 @@
+% Maths
+\newcommand{\set}[1]{\{#1\}}
+\newcommand{\B}{\mathbb{B}}
+\newcommand{\Bfalse}{0}
+\newcommand{\Btrue}{1}
+
 % Programs
+\newcommand{\mutexes}{\mathcal{M}}
+\newcommand{\variables}{\mathcal{V}}
 \newcommand{\actions}{\mathcal{A}}
 \newcommand{\pseq}[2]{#1\texttt{;}#2}
-\newcommand{\por}[2]{#1\texttt{+}#2}
+\newcommand{\pseql}[1]{\pseq{#1}-}
+\newcommand{\pseqr}[1]{\pseq-{#1}}
+\newcommand{\por}[3]{#2\texttt{+}_{#1}#3}
+\newcommand{\porl}[1]{\por{}{#1}-}
+\newcommand{\porr}[1]{\por{}-{#1}}
 \newcommand{\ppar}[2]{#1\texttt{|\!\!|}#2}
-\newcommand{\ploop}[1]{#1^{\texttt{*}}}
+\newcommand{\ploop}[2]{\texttt{W}_{#1}#2}
+\newcommand{\pwhile}{\ploop}
+\newcommand{\ploopl}[1]{\ploop{}{#1}}
+\newcommand{\pdie}{\dagger}
 \newcommand{\pbot}{\bot}
 \newcommand{\ptop}{\top}
+\newcommand{\pskip}{\mathtt{skip}}
 \let\P\undefined
 \newcommand{\P}[1]{\texttt{P}_{#1}}
 \newcommand{\V}[1]{\texttt{V}_{#1}}
+\newcommand{\pset}[2]{#1\texttt{:=}#2}
+
+\newcommand{\penv}[2]{#1\vdash #2} % a program in an environment
+\newcommand{\redto}{\rightsquigarrow} % reduction
 
 % Regions
 \newcommand{\vpos}[2]{\vdash #1:#2} % valid position
 \newcommand{\mpos}[2]{\vdash_{\mathsf{max}} #1:#2} % maximal position
+
+% English
+\newcommand{\ie}{i.e.~}

@@ -7,6 +7,8 @@
 \usepackage{mathpartir}
 \usepackage{macros}
 
+\renewcommand{\labelitemi}{--}
+
 \title{Syntactic regions}
 \author{Emmanuel Haucourt \and Samuel Mimram}
 
@@ -20,8 +22,22 @@
 \begin{document}
 \maketitle
 
-Suppose given a set $\actions$ of actions containing $\P a$ and $\V a$. A
-\emph{process} is
+\section{Programs}
+We suppose fixed a set $\variables=\set{x,y,\ldots}$ of \emph{variables} and a
+set~$\mutexes=\set{a,b,\ldots}$ of \emph{mutexes}. An \emph{expression} $e$ is either
+\begin{itemize}
+\item a variable~$x$,
+\item $\Bfalse$ or $\Btrue$.
+\end{itemize}
+An \emph{action} is either
+\begin{itemize}
+\item $\P a$ or $\V a$, for some $a\in\mutexes$, respectively meaning that the
+  mutex~$a$ is taken or released,
+\item $\pset x\Bfalse$ or $\pset x\Btrue$, for some $x\in\variables$,
+\item $\pskip$,
+\item $\pdie$ meaning that the program crashes.
+\end{itemize}
+We write $\actions$ for the set of actions. A \emph{process} is
 \[
   P
   \qquad::=\qquad
@@ -29,13 +45,62 @@ Suppose given a set $\actions$ of actions containing $\P a$ and $\V a$. A
   \quad|\quad
   \pseq PP
   \quad|\quad
-  \por PP
+  \por ePP
   \quad|\quad
   \ppar PP
   \quad|\quad
-  \ploop P
+  \ploop eP
 \]
-with $A\in\actions$. A \emph{position} is
+with $A\in\actions$.
+
+\section{Operational semantics}
+We write~$\B=\set{\Bfalse,\Btrue}$ for the set of \emph{booleans}. An
+\emph{environment} is a function $\nu:\variables\to\B$. The \emph{initial
+  valuation} $\nu_0$ is such that $\nu_0(x)=\Bfalse$ for every
+$x\in\variables$. We abuse notations and write $\nu(\Bfalse)=\Bfalse$ and
+$\nu(\Btrue)=\Btrue$, so that $\nu(e)$ is defined for any expression~$e$.
+
+The operational semantics is given by evaluating programs in
+environments, \ie judgments of the form $\nu\vdash P$ using the following rules:
+\[
+  \inferrule{\null}{\penv{\nu}{\pset x\Bfalse}\redto\penv{\nu[x\mapsto\Bfalse]}{\pskip}}
+\]
+\[
+  \inferrule{\penv\nu P\redto\penv{\nu'}{P'}}{\penv{\nu}{\pseq PQ}\redto\penv{\nu'}{\pseq{P'}{Q}}}
+  \qquad
+  \inferrule{\penv{\nu'}{Q}\redto\penv{\nu''}{Q'}}{\penv{\nu}{\pseq \pskip Q}\redto\penv{\nu''}{Q'}}
+\]
+\[
+  \inferrule{\penv\nu P\redto\penv{\nu'}{P'}\\\nu(e)=\Bfalse}{\penv{\nu}{\por ePQ}\redto\penv{\nu'}{\por{\Bfalse}{P'}Q}}
+  \qquad
+  \inferrule{\penv\nu P\redto\penv{\nu'}{Q'}\\\nu(e)=\Btrue}{\penv{\nu}{\por ePQ}\redto\penv{\nu'}{\por{\Btrue}P{Q'}}}
+\]
+\[
+  \inferrule{\penv\nu P\redto\penv{\nu'}{P'}}{\penv{\nu}{\ppar PQ}\redto\penv{\nu'}{\ppar{P'}{Q}}}
+  \qquad
+  \inferrule{\penv\nu Q\redto\penv{\nu'}{Q'}}{\penv{\nu}{\ppar PQ}\redto\penv{\nu'}{\ppar{P}{Q'}}}
+\]
+\[
+  \inferrule{\nu(e)=\Bfalse}{\penv\nu{\pwhile eP}\redto\penv\nu\pskip}
+  \qquad
+  \inferrule{\penv\nu P\redto\penv{\nu'}{P'}\\\nu(e)=\Btrue}{\penv\nu{\pwhile eP}\redto\penv{\nu'}{\pseq{P'}{\pwhile eP}}}
+\]
+etc. (we must close under transitivity...)
+
+NB: there is no rule for $\pdie$.
+
+\begin{lemma}[Progress]
+  For any crash-free program~$P$ and environment~$\nu$, $\penv\nu P$ reduces to
+  $\penv{\nu'}{}$.
+\end{lemma}
+
+\begin{lemma}[Determinism]
+  For a sequential program there is only one possible derivation tree to the
+  normal form~$\penv{\nu'}{}$.
+\end{lemma}
+
+\section{Positions}
+A \emph{position} is
 \[
   \pi
   \qquad::=\qquad
@@ -43,13 +108,17 @@ with $A\in\actions$. A \emph{position} is
   \quad|\quad
   \ptop
   \quad|\quad
-  \pseq \pi\pi
+  \pseql \pi
   \quad|\quad
-  \por \pi\pi
+  \pseqr \pi
+  \quad|\quad
+  \porl\pi
+  \quad|\quad
+  \porr\pi
   \quad|\quad
   \ppar \pi\pi
   \quad|\quad
-  \ploop \pi
+  \ploopl\pi
 \]
 A position~$\pi$ is \emph{valid} for a program~$P$ when the judgment
 $\vpos\pi P$ is derivable by the following rules
@@ -59,33 +128,42 @@ $\vpos\pi P$ is derivable by the following rules
   &&
   \inferrule{\null}{\vpos\ptop P}
   &&
-  \inferrule{\vpos\pi P}{\vpos{\pseq\pi\pbot}{\pseq PQ}}
+  \inferrule{\vpos\pi P}{\vpos{\pseql\pi}{\pseq PQ}}
   &&
-  \inferrule{\vpos\pi Q}{\vpos{\pseq\ptop\pi}{\pseq PQ}}
+  \inferrule{\vpos\pi Q}{\vpos{\pseqr\pi}{\pseq PQ}}
   \\
   &
-  \inferrule{\vpos\pi P}{\vpos{\por\pi\bot}{\por PQ}}
+  \inferrule{\vpos\pi P}{\vpos{\porl\pi}{\por xPQ}}
   &&
-  \inferrule{\vpos\pi Q}{\vpos{\por\bot\pi}{\por PQ}}
+  \inferrule{\vpos\pi Q}{\vpos{\porr\pi}{\por xPQ}}
   &&
   \inferrule{\vpos\pi P\\\vpos\rho Q}{\vpos{\ppar\pi\rho}{\ppar PQ}}
   &&
-  \inferrule{\vpos\pi P}{\vpos{\ploop\pi}{\ploop P}}
+  \inferrule{\vpos\pi P}{\vpos{\ploopl\pi}{\ploop xP}}
 \end{align*}
 
-\begin{remark}
-  For loops, we need to have left and right variant of $+$ position (we could do
-  the same for sequence).
-\end{remark}
+% \begin{remark}
+  % For loops, we need to have left and right variant of $+$ position because
+  % $\pbot+\pbot$ could be a position on the left or on the right (we could do the
+  % same for sequence).
+% \end{remark}
 
 
-where the judgment $\mpos\pi P$ means that $\pi$ is a \emph{maximal position}
-of~$P$, inferred by the following rules
-\begin{align*}
-  ...
-\end{align*}
+% where the judgment $\mpos\pi P$ means that $\pi$ is a \emph{maximal position}
+% of~$P$, inferred by the following rules
+% \begin{align*}
+  % ...
+% \end{align*}
 
-\begin{lemma}
-  $\mpos\pi P$ implies $\vpos\pi P$.
-\end{lemma}
+% \begin{lemma}
+  % $\mpos\pi P$ implies $\vpos\pi P$.
+  % \end{lemma}
+
+\begin{theorem}
+  The set of $P'$ such that $\penv\nu P\redto\penv{\nu'}{P'}$ injects into the
+  set of positions (and the injection can be described explicitly).
+\end{theorem}
+
+\section{Intervals}
+We write $\leq$ for the smallest congruence on positions such that $\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$.
 \end{document}
