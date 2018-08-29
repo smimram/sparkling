@@ -40,7 +40,7 @@ An \emph{action} is either
   mutex~$a$ is taken or released,
 \item $\pset x b$ for some $x\in\variables$ and $b\in\B$,
 % \item $\pskip$,
-\item $\pdie$ meaning that the program crashes.
+% \item $\pdie$ meaning that the program crashes.
 \end{itemize}
 We write $\actions$ for the set of actions. A \emph{process} is
 \[
@@ -125,7 +125,7 @@ The operational semantics is given by evaluating program states in environments,
 \]
 etc. (we must close under transitivity...)
 
-NB: there is no rule for $\pdie$.
+% NB: there is no rule for $\pdie$.
 
 \begin{lemma}[Progress]
   For any crash-free program~$P$ and environment~$\nu$, $\penv\nu P$ reduces to
@@ -215,6 +215,10 @@ defined by
   \ldots
 \end{align*}
 
+\begin{lemma}
+  A program has a finite number of valid positions.
+\end{lemma}
+
 \begin{theorem}
   Given a program~$P$ and an environment~$\nu$, every program state~$P'$ such
   that $\penv\nu P\redto\penv{\nu'}{P'}$ is of the form $P'=\postate\pi P$ for a
@@ -225,6 +229,14 @@ defined by
 A valid position~$\pi$ of~$P$ is \emph{reachable} if
 $\penv{\nu_0} P\redto\penv\nu{\postate\pi P}$ for some environment~$\nu$.
 
+\section{Reduction of positions}
+We define $\pi\redto\pi'$ by ... (roughly the non-deterministic version of the
+reduction of programs)
+
+\begin{lemma}
+  If $\penv\nu{\postate\pi P}\redto\penv{\nu'}{\postate{\pi'}P}$ then $\pi\redto\pi'$.
+\end{lemma}
+
 \section{The syntactic order}
 We write $\leq$ for the smallest congruence on positions such that
 $\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$.
@@ -232,6 +244,10 @@ $\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$.
 \begin{lemma}
   For programs without loops, the preorder is a partial order on valid
   positions.
+\end{lemma}
+
+\begin{lemma}
+  $\pi\leq\rho$ iff $\pi\overset*\redto\rho$.
 \end{lemma}
 
 \begin{theorem}
@@ -242,8 +258,11 @@ $\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$.
 \section{Intervals}
 An \emph{interval} is a pair of positions~$\intv\pi\rho$ such that
 $\pi\leq\rho$. Such an interval is valid for a program~$P$ when both $\pi$ and
-$\rho$ are valid for~$P$. A \emph{region} of~$P$ is a finite set of valid
-intervals of~$P$.
+$\rho$ are valid for~$P$. An interval $\intv\pi\rho$ is \emph{included} in an
+interval $\intv{\pi'}{\rho'}$ when ... (TODO: be careful for loops)
+
+A \emph{region} of~$P$ is a finite set of valid intervals of~$P$. Two regions
+are considered equivalent when they have a common refinement.
 
 \begin{theorem}
   Regions form a boolean algebra.
