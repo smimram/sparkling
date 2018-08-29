@@ -263,9 +263,12 @@ $\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$.
 \section{Intervals}
 An \emph{interval} is a pair of positions~$\intv\pi\rho$ such that
 $\pi\leq\rho$. Such an interval is valid for a program~$P$ when both $\pi$ and
-$\rho$ are valid for~$P$. An interval $\intv\pi\rho$ is \emph{included} in an
-interval $\intv{\pi'}{\rho'}$ when ... (TODO: be careful for loops) An interval
-is \emph{elementary} when it is of the form $\intv\pi\rho$ with $\pi\redto\rho$.
+$\rho$ are valid for~$P$.  An interval is \emph{elementary} when it is of the
+form $\intv\pi\rho$ with $\pi\redto\rho$. The \emph{realization} of an interval
+$\intv\pi\rho$ is the set of all elementary intervals of the form
+$\intv{\pi_i}{\pi_{i+1}}$ for some arc $(\pi_i)$ from~$\pi$ to~$\rho$.  An
+interval $\intv\pi\rho$ is \emph{included} in an interval $\intv{\pi'}{\rho'}$
+when the corresponding realizations are included.
 
 A \emph{region} of~$P$ is a finite set of valid intervals of~$P$. Two regions
 are considered equivalent when they have a common refinement.
@@ -273,4 +276,16 @@ are considered equivalent when they have a common refinement.
 \begin{theorem}
   Regions form a boolean algebra.
 \end{theorem}
+
+\section{Conservative programs}
+Define conservativity. The forbidden region. The syntactic state-space is the
+complement.
+
+\section{Algorithms on regions}
+In order to implement the complement of regions, we need:
+\begin{itemize}
+\item intersections of intervals,
+\item complements of intervals.
+\end{itemize}
+
 \end{document}
