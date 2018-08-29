@@ -234,8 +234,13 @@ We define $\pi\redto\pi'$ by ... (roughly the non-deterministic version of the
 reduction of programs)
 
 \begin{lemma}
-  If $\penv\nu{\postate\pi P}\redto\penv{\nu'}{\postate{\pi'}P}$ then $\pi\redto\pi'$.
+  If $\penv\nu{\postate\pi P}\redto\penv{\nu'}{\postate{\pi'}P}$ then
+  $\pi\redto\pi'$.
 \end{lemma}
+
+\noindent
+A \emph{path} is a sequence $\pi_1,\ldots,\pi_n$ such that
+$\pi_i\redto\pi_{i+1}$. An \emph{arc} is a reduction path without repetitions.
 
 \section{The syntactic order}
 We write $\leq$ for the smallest congruence on positions such that
@@ -259,7 +264,8 @@ $\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$.
 An \emph{interval} is a pair of positions~$\intv\pi\rho$ such that
 $\pi\leq\rho$. Such an interval is valid for a program~$P$ when both $\pi$ and
 $\rho$ are valid for~$P$. An interval $\intv\pi\rho$ is \emph{included} in an
-interval $\intv{\pi'}{\rho'}$ when ... (TODO: be careful for loops)
+interval $\intv{\pi'}{\rho'}$ when ... (TODO: be careful for loops) An interval
+is \emph{elementary} when it is of the form $\intv\pi\rho$ with $\pi\redto\rho$.
 
 A \emph{region} of~$P$ is a finite set of valid intervals of~$P$. Two regions
 are considered equivalent when they have a common refinement.
