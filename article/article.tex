@@ -16,6 +16,9 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
 
+\theoremstyle{example}
+\newtheorem{example}[theorem]{Example}
+
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 
@@ -86,7 +89,7 @@ any expression~$e$.
 The operational semantics is given by evaluating program states in environments,
 \ie judgments of the form $\nu\vdash P$ using the following rules:
 \[
-  \inferrule{\null}{\penv{\nu}{\pset x\Bfalse}\redto\penv{\nu[x\mapsto\Bfalse]}{\pskip}}
+  \inferrule{\null}{\penv{\nu}{\pset xb}\redto\penv{\nu[x\mapsto b]}{\pskip}}
 \]
 \[
   \inferrule{\penv\nu P\redto\penv{\nu'}{P'}}{\penv{\nu}{\pseq PQ}\redto\penv{\nu'}{\pseq{P'}{Q}}}
@@ -94,9 +97,9 @@ The operational semantics is given by evaluating program states in environments,
   \inferrule{\penv{\nu'}{Q}\redto\penv{\nu''}{Q'}}{\penv{\nu}{\pseq \pskip Q}\redto\penv{\nu''}{Q'}}
 \]
 \[
-  \inferrule{\nu(e)=\Bfalse}{\penv{\nu}{\por ePQ}\redto\penv{\nu'}{\porl P}}
+  \inferrule{\nu(x)=\Bfalse}{\penv{\nu}{\por xPQ}\redto\penv{\nu'}{\porl P}}
   \qquad
-  \inferrule{\nu(e)=\Btrue}{\penv{\nu}{\por ePQ}\redto\penv{\nu'}{\porr Q}}
+  \inferrule{\nu(x)=\Btrue}{\penv{\nu}{\por xPQ}\redto\penv{\nu'}{\porr Q}}
 \]
 \[
   \inferrule{\penv\nu P\redto\penv{\nu'}{P'}}{\penv{\nu}{\porl P}\redto\penv{\nu'}{\porl{P'}}}
@@ -116,9 +119,9 @@ The operational semantics is given by evaluating program states in environments,
   \inferrule{\null}{\penv\nu{\ppar\pskip\pskip}\redto\penv\nu\pskip}
 \]
 \[
-  \inferrule{\nu(e)=\Bfalse}{\penv\nu{\pwhile eP}\redto\penv\nu\pskip}
+  \inferrule{\nu(x)=\Bfalse}{\penv\nu{\pwhile xP}\redto\penv\nu\pskip}
   \qquad
-  \inferrule{\nu(e)=\Btrue}{\penv\nu{\pwhile eP}\redto\penv\nu{\pseq{P}{\pwhile eP}}}
+  \inferrule{\nu(x)=\Btrue}{\penv\nu{\pwhile xP}\redto\penv\nu{\pseq{P}{\pwhile xP}}}
 \]
 etc. (we must close under transitivity...)
 
@@ -133,6 +136,10 @@ NB: there is no rule for $\pdie$.
   For a sequential program there is only one possible derivation tree to the
   normal form~$\penv{\nu'}{}$.
 \end{lemma}
+
+\begin{example}
+  TODO: example of a program: Syracuse
+\end{example}
 
 \section{Positions}
 A \emph{position} is
@@ -214,6 +221,10 @@ defined by
   unique valid position~$\pi$ of~$P$.
 \end{theorem}
 
+\noindent
+A valid position~$\pi$ of~$P$ is \emph{reachable} if
+$\penv{\nu_0} P\redto\penv\nu{\postate\pi P}$ for some environment~$\nu$.
+
 \section{The syntactic order}
 We write $\leq$ for the smallest congruence on positions such that
 $\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$.
@@ -229,7 +240,12 @@ $\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$.
 \end{theorem}
 
 \section{Intervals}
- An \emph{interval}
-is a pair of positions~$\intv\pi\rho$ such that $\pi\leq\rho$. Such an interval
-is valid for a program~$P$ when both $\pi$ and $\rho$ are valid for~$P$.
+An \emph{interval} is a pair of positions~$\intv\pi\rho$ such that
+$\pi\leq\rho$. Such an interval is valid for a program~$P$ when both $\pi$ and
+$\rho$ are valid for~$P$. A \emph{region} of~$P$ is a finite set of valid
+intervals of~$P$.
+
+\begin{theorem}
+  Regions form a boolean algebra.
+\end{theorem}
 \end{document}
