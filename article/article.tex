@@ -23,18 +23,20 @@
 \maketitle
 
 \section{Programs}
-We suppose fixed a set $\variables=\set{x,y,\ldots}$ of \emph{variables} and a
-set~$\mutexes=\set{a,b,\ldots}$ of \emph{mutexes}. An \emph{expression} $e$ is either
-\begin{itemize}
-\item a variable~$x$,
-\item $\Bfalse$ or $\Btrue$.
-\end{itemize}
+We write~$\B=\set{\Bfalse,\Btrue}$ for the set of \emph{booleans}. We suppose
+fixed a set $\variables=\set{x,y,\ldots}$ of \emph{variables} and a
+set~$\mutexes=\set{a,b,\ldots}$ of \emph{mutexes}.
+% An \emph{expression} $e$ is either
+% \begin{itemize}
+% \item a variable~$x$,
+% \item $\Bfalse$ or $\Btrue$.
+% \end{itemize}
 An \emph{action} is either
 \begin{itemize}
 \item $\P a$ or $\V a$, for some $a\in\mutexes$, respectively meaning that the
   mutex~$a$ is taken or released,
-\item $\pset x\Bfalse$ or $\pset x\Btrue$, for some $x\in\variables$,
-\item $\pskip$,
+\item $\pset x b$ for some $x\in\variables$ and $b\in\B$,
+% \item $\pskip$,
 \item $\pdie$ meaning that the program crashes.
 \end{itemize}
 We write $\actions$ for the set of actions. A \emph{process} is
@@ -45,16 +47,31 @@ We write $\actions$ for the set of actions. A \emph{process} is
   \quad|\quad
   \pseq PP
   \quad|\quad
-  \por ePP
+  \por xPP
   \quad|\quad
   \ppar PP
   \quad|\quad
-  \ploop eP
+  \ploop xP
 \]
 with $A\in\actions$.
 
+\section{Program states}
+A \emph{program state} is defined as above together with the following
+constructions
+\[
+  P
+  \qquad::=\qquad
+  \ldots
+  \quad|\quad
+  \porl P
+  \quad|\quad
+  \porr P
+  \quad|\quad
+  \pskip
+\]
+
 \section{Operational semantics}
-We write~$\B=\set{\Bfalse,\Btrue}$ for the set of \emph{booleans}. An
+An
 \emph{environment} is a function
 \[
   \nu:\variables\sqcup\mutexes\to\B
@@ -66,8 +83,8 @@ $\nu_0(a)=\Bfalse$ for $a\in\mutexes$. We abuse notations and write
 $\nu(\Bfalse)=\Bfalse$ and $\nu(\Btrue)=\Btrue$, so that $\nu(e)$ is defined for
 any expression~$e$.
 
-The operational semantics is given by evaluating programs in
-environments, \ie judgments of the form $\nu\vdash P$ using the following rules:
+The operational semantics is given by evaluating program states in environments,
+\ie judgments of the form $\nu\vdash P$ using the following rules:
 \[
   \inferrule{\null}{\penv{\nu}{\pset x\Bfalse}\redto\penv{\nu[x\mapsto\Bfalse]}{\pskip}}
 \]
@@ -77,19 +94,31 @@ environments, \ie judgments of the form $\nu\vdash P$ using the following rules:
   \inferrule{\penv{\nu'}{Q}\redto\penv{\nu''}{Q'}}{\penv{\nu}{\pseq \pskip Q}\redto\penv{\nu''}{Q'}}
 \]
 \[
-  \inferrule{\penv\nu P\redto\penv{\nu'}{P'}\\\nu(e)=\Bfalse}{\penv{\nu}{\por ePQ}\redto\penv{\nu'}{\por{\Bfalse}{P'}Q}}
+  \inferrule{\nu(e)=\Bfalse}{\penv{\nu}{\por ePQ}\redto\penv{\nu'}{\porl P}}
   \qquad
-  \inferrule{\penv\nu P\redto\penv{\nu'}{Q'}\\\nu(e)=\Btrue}{\penv{\nu}{\por ePQ}\redto\penv{\nu'}{\por{\Btrue}P{Q'}}}
+  \inferrule{\nu(e)=\Btrue}{\penv{\nu}{\por ePQ}\redto\penv{\nu'}{\porr Q}}
+\]
+\[
+  \inferrule{\penv\nu P\redto\penv{\nu'}{P'}}{\penv{\nu}{\porl P}\redto\penv{\nu'}{\porl{P'}}}
+  \qquad
+  \inferrule{\penv\nu Q\redto\penv{\nu'}{Q'}}{\penv{\nu}{\porr Q}\redto\penv{\nu'}{\porr{Q'}}}
+\]
+\[
+  \inferrule{\null}{\penv{\nu}{\porl\pskip}\redto\penv{\nu}{\pskip}}
+  \qquad
+  \inferrule{\null}{\penv{\nu}{\porr\pskip}\redto\penv{\nu}{\pskip}}
 \]
 \[
   \inferrule{\penv\nu P\redto\penv{\nu'}{P'}}{\penv{\nu}{\ppar PQ}\redto\penv{\nu'}{\ppar{P'}{Q}}}
   \qquad
   \inferrule{\penv\nu Q\redto\penv{\nu'}{Q'}}{\penv{\nu}{\ppar PQ}\redto\penv{\nu'}{\ppar{P}{Q'}}}
+  \qquad
+  \inferrule{\null}{\penv\nu{\ppar\pskip\pskip}\redto\penv\nu\pskip}
 \]
 \[
   \inferrule{\nu(e)=\Bfalse}{\penv\nu{\pwhile eP}\redto\penv\nu\pskip}
   \qquad
-  \inferrule{\penv\nu P\redto\penv{\nu'}{P'}\\\nu(e)=\Btrue}{\penv\nu{\pwhile eP}\redto\penv{\nu'}{\pseq{P'}{\pwhile eP}}}
+  \inferrule{\nu(e)=\Btrue}{\penv\nu{\pwhile eP}\redto\penv\nu{\pseq{P}{\pwhile eP}}}
 \]
 etc. (we must close under transitivity...)
 
@@ -165,14 +194,42 @@ $\vpos\pi P$ is derivable by the following rules
   % $\mpos\pi P$ implies $\vpos\pi P$.
   % \end{lemma}
 
+A valid position~$\pi$ of a program~$P$ induces a program state $\postate\pi P$
+defined by
+\begin{align*}
+  \postate\pbot P&=P
+  &
+  \postate\ptop P&=\pskip
+  &
+  \postate{\pseql\pi}{\pseq PQ}&=\pseq{\postate\pi P}Q
+  &
+  \postate{\pseqr\pi}{\pseq PQ}&=\postate\pi Q
+  &
+  \ldots
+\end{align*}
+
 \begin{theorem}
-  The set of $P'$ such that $\penv\nu P\redto\penv{\nu'}{P'}$ injects into the
-  set of positions (and the injection can be described explicitly).
+  Given a program~$P$ and an environment~$\nu$, every program state~$P'$ such
+  that $\penv\nu P\redto\penv{\nu'}{P'}$ is of the form $P'=\postate\pi P$ for a
+  unique valid position~$\pi$ of~$P$.
+\end{theorem}
+
+\section{The syntactic order}
+We write $\leq$ for the smallest congruence on positions such that
+$\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$.
+
+\begin{lemma}
+  For programs without loops, the preorder is a partial order on valid
+  positions.
+\end{lemma}
+
+\begin{theorem}
+  If $\penv\nu{\postate\pi P}\redto\penv{\nu'}{\postate{\pi'}P}$ then
+  $\pi\leq\pi'$.
 \end{theorem}
 
 \section{Intervals}
-We write $\leq$ for the smallest congruence on positions such that
-$\pbot\leq\pi$ and $\pi\leq\ptop$ for every position~$\pi$. An \emph{interval}
+ An \emph{interval}
 is a pair of positions~$\intv\pi\rho$ such that $\pi\leq\rho$. Such an interval
 is valid for a program~$P$ when both $\pi$ and $\rho$ are valid for~$P$.
 \end{document}

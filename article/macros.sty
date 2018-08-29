@@ -21,7 +21,7 @@
 \newcommand{\pdie}{\dagger}
 \newcommand{\pbot}{\bot}
 \newcommand{\ptop}{\top}
-\newcommand{\pskip}{\mathtt{skip}}
+\newcommand{\pskip}{\top}%{\mathtt{skip}}
 \let\P\undefined
 \newcommand{\P}[1]{\texttt{P}_{#1}}
 \newcommand{\V}[1]{\texttt{V}_{#1}}
@@ -29,6 +29,7 @@
 
 \newcommand{\penv}[2]{#1\vdash #2} % a program in an environment
 \newcommand{\redto}{\rightsquigarrow} % reduction
+\newcommand{\postate}[2]{#2|_{#1}} % program state induced by position
 
 % Regions
 \newcommand{\intv}[2]{[#1,#2]} % interval
