@@ -141,6 +141,12 @@ etc. (we must close under transitivity...)
   TODO: example of a program: Syracuse
 \end{example}
 
+\begin{remark}
+  We need to remember the position. For instance if we had
+  $\por\Bfalse PQ\redto P$, in the program $\por xPP$, the position $P$ would be
+  ``ambiguous''.
+\end{remark}
+
 \section{Positions}
 A \emph{position} is
 \[
@@ -200,6 +206,27 @@ $\vpos\pi P$ is derivable by the following rules
 % \begin{lemma}
   % $\mpos\pi P$ implies $\vpos\pi P$.
   % \end{lemma}
+
+\begin{remark}
+  We could want to impose ``$\eta$-expansed'' positions, for instance the lowest
+  position of $\pseq A{\pseq BC}$ would be $\pseql\bot$. However, this cannot be
+  done for disjunction since we really want a global bottom and top in this
+  case. Moreover, in the rules which require some part to have finished, the
+  indication of ``finished'' would be an $\eta$-expansed $\top$ which would vary
+  with the program and thus be difficult to detect syntactically.
+\end{remark}
+
+\begin{remark}
+  At first, we could have declared that a position for sequence is either
+  $\pseq\pi\pbot$ or $\pseq\ptop\pi$, but in this case, we would not have
+  uniqueness of derivation of the validity of a position: for instance, consider
+  $\pseq\ptop\pbot$.
+\end{remark}
+
+\begin{lemma}
+  There is only one derivation which shows that a position is a valid one.
+  
+\end{lemma}
 
 A valid position~$\pi$ of a program~$P$ induces a program state $\postate\pi P$
 defined by
