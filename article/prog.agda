@@ -1,39 +1,26 @@
 open import Data.Product
 
 data Prog : Set where
-  PAct : Prog
-  PSeq : Prog → Prog → Prog
+  Act : Prog
+  Seq : Prog → Prog → Prog
 
--- Pos ?
-data State : Prog → Set where
-  SBot : (P : Prog) → State P
-  STop : (P : Prog) → State P
-  SSeqₗ : {P : Prog} → State P → (Q : Prog) → State (PSeq P Q)
-  SSeqᵣ : (P : Prog) → {Q : Prog} → State Q → State (PSeq P Q)
+data Pos : Prog → Set where
+  Bot : (P : Prog) → Pos P
+  Top : (P : Prog) → Pos P
+  Seqₗ : {P : Prog} → Pos P → (Q : Prog) → Pos (Seq P Q)
+  Seqᵣ : (P : Prog) → {Q : Prog} → Pos Q → Pos (Seq P Q)
 
-data _↝_ : {P : Prog} (p : State P) (q : State P) → Set where
-  ↝-Act : SBot PAct ↝ STop PAct
-  ↝-Seq-b : (P Q : Prog) → SBot (PSeq P Q) ↝ SSeqₗ (SBot P) Q
-  ↝-Seq-l : {P : Prog} {p p' : State P} (_ : p ↝ p') (Q : Prog) → SSeqₗ p Q ↝ SSeqₗ p' Q
-  ↝-Seq-lr : (P Q : Prog) → SSeqₗ (STop P) Q ↝ SSeqᵣ P (SBot Q)
-  ↝-Seq-r : (P : Prog) {Q : Prog} {q q' : State Q} (_ : q ↝ q') → SSeqᵣ P q ↝ SSeqᵣ P q'
-  ↝-Seq-e : (P Q : Prog) → SSeqᵣ P (STop Q) ↝ STop (PSeq P Q)
+data _↝_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
+  ↝-Act : Bot Act ↝ Top Act
+  ↝-Seq-b : (P Q : Prog) → Bot (Seq P Q) ↝ Seqₗ (Bot P) Q
+  ↝-Seq-l : {P : Prog} {p p' : Pos P} → (p ↝ p') → (Q : Prog) → Seqₗ p Q ↝ Seqₗ p' Q
+  ↝-Seq-lr : (P Q : Prog) → Seqₗ (Top P) Q ↝ Seqᵣ P (Bot Q)
+  ↝-Seq-r : (P : Prog) {Q : Prog} {q q' : Pos Q} → (q ↝ q') → Seqᵣ P q ↝ Seqᵣ P q'
+  ↝-Seq-e : (P Q : Prog) → Seqᵣ P (Top Q) ↝ Top (Seq P Q)
 
-data _≤_ : {P : Prog} (p q : State P) → Set where
-  ≤-refl : (SBot PAct) ≤ (SBot PAct)
-  ≤-botop : {P : Prog} → (SBot P) ≤ (STop P)
-  -- ≤-Seq : {P Q : Prog} {p p' : State P} {q q' : State Q} (_ : p ≤ p') (_ : q ≤ q') → S
-
--- data State-path : (P : State) (Q : State) → Set where
-  -- State-path-empty : (P : State) → State-path P P
-  -- State-path-cons : {P Q R : State} (_ : P ↝ Q) (_ : State-path Q R) → State-path P R
-
--- data PState (P : Prog) : (S : State) → Set where
-  -- PS-prog : PState P (prog-to-state P)
-  -- PS-red : {S S' : State} (_ : PState P S) (_ : S ↝ S') → PState P S'
-
--- Interval (P : Prog) : Set
--- Interval P = PState P × State P
-
--- meet : (I : Interval) (J : Interval) → Interval
--- meet I J = {!!}
+data _≤_ : {P : Prog} (p q : Pos P) → Set where
+  ≤-refl : {P : Prog} (p : Pos P) → p ≤ p
+  ≤-trans : {P : Prog} (p q r : Pos P) → (p ≤ q) → (q ≤ r) → (p ≤ r)
+  ≤-botop : {P : Prog} → (Bot P) ≤ (Top P)
+  ≤-Seqₗ : {P : Prog} {p p' : Pos P} → (p ≤ p') → (Q : Prog) → Seqₗ p Q ≤ Seqₗ p' Q
+  ≤-Seqᵣ : (P : Prog) {Q : Prog} {q q' : Pos Q} → (q ≤ q') → Seqᵣ P q ≤ Seqᵣ P q'
