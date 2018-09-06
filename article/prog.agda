@@ -4,26 +4,25 @@ data Prog : Set where
   PAct : Prog
   PSeq : Prog → Prog → Prog
 
-data State : Set where
-  SAct : State
-  SSeq : State → State → State
-  SSeqₗ : State → State → State
-  SSeqᵣ : State → State
-  SDone : State
+-- Pos ?
+data State : Prog → Set where
+  SBot : (P : Prog) → State P
+  STop : (P : Prog) → State P
+  SSeqₗ : {P : Prog} → State P → (Q : Prog) → State (PSeq P Q)
+  SSeqᵣ : (P : Prog) → {Q : Prog} → State Q → State (PSeq P Q)
 
-prog-to-state : Prog → State
-prog-to-state PAct = SAct
-prog-to-state (PSeq P Q) = SSeq (prog-to-state P) (prog-to-state Q)
+data _↝_ : {P : Prog} (p : State P) (q : State P) → Set where
+  ↝-Act : SBot PAct ↝ STop PAct
+  ↝-Seq-b : (P Q : Prog) → SBot (PSeq P Q) ↝ SSeqₗ (SBot P) Q
+  ↝-Seq-l : {P : Prog} {p p' : State P} (_ : p ↝ p') (Q : Prog) → SSeqₗ p Q ↝ SSeqₗ p' Q
+  ↝-Seq-lr : (P Q : Prog) → SSeqₗ (STop P) Q ↝ SSeqᵣ P (SBot Q)
+  ↝-Seq-r : (P : Prog) {Q : Prog} {q q' : State Q} (_ : q ↝ q') → SSeqᵣ P q ↝ SSeqᵣ P q'
+  ↝-Seq-e : (P Q : Prog) → SSeqᵣ P (STop Q) ↝ STop (PSeq P Q)
 
-data _↝_ : (P : State) (Q : State) → Set where
-  ↝-Act : SAct ↝ SDone
-  ↝-Seq-b : (P Q : State) → SSeq P Q ↝ SSeqₗ P Q
-  ↝-Seq-l : {P P' : State} (_ : P ↝ P') (Q : State) → SSeqₗ P Q ↝ SSeqₗ P' Q
-  ↝-Seq-lr : (Q : State) → SSeqₗ SDone Q ↝ SSeqᵣ Q
-  ↝-Seq-r : {Q Q' : State} (_ : Q ↝ Q') → SSeqᵣ Q ↝ SSeqᵣ Q'
-  ↝-Seq-e : SSeqᵣ SDone ↝ SDone
-
-data _≤_ : (P : State) (Q : State) → Set where
+data _≤_ : {P : Prog} (p q : State P) → Set where
+  ≤-refl : (SBot PAct) ≤ (SBot PAct)
+  ≤-botop : {P : Prog} → (SBot P) ≤ (STop P)
+  -- ≤-Seq : {P Q : Prog} {p p' : State P} {q q' : State Q} (_ : p ≤ p') (_ : q ≤ q') → S
 
 -- data State-path : (P : State) (Q : State) → Set where
   -- State-path-empty : (P : State) → State-path P P
