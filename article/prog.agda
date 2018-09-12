@@ -1,7 +1,13 @@
 open import Relation.Binary.PropositionalEquality
 
-transport : {A B : Set} → (A ≡ B) → A → B
-transport refl x = x
+≡-trans : {A : Set} {a b c : A} → (a ≡ b) → (b ≡ c) → (a ≡ c)
+≡-trans refl refl = refl
+
+coe : {A B : Set} → (A ≡ B) → A → B
+coe refl x = x
+
+transport : {A : Set} (B : A → Set) {x y : A} (p : x ≡ y) → B x → B y
+transport B refl x = x
 
 data Prog : Set where
   Act : Prog
@@ -39,6 +45,9 @@ data _≤_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
   ≤-refl : {P : Prog} (p : Pos P) → p ≤ p
   ≤-trans : {P : Prog} {p q r : Pos P} → (p ≤ q) → (q ≤ r) → p ≤ r
 
+_≥_ : {P : Prog} (p : Pos P) (q : Pos P) → Set
+p ≥ q = q ≤ p
+
 ≤-Seqₗ : {P : Prog} {p p' : Pos P} (l : p ≤ p') (Q : Prog) → Seqₗ p Q ≤ Seqₗ p' Q
 ≤-Seqₗ (≤-step l) Q = ≤-step (↝-Seqₗ l Q)
 ≤-Seqₗ (≤-refl p) Q = ≤-refl (Seqₗ p Q)
@@ -74,6 +83,18 @@ data _≤_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
 ≤-Top (Seqᵣ P {Q} p) =
   ≤-trans (≤-Seqᵣ P (≤-Top p))
   (≤-step (↝-Seq₁ P Q))
+
+{-# TERMINATING #-}
+≤-Bot-≡ : {P : Prog} (p : Pos P) → (p ≤ Bot P) → (p ≡ Bot P)
+≤-Bot-≡ p (≤-step ())
+≤-Bot-≡ .(Bot _) (≤-refl .(Bot _)) = refl
+≤-Bot-≡ {P} p (≤-trans {_} {.p} {q} {.(Bot P)} l l') = ≤-Bot-≡ p (transport (λ q → p ≤ q) (≤-Bot-≡ q l') l)
+
+{-# TERMINATING #-}
+≤-Top-≡ : {P : Prog} (p : Pos P) → (Top P ≤ p) → (p ≡ Top P)
+≤-Top-≡ p (≤-step ())
+≤-Top-≡ .(Top _) (≤-refl .(Top _)) = refl
+≤-Top-≡ {P} q (≤-trans {_} {.(Top P)} {p} {.q} l l') = ≤-Top-≡ q (transport (λ p → p ≤ q) (≤-Top-≡ p l) l')
 
 ≤-Seqₗ-Seqᵣ : {P Q : Prog} (p : Pos P) (q : Pos Q) → (Seqₗ p Q ≤ Seqᵣ P q)
 ≤-Seqₗ-Seqᵣ {P} {Q} p q =
@@ -149,7 +170,7 @@ sup-bigger-l (Seqᵣ P p) (Seqₗ q Q) = ≤-Seqᵣ P (≤-refl p)
 sup-bigger-l (Seqᵣ P p) (Seqᵣ .P q) = ≤-Seqᵣ P (sup-bigger-l p q)
 
 sup-bigger-r : {P : Prog} (p q : Pos P) → (q ≤ (p ∨ q))
-sup-bigger-r p q = transport (cong (λ p → q ≤ p) (sup-comm q p)) (sup-bigger-l q p)
+sup-bigger-r p q = coe (cong (λ p → q ≤ p) (sup-comm q p)) (sup-bigger-l q p)
 
 sup-inc-l : {P : Prog} (p p' q : Pos P) → (p ≤ p') → ((p ∨ q) ≤ (p' ∨ q))
 sup-inc-l .(Bot Act) .(Top Act) q (≤-step ↝-Act) = ≤-Top q
@@ -175,8 +196,8 @@ sup-inc-l p p' q (≤-trans {_} {.p} {p''} l l') = ≤-trans (sup-inc-l p p'' q 
 
 sup-inc-r : {P : Prog} (p q q' : Pos P) → (q ≤ q') → ((p ∨ q) ≤ (p ∨ q'))
 sup-inc-r p q q' l =
-  transport (cong (λ r → r ≤ (p ∨ q')) (sup-comm q p))
-  (transport (cong (λ r → (q ∨ p) ≤ r) (sup-comm q' p))
+  coe (cong (λ r → r ≤ (p ∨ q')) (sup-comm q p))
+  (coe (cong (λ r → (q ∨ p) ≤ r) (sup-comm q' p))
   (sup-inc-l q q' p l))
 
 -- TODO: sup-lattice
@@ -185,15 +206,24 @@ sup-inc-r p q q' l =
 -- Complements (TODO: better name, this is already taken) 
 --
 
-open import Data.List
-
 -- maximal elements not greater
 
+-- open import Data.List
 -- ¬≥ : {P : Prog} (p : Pos P) → List (Pos P)
 -- ¬≥ (Bot P) = (Bot P) ∷ []
 -- ¬≥ (Top P) = (Top P) ∷ []
 -- ¬≥ (Seqₗ p Q) = map (λ p → Seqₗ p Q) (¬≥ p)
 -- ¬≥ (Seqᵣ P q) = map (λ q → Seqᵣ P q) (¬≥ q)
+
+open import Data.Sum
+open import Data.Product
+
+_and_ : (A : Set) (B : Set) → Set
+A and B = A × B
+
+_or_ : (A : Set) (B : Set) → Set
+A or B = A ⊎ B
+
 
 data _¬≥_ : {P : Prog} (p : Pos P) → (q : Pos P) → Set where
   ¬≥-Bot : {P : Prog} → (Bot P) ¬≥ (Bot P)
@@ -201,7 +231,11 @@ data _¬≥_ : {P : Prog} (p : Pos P) → (q : Pos P) → Set where
   ¬≥-Seqₗ : {P : Prog} {p p' : Pos P} → (p ¬≥ p') → (Q : Prog) → Seqₗ p Q ¬≥ Seqₗ p' Q
   ¬≥-Seqᵣ : (P : Prog) {Q : Prog} {q q' : Pos P} → (q ¬≥ q') → Seqᵣ P q ¬≥ Seqᵣ P q'
 
--- ¬≥-sound : {P : Prog} (p : Pos P) (q ≤ p)
--- ¬≥-sound = ?
+¬≥-sound : {P : Prog} {x : Pos P} {p q : Pos P} → (p ¬≥ q) → (x ≤ p) → (q ≤ x) → x ≡ q
+¬≥-sound {P} {x} {.(Bot P)} {.(Bot P)} ¬≥-Bot l l' = ≤-Bot-≡ x l
+¬≥-sound {P} {x} {.(Top P)} {.(Top P)} ¬≥-Top l l' = ≤-Top-≡ x l'
+¬≥-sound {.(Seq _ Q)} {x} {.(Seqₗ _ Q)} {.(Seqₗ _ Q)} (¬≥-Seqₗ l1 Q) l l' = {!!}
+¬≥-sound {.(Seq P P)} {x} {.(Seqᵣ P _)} {.(Seqᵣ P _)} (¬≥-Seqᵣ P l1) l l' = {!!}
 
-¬≥-complete : {P : Prog} (p : Pos P) (x : Pos P)
+¬≥-complete : {P : Prog} (p : Pos P) (x : Pos P) → (p ≤ x) or (∃[ p ] ((Pos P) and (x ≤ p)))
+¬≥-complete = {!!}
