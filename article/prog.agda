@@ -73,6 +73,8 @@ p ≥ q = q ≤ p
 ≤-Seqₗ (≤-refl p) Q = ≤-refl (Seqₗ p Q)
 ≤-Seqₗ (≤-trans l l') Q = ≤-trans (≤-Seqₗ l Q) (≤-Seqₗ l' Q)
 
+-- ≤-Seqₗ' : 
+
 ≤-Seqᵣ : (P : Prog) {Q : Prog} {q q' : Pos Q} (l : q ≤ q') → Seqᵣ P q ≤ Seqᵣ P q'
 ≤-Seqᵣ P (≤-step l) = ≤-step (↝-Seqᵣ P l)
 ≤-Seqᵣ P (≤-refl p) = ≤-refl (Seqᵣ P p)
@@ -115,24 +117,21 @@ p ≥ q = q ≤ p
 ---
 
 {-# TERMINATING #-}
-≤-Bot-≡ : {P : Prog} (p : Pos P) → (p ≤ Bot P) → (p ≡ Bot P)
-≤-Bot-≡ p (≤-step ())
-≤-Bot-≡ .(Bot _) (≤-refl .(Bot _)) = refl
-≤-Bot-≡ {P} p (≤-trans {_} {.p} {q} {.(Bot P)} l l') = ≤-Bot-≡ p (transport (λ q → p ≤ q) (≤-Bot-≡ q l') l)
+≤-Bot-≡ : {P : Prog} {p : Pos P} → (p ≤ Bot P) → (p ≡ Bot P)
+≤-Bot-≡ (≤-step ())
+≤-Bot-≡ (≤-refl .(Bot _)) = refl
+≤-Bot-≡ {P} {p} (≤-trans {_} {.p} {q} {.(Bot P)} l l') = ≤-Bot-≡ (transport (λ q → p ≤ q) (≤-Bot-≡ l') l)
 
 {-# TERMINATING #-}
-≤-Top-≡ : {P : Prog} (p : Pos P) → (Top P ≤ p) → (p ≡ Top P)
-≤-Top-≡ p (≤-step ())
-≤-Top-≡ .(Top _) (≤-refl .(Top _)) = refl
-≤-Top-≡ {P} q (≤-trans {_} {.(Top P)} {p} {.q} l l') = ≤-Top-≡ q (transport (λ p → p ≤ q) (≤-Top-≡ p l) l')
+≤-Top-≡ : {P : Prog} {p : Pos P} → (Top P ≤ p) → (p ≡ Top P)
+≤-Top-≡ (≤-step ())
+≤-Top-≡ (≤-refl .(Top _)) = refl
+≤-Top-≡ {P} {q} (≤-trans {_} {.(Top P)} {p} {.q} l l') = ≤-Top-≡ (transport (λ p → p ≤ q) (≤-Top-≡ l) l')
 
 ≤-asym : {P : Prog} {p q : Pos P} → (p ≤ q) → (q ≤ p) → p ≡ q
-≤-asym {.Act} {.(Bot Act)} {.(Top Act)} (≤-step ↝-Act) (≤-step ())
-≤-asym {.Act} {.(Bot Act)} {.(Top Act)} (≤-step ↝-Act) (≤-trans {_} {_} {q} {_} l' l'') = ≡-trans (≡-sym (≤-Bot-≡ q l'')) (≤-Top-≡ q l')
-≤-asym {.(Seq P Q)} {.(Bot (Seq P Q))} {.(Seqₗ (Bot P) Q)} (≤-step (↝-Seq₀ P Q)) (≤-step ())
-≤-asym {.(Seq P Q)} {.(Bot (Seq P Q))} {.(Seqₗ (Bot P) Q)} (≤-step (↝-Seq₀ P Q)) (≤-trans {_} {_} {q} {_} l' l'') = {!!}
--- ≤-Bot-≡ q l''
-≤-asym {.(Seq _ Q)} {.(Seqₗ _ Q)} {.(Seqₗ _ Q)} (≤-step (↝-Seqₗ x Q)) l' = {!!}
+≤-asym {.Act} {.(Bot Act)} {q} (≤-step ↝-Act) l' = ≡-sym (≤-Bot-≡ l')
+≤-asym {.(Seq P Q)} {.(Bot (Seq P Q))} {q} (≤-step (↝-Seq₀ P Q)) l' = ≡-sym (≤-Bot-≡ l')
+≤-asym {.(Seq _ Q)} {.(Seqₗ _ Q)} {.(Seqₗ _ Q)} (≤-step (↝-Seqₗ x Q)) l' = {!l'!}
 ≤-asym {.(Seq P Q)} {.(Seqₗ (Top P) Q)} {.(Seqᵣ P (Bot Q))} (≤-step (↝-Seqₘ P Q)) l' = {!!}
 ≤-asym {.(Seq P _)} {.(Seqᵣ P _)} {.(Seqᵣ P _)} (≤-step (↝-Seqᵣ P x)) l' = {!!}
 ≤-asym {.(Seq P Q)} {.(Seqᵣ P (Top Q))} {.(Top (Seq P Q))} (≤-step (↝-Seq₁ P Q)) l' = {!!}
@@ -290,10 +289,10 @@ data _¬>_ : {P : Prog} (p : Pos P) → (q : Pos P) → Set where
 
 {-# TERMINATING #-}
 ¬>-sound : {P : Prog} {x : Pos P} {p q : Pos P} → (p ¬> q) → (x ≤ p) → (q ≤ x) → x ≡ q
-¬>-sound {P} {x} {.(Bot P)} {.(Bot P)} ¬>-Bot l l' = ≤-Bot-≡ x l
-¬>-sound {P} {x} {.(Top P)} {.(Top P)} ¬>-Top l l' = ≤-Top-≡ x l'
+¬>-sound {P} {x} {.(Bot P)} {.(Bot P)} ¬>-Bot l l' = ≤-Bot-≡ l
+¬>-sound {P} {x} {.(Top P)} {.(Top P)} ¬>-Top l l' = ≤-Top-≡ l'
 ¬>-sound {.(Seq P Q)} {.(Bot (Seq P Q))} {.(Seqₗ (Bot P) Q)} {.(Seqₗ p' Q)} (¬>-Seqₗ {.P} {.(Bot P)} {p'} n Q) (≤-step (↝-Seq₀ P .Q)) (≤-step ())
-¬>-sound {.(Seq P Q)} {.(Bot (Seq P Q))} {.(Seqₗ (Bot P) Q)} {.(Seqₗ p' Q)} (¬>-Seqₗ {.P} {.(Bot P)} {p'} n Q) (≤-step (↝-Seq₀ P .Q)) (≤-trans {.(Seq P Q)} {.(Seqₗ p' Q)} {p''} {.(Bot (Seq P Q))} l' l'') = ¬>-sound (¬>-Seqₗ n Q) (≤-step (↝-Seq₀ P Q)) (transport (λ p'' → (Seqₗ p' Q ≤ p'')) (≤-Bot-≡ p'' l'') l')
+¬>-sound {.(Seq P Q)} {.(Bot (Seq P Q))} {.(Seqₗ (Bot P) Q)} {.(Seqₗ p' Q)} (¬>-Seqₗ {.P} {.(Bot P)} {p'} n Q) (≤-step (↝-Seq₀ P .Q)) (≤-trans {.(Seq P Q)} {.(Seqₗ p' Q)} {p''} {.(Bot (Seq P Q))} l' l'') = ¬>-sound (¬>-Seqₗ n Q) (≤-step (↝-Seq₀ P Q)) (transport (λ p'' → (Seqₗ p' Q ≤ p'')) (≤-Bot-≡ l'') l')
 ¬>-sound {.(Seq P Q)} {.(Seqₗ _ Q)} {.(Seqₗ p Q)} {.(Seqₗ p' Q)} (¬>-Seqₗ {P} {p} {p'} n Q) (≤-step (↝-Seqₗ r .Q)) l' = cong (λ p → Seqₗ p Q) {!!}
 ¬>-sound {.(Seq P Q)} {.(Seqₗ p Q)} {.(Seqₗ p Q)} {.(Seqₗ p' Q)} (¬>-Seqₗ {P} {p} {p'} n Q) (≤-refl .(Seqₗ p Q)) l' = {!l'!}
 ¬>-sound {.(Seq P Q)} {x} {.(Seqₗ p Q)} {.(Seqₗ p' Q)} (¬>-Seqₗ {P} {p} {p'} n Q) (≤-trans l l₁) l' = {!!}
