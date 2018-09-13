@@ -8,9 +8,11 @@ open import Data.Sum
 open import Data.Product
 
 _and_ : (A : Set) (B : Set) → Set
+infixr 2 _and_
 A and B = A × B
 
 _or_ : (A : Set) (B : Set) → Set
+infixr 1 _or_
 A or B = A ⊎ B
 
 ≡-trans : {A : Set} {a b c : A} → (a ≡ b) → (b ≡ c) → (a ≡ c)
@@ -67,6 +69,9 @@ data _↝_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
 data _≤_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
   ≤-step : {P : Prog} {p q r : Pos P} → (p ↝ q) → (q ≤ r) → p ≤ r
   ≤-refl : {P : Prog} (p : Pos P) → p ≤ p
+
+≡-≤ : {P : Prog} {p q : Pos P} → (p ≡ q) → p ≤ q
+≡-≤ {P} {p} {q} l = transport (λ q → p ≤ q) l (≤-refl p)
 
 ≤-trans : {P : Prog} {p q r : Pos P} → (p ≤ q) → (q ≤ r) → (p ≤ r)
 ≤-trans (≤-step r l) l' = ≤-step r (≤-trans l l')
@@ -216,6 +221,7 @@ p ≥ q = q ≤ p
 -- --
 
 _∨_ : {P : Prog} (p q : Pos P) → Pos P
+infix 40 _∨_
 Bot P ∨ q = q
 Top P ∨ q = Top P
 Seqₗ p Q ∨ Bot .(Seq _ Q) = Seqₗ p Q
@@ -293,23 +299,23 @@ Seqᵣ P p ∨ Seqᵣ .P q = Seqᵣ P (p ∨ q)
 ∨-comm (Seqᵣ P p) (Seqₗ q Q) = refl
 ∨-comm (Seqᵣ P p) (Seqᵣ .P q) = trans (∨-Seqᵣ P p q) (trans (cong (λ q → Seqᵣ P q) (∨-comm p q)) (sym (∨-Seqᵣ P q p)))
 
-∨-bigger-l : {P : Prog} (p q : Pos P) → (p ≤ (p ∨ q))
-∨-bigger-l (Bot P) q = ≤-Bot q
-∨-bigger-l (Top P) (Bot .P) = ≤-refl (Top P)
-∨-bigger-l (Top P) (Top .P) = ≤-refl (Top P)
-∨-bigger-l (Top .(Seq _ Q)) (Seqₗ {P} q Q) = ≤-refl (Top (Seq P Q))
-∨-bigger-l (Top .(Seq P _)) (Seqᵣ P {Q} q) = ≤-refl (Top (Seq P Q))
-∨-bigger-l (Seqₗ p Q) (Bot .(Seq _ Q)) = ≤-refl (Seqₗ p Q)
-∨-bigger-l (Seqₗ p Q) (Top .(Seq _ Q)) = ≤-Top (Seqₗ p Q)
-∨-bigger-l (Seqₗ p Q) (Seqₗ q .Q) = ≤-Seqₗ (∨-bigger-l p q) Q
-∨-bigger-l (Seqₗ p Q) (Seqᵣ P q) = ≤-Seqₗ-Seqᵣ p q
-∨-bigger-l (Seqᵣ P p) (Bot .(Seq P _)) = ≤-refl (Seqᵣ P p)
-∨-bigger-l (Seqᵣ P p) (Top .(Seq P _)) = ≤-Top (Seqᵣ P p)
-∨-bigger-l (Seqᵣ P p) (Seqₗ q Q) = ≤-Seqᵣ P (≤-refl p)
-∨-bigger-l (Seqᵣ P p) (Seqᵣ .P q) = ≤-Seqᵣ P (∨-bigger-l p q)
+∨-l-≤ : {P : Prog} (p q : Pos P) → (p ≤ (p ∨ q))
+∨-l-≤ (Bot P) q = ≤-Bot q
+∨-l-≤ (Top P) (Bot .P) = ≤-refl (Top P)
+∨-l-≤ (Top P) (Top .P) = ≤-refl (Top P)
+∨-l-≤ (Top .(Seq _ Q)) (Seqₗ {P} q Q) = ≤-refl (Top (Seq P Q))
+∨-l-≤ (Top .(Seq P _)) (Seqᵣ P {Q} q) = ≤-refl (Top (Seq P Q))
+∨-l-≤ (Seqₗ p Q) (Bot .(Seq _ Q)) = ≤-refl (Seqₗ p Q)
+∨-l-≤ (Seqₗ p Q) (Top .(Seq _ Q)) = ≤-Top (Seqₗ p Q)
+∨-l-≤ (Seqₗ p Q) (Seqₗ q .Q) = ≤-Seqₗ (∨-l-≤ p q) Q
+∨-l-≤ (Seqₗ p Q) (Seqᵣ P q) = ≤-Seqₗ-Seqᵣ p q
+∨-l-≤ (Seqᵣ P p) (Bot .(Seq P _)) = ≤-refl (Seqᵣ P p)
+∨-l-≤ (Seqᵣ P p) (Top .(Seq P _)) = ≤-Top (Seqᵣ P p)
+∨-l-≤ (Seqᵣ P p) (Seqₗ q Q) = ≤-Seqᵣ P (≤-refl p)
+∨-l-≤ (Seqᵣ P p) (Seqᵣ .P q) = ≤-Seqᵣ P (∨-l-≤ p q)
 
-∨-bigger-r : {P : Prog} (p q : Pos P) → (q ≤ (p ∨ q))
-∨-bigger-r p q = coe (cong (λ p → q ≤ p) (∨-comm q p)) (∨-bigger-l q p)
+∨-r-≤ : {P : Prog} (p q : Pos P) → (q ≤ (p ∨ q))
+∨-r-≤ p q = coe (cong (λ p → q ≤ p) (∨-comm q p)) (∨-l-≤ q p)
 
 ∨-↝-l : {P : Prog} {p p' : Pos P} → (p ↝ p') → (q : Pos P) → ((p ∨ q) ≤ (p' ∨ q))
 ∨-↝-l ↝-Act (Bot .Act) = ≤-step1 ↝-Act
@@ -335,17 +341,23 @@ Seqᵣ P p ∨ Seqᵣ .P q = Seqᵣ P (p ∨ q)
 ∨-↝-l (↝-Seq₁ P Q) (Seqₗ q .Q) = ≤-step1 (↝-Seq₁ P Q)
 ∨-↝-l (↝-Seq₁ P Q) (Seqᵣ .P q) = ≤-step1 (↝-Seq₁ P Q)
 
-∨-inc-l : {P : Prog} {p p' : Pos P} → (p ≤ p') → (q : Pos P) → ((p ∨ q) ≤ (p' ∨ q))
-∨-inc-l (≤-step r l) q = ≤-trans (∨-↝-l r q) (∨-inc-l l q)
-∨-inc-l (≤-refl p) q = ≤-refl (p ∨ q)
+∨-≤-l : {P : Prog} {p p' : Pos P} → (p ≤ p') → (q : Pos P) → (p ∨ q ≤ p' ∨ q)
+∨-≤-l (≤-step r l) q = ≤-trans (∨-↝-l r q) (∨-≤-l l q)
+∨-≤-l (≤-refl p) q = ≤-refl (p ∨ q)
 
-∨-inc-r : {P : Prog} (p q q' : Pos P) → (q ≤ q') → ((p ∨ q) ≤ (p ∨ q'))
-∨-inc-r p q q' l =
+∨-≤-r : {P : Prog} (p : Pos P) {q q' : Pos P} → (q ≤ q') → (p ∨ q ≤ p ∨ q')
+∨-≤-r p {q} {q'} l =
   coe (cong (λ r → r ≤ (p ∨ q')) (∨-comm q p))
   (coe (cong (λ r → (q ∨ p) ≤ r) (∨-comm q' p))
-  (∨-inc-l l p))
+  (∨-≤-l l p))
 
--- -- TODO: sup-lattice
+∨-≤ : {P : Prog} {p p' q q' : Pos P} → (p ≤ p') → (q ≤ q') → (p ∨ q ≤ p' ∨ q')
+∨-≤ {p' = p'} {q = q} l r = ≤-trans (∨-≤-l l q) (∨-≤-r p' r)
+
+∨-sup : {P : Prog} (p p' q : Pos P) → ((p ≤ p ∨ p') and (p' ≤ p ∨ p')) and ((r : Pos P) → (p ≤ r) → (p' ≤ r) → (p ∨ p' ≤ r))
+proj₁ (proj₁ (∨-sup p p' q)) = ∨-l-≤ p p'
+proj₂ (proj₁ (∨-sup p p' q)) = ∨-r-≤ p p'
+proj₂ (∨-sup p p' q) r l l' = ≤-trans (∨-≤ l l') (≡-≤ (∨-idem r))
 
 -- --
 -- -- Complements (TODO: better name, this is already taken) 
@@ -360,11 +372,17 @@ Seqᵣ P p ∨ Seqᵣ .P q = Seqᵣ P (p ∨ q)
 -- ¬≥ (Seqₗ p Q) = map (λ p → Seqₗ p Q) (¬≥ p)
 -- ¬≥ (Seqᵣ P q) = map (λ q → Seqᵣ P q) (¬≥ q)
 
-data _¬>_ : {P : Prog} (p : Pos P) → (q : Pos P) → Set where
+data _¬>_ : {P : Prog} (p q : Pos P) → Set where
   ¬>-Bot : {P : Prog} → (Bot P) ¬> (Bot P)
   ¬>-Top : {P : Prog} → (Top P) ¬> (Top P)
   ¬>-Seqₗ : {P : Prog} {p p' : Pos P} → (p ¬> p') → (Q : Prog) → Seqₗ p Q ¬> Seqₗ p' Q
-  ¬>-Seqᵣ : (P : Prog) {Q : Prog} {q q' : Pos P} → (q ¬> q') → Seqᵣ P q ¬> Seqᵣ P q'
+  ¬>-Seqᵣ : (P : Prog) {Q : Prog} {q q' : Pos Q} → (q ¬> q') → Seqᵣ P q ¬> Seqᵣ P q'
+
+¬>-refl : {P : Prog} (p : Pos P) → p ¬> p
+¬>-refl (Bot P) = ¬>-Bot
+¬>-refl (Top P) = ¬>-Top
+¬>-refl (Seqₗ p Q) = ¬>-Seqₗ (¬>-refl p) Q
+¬>-refl (Seqᵣ P q) = ¬>-Seqᵣ P (¬>-refl q)
 
 ¬>-sound : {P : Prog} {x : Pos P} {p q : Pos P} → (p ¬> q) → (x ≤ p) → (q ≤ x) → x ≡ q
 ¬>-sound ¬>-Bot l l' = ≤-asym l l'
@@ -375,18 +393,21 @@ data _¬>_ : {P : Prog} (p : Pos P) → (q : Pos P) → Set where
 ¬>-sound (¬>-Seqₗ r Q) (≤-step (↝-Seqᵣ P s) l) l' = ⊥-elim (¬≤-Seqᵣ-Seqₗ l)
 ¬>-sound (¬>-Seqₗ r Q) (≤-step (↝-Seq₁ P .Q) l) l' = ⊥-elim (¬≤-Top-Seqₗ l)
 ¬>-sound (¬>-Seqₗ {p = p} r Q) (≤-refl .(Seqₗ _ Q)) l' = cong (λ p → Seqₗ p Q) (¬>-sound r (≤-refl p) (≤-Seqₗ' l'))
-¬>-sound (¬>-Seqᵣ P r) (≤-step (↝-Seq₀ .P .P) l) l' = ⊥-elim (¬≤-Seqᵣ-Bot l')
-¬>-sound (¬>-Seqᵣ P r) (≤-step (↝-Seqₗ s .P) l) l' = ⊥-elim (¬≤-Seqᵣ-Seqₗ l')
-¬>-sound (¬>-Seqᵣ P r) (≤-step (↝-Seqₘ .P .P) l) l' = ⊥-elim (¬≤-Seqᵣ-Seqₗ l')
+¬>-sound (¬>-Seqᵣ P r) (≤-step (↝-Seq₀ .P _) l) l' = ⊥-elim (¬≤-Seqᵣ-Bot l')
+¬>-sound (¬>-Seqᵣ P r) (≤-step (↝-Seqₗ s _) l) l' = ⊥-elim (¬≤-Seqᵣ-Seqₗ l')
+¬>-sound (¬>-Seqᵣ P r) (≤-step (↝-Seqₘ .P _) l) l' = ⊥-elim (¬≤-Seqᵣ-Seqₗ l')
 ¬>-sound (¬>-Seqᵣ P r) (≤-step (↝-Seqᵣ .P s) l) l' = cong (λ q → Seqᵣ P q) (¬>-sound r (≤-step s (≤-Seqᵣ' l)) (≤-Seqᵣ' l'))
-¬>-sound (¬>-Seqᵣ P r) (≤-step (↝-Seq₁ .P .P) l) l' = ⊥-elim (¬≤-Top-Seqᵣ l)
+¬>-sound (¬>-Seqᵣ P r) (≤-step (↝-Seq₁ .P _) l) l' = ⊥-elim (¬≤-Top-Seqᵣ l)
 ¬>-sound (¬>-Seqᵣ P {q = q} r) (≤-refl .(Seqᵣ P _)) l' = cong (λ q → Seqᵣ P q) (¬>-sound r (≤-refl q) (≤-Seqᵣ' l'))
 
 ¬>-complete : {P : Prog} (p : Pos P) (x : Pos P) → (p ≤ x) or (∃[ q ] ((q ¬> p) and (x ≤ q)))
 ¬>-complete (Bot P) x = inj₁ (≤-Bot x)
 ¬>-complete (Top P) x = inj₂ ( Top P , ¬>-Top , ≤-Top x )
-¬>-complete (Seqₗ p Q) (Bot .(Seq _ Q)) = inj₂ (Seqₗ p Q , ¬>-Seqₗ {!!} Q , ≤-Bot (Seqₗ p Q))
+¬>-complete (Seqₗ p Q) (Bot .(Seq _ Q)) = inj₂ (Seqₗ p Q , ¬>-Seqₗ (¬>-refl p) Q , ≤-Bot (Seqₗ p Q))
 ¬>-complete (Seqₗ p Q) (Top .(Seq _ Q)) = inj₁ (≤-Top (Seqₗ p Q))
-¬>-complete (Seqₗ p Q) (Seqₗ x .Q) = {!!}
+¬>-complete (Seqₗ p Q) (Seqₗ x .Q) = case ¬>-complete p x of λ { (inj₁ l) → inj₁ (≤-Seqₗ l Q) ; (inj₂ (q , n , l)) → inj₂ (Seqₗ q Q , ¬>-Seqₗ n Q , ≤-Seqₗ l Q) }
 ¬>-complete (Seqₗ p Q) (Seqᵣ P x) = inj₁ (≤-Seqₗ-Seqᵣ p x)
-¬>-complete (Seqᵣ P p) x = {!!}
+¬>-complete (Seqᵣ P p) (Bot .(Seq P _)) = inj₂ (Seqᵣ P p , ¬>-refl (Seqᵣ P p) , ≤-Bot (Seqᵣ P p))
+¬>-complete (Seqᵣ P p) (Top .(Seq P _)) = inj₁ (≤-Top (Seqᵣ P p))
+¬>-complete (Seqᵣ P p) (Seqₗ x Q) = inj₂ (Seqᵣ P p , ¬>-Seqᵣ P (¬>-refl p) , ≤-Seqₗ-Seqᵣ x p)
+¬>-complete (Seqᵣ P q) (Seqᵣ .P x) = case ¬>-complete q x of λ { (inj₁ l) → inj₁ (≤-Seqᵣ P l) ; (inj₂ (q , n , l)) → inj₂ (Seqᵣ P q , ¬>-Seqᵣ P n , ≤-Seqᵣ P l) }
