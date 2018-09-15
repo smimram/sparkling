@@ -8,7 +8,8 @@ open import Program
 open import Order
 
 _∨_ : {P : Prog} (p q : Pos P) → Pos P
-_∨While_ : {P : Prog} → (np : ℕ × Pos P) → (np' : ℕ × Pos P) → ℕ × Pos P
+_∨Wₙ_ : {P : Prog} → (np : ℕ × Pos P) → (np' : ℕ × Pos P) → ℕ
+_∨Wₚ_ : {P : Prog} → (np : ℕ × Pos P) → (np' : ℕ × Pos P) → Pos P
 infix 40 _∨_
 Bot P ∨ q = q
 Top P ∨ q = Top P
@@ -33,11 +34,15 @@ Par {P} p {Q} q ∨ Top .(Par _ _) = Top (Par P Q)
 Par p q ∨ Par p' q' = Par (p ∨ p') (q ∨ q')
 While n p ∨ Bot .(While _) = While n p
 While {P} n p ∨ Top .(While _) = Top (While P)
-While n p ∨ While n' p' = let n'' , p'' = (n , p) ∨While (n' , p') in While n''  p''
-(zero , p) ∨While (zero , p') = zero , (p ∨ p')
-(zero , p) ∨While (suc n' , p') = (suc n') , p'
-(suc n , p) ∨While (zero , p') = (suc n) , p
-(suc n , p) ∨While (suc n' , p') = let n'' , p'' = (n , p) ∨While (n' , p') in (suc n'') , p''
+While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (n' , p'))
+(zero , p) ∨Wₙ (zero , p') = zero
+(zero , p) ∨Wₙ (suc n' , p') = suc n'
+(suc n , p) ∨Wₙ (zero , p') = suc n
+(suc n , p) ∨Wₙ (suc n' , p') = suc ((n , p) ∨Wₙ (n' , p'))
+(zero , p) ∨Wₚ (zero , p') = p ∨ p'
+(zero , p) ∨Wₚ (suc n' , p') = p'
+(suc n , p) ∨Wₚ (zero , p') = p
+(suc n , p) ∨Wₚ (suc n' , p') = (n , p) ∨Wₚ (n' , p')
 
 ∨-Seqₗ : {P : Prog} (p p' : Pos P) (Q : Prog) → (Seqₗ p Q ∨ Seqₗ p' Q ≡ Seqₗ (p ∨ p') Q)
 ∨-Seqₗ (Bot P) p' Q = refl
@@ -124,8 +129,11 @@ While n p ∨ While n' p' = let n'' , p'' = (n , p) ∨While (n' , p') in While 
 ∨-assoc (While zero p) (While zero p') (While zero p'') = cong₂ While refl (∨-assoc p p' p'')
 ∨-assoc (While zero p) (While zero p') (While (suc n'') p'') = refl
 ∨-assoc (While zero p) (While (suc n') p') (While zero p'') = refl
-∨-assoc (While zero p) (While (suc n') p') (While (suc n'') p'') = {!!}
-∨-assoc (While (suc n) p) (While n' p') (While n'' p'') = {!!}
+∨-assoc (While zero p) (While (suc n') p') (While (suc n'') p'') = refl
+∨-assoc (While (suc n) p) (While zero p') (While zero p'') = refl
+∨-assoc (While (suc n) p) (While zero p') (While (suc n'') p'') = refl
+∨-assoc (While (suc n) p) (While (suc n') p') (While zero p'') = refl
+∨-assoc (While (suc n) p) (While (suc n') p') (While (suc n'') p'') = cong₂ While {!!} {!!}
 
 -- ∨-assoc : {P : Prog} (p q r : Pos P) → ((p ∨ q) ∨ r ≡ p ∨ (q ∨ r))
 -- ∨-assoc (Bot P) q r = refl
