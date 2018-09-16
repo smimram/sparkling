@@ -36,6 +36,10 @@ data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
 ≤W-refl (zero , p) = ≤W-zz (≤-refl p)
 ≤W-refl (suc n , p) = ≤W-ss (≤W-refl (n , p))
 
+≤-≤W : {P : Prog} → (n : ℕ) → {p p' : Pos P} → (p ≤ p') → (n , p) ≤W (n , p')
+≤-≤W zero l = ≤W-zz l
+≤-≤W (suc n) l = ≤W-ss (≤-≤W n l)
+
 ≡-≤W : {P : Prog} {np np' : ℕ × Pos P} → np ≡ np' → np ≤W np'
 ≡-≤W {_} {np} refl = ≤W-refl np
 

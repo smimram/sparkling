@@ -257,6 +257,12 @@ While np ∨ While np' = While (np ∨W np')
 ∨-r-≤ : {P : Prog} (p q : Pos P) → (q ≤ (p ∨ q))
 ∨-r-≤ p q = ≤-trans (∨-l-≤ q p) (≡-≤ (∨-comm q p))
 
+-- ∨W-≤-l : {P : Prog} → {np np' : ℕ × Pos P} → (np ≤W np') → (mq : ℕ × Pos P) → (np ∨W mq) ≤W (np' ∨W mq)
+-- ∨W-≤-l (≤W-zz l) (zero , q) = ≤W-zz {!!}
+-- ∨W-≤-l (≤W-zz l) (suc m , q) = {!!}
+-- ∨W-≤-l (≤W-zs n' p p') mq = {!!}
+-- ∨W-≤-l (≤W-ss l) mq = {!!}
+
 ∨-↝-l : {P : Prog} {p p' : Pos P} → (p ↝ p') → (q : Pos P) → ((p ∨ q) ≤ (p' ∨ q))
 ∨-↝-l ↝-Act (Bot .Act) = ≤-step1 ↝-Act
 ∨-↝-l ↝-Act (Top .Act) = ≤-refl (Top Act)
@@ -325,12 +331,15 @@ While np ∨ While np' = While (np ∨W np')
 ∨-↝-l (↝-While n p) (Bot .(While _)) = ≤-step1 (↝-While n p)
 ∨-↝-l (↝-While {P} n p) (Top .(While _)) = ≤-refl (Top (While P))
 ∨-↝-l (↝-While n p) (While np) = {!!}
+-- ≤-While {!≤-≤W ? ?!}
 ∨-↝-l (↝-While₁ P n) (Bot .(While P)) = ≤-step1 (↝-While₁ P n)
 ∨-↝-l (↝-While₁ P n) (Top .(While P)) = ≤-refl (Top (While P))
-∨-↝-l (↝-While₁ P n) (While np) = {!!}
+∨-↝-l (↝-While₁ P zero) (While (zero , p)) = ≤-While (≤W-zs zero (Top P) (Bot P))
+∨-↝-l (↝-While₁ P zero) (While (suc n' , p)) = ≤-While (≤W-ss {!!})
+∨-↝-l (↝-While₁ P (suc n)) (While (n' , p)) = {!!}
 ∨-↝-l (↝-While₁' P n) (Bot .(While P)) = ≤-step1 (↝-While₁' P n)
 ∨-↝-l (↝-While₁' P n) (Top .(While P)) = ≤-refl (Top (While P))
-∨-↝-l (↝-While₁' P n) (While np) = {!≤-Top (While ((n , Top P) ∨W np))!}
+∨-↝-l (↝-While₁' P n) (While np) = ≤-Top (While ((n , Top P) ∨W np))
 
 -- -- ∨-≤-l : {P : Prog} {p p' : Pos P} → (p ≤ p') → (q : Pos P) → (p ∨ q ≤ p' ∨ q)
 -- -- ∨-≤-l (≤-step r l) q = ≤-trans (∨-↝-l r q) (∨-≤-l l q)
