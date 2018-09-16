@@ -13,9 +13,11 @@ open import Order
 ≤ℕ-suc {suc n} {zero} l = s≤s l
 ≤ℕ-suc {suc n} {suc n'} l = s≤s l
 
+≡-× : {A B : Set} {a a' : A} {b b' : B} → (a ≡ a') → (b ≡ b') → (a , b) ≡ (a' , b')
+≡-× refl refl = refl
+
 _∨_ : {P : Prog} (p q : Pos P) → Pos P
-_∨Wₙ_ : {P : Prog} → (np : ℕ × Pos P) → (np' : ℕ × Pos P) → ℕ
-_∨Wₚ_ : {P : Prog} → (np : ℕ × Pos P) → (np' : ℕ × Pos P) → Pos P
+_∨W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → ℕ × Pos P
 infix 40 _∨_
 Bot P ∨ q = q
 Top P ∨ q = Top P
@@ -38,17 +40,13 @@ Ifᵣ P q ∨ Ifᵣ .P q' = Ifᵣ P (q ∨ q')
 Par p q ∨ Bot .(Par _ _) = Par p q
 Par {P} p {Q} q ∨ Top .(Par _ _) = Top (Par P Q)
 Par p q ∨ Par p' q' = Par (p ∨ p') (q ∨ q')
-While n p ∨ Bot .(While _) = While n p
-While {P} n p ∨ Top .(While _) = Top (While P)
-While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (n' , p'))
-(zero , p) ∨Wₙ (zero , p') = zero
-(zero , p) ∨Wₙ (suc n' , p') = suc n'
-(suc n , p) ∨Wₙ (zero , p') = suc n
-(suc n , p) ∨Wₙ (suc n' , p') = suc ((n , p) ∨Wₙ (n' , p'))
-(zero , p) ∨Wₚ (zero , p') = p ∨ p'
-(zero , p) ∨Wₚ (suc n' , p') = p'
-(suc n , p) ∨Wₚ (zero , p') = p
-(suc n , p) ∨Wₚ (suc n' , p') = (n , p) ∨Wₚ (n' , p')
+While (n , p) ∨ Bot .(While _) = While (n , p)
+While {P} (n , p) ∨ Top .(While _) = Top (While P)
+While np ∨ While np' = While (np ∨W np')
+(zero , p) ∨W (zero , p') = zero , p ∨ p'
+(zero , p) ∨W (suc n' , p') = suc n' , p'
+(suc n , p) ∨W (zero , p') = suc n , p
+(suc n , p) ∨W (suc n' , p') = let n'' , p'' = (n , p) ∨W (n' , p') in suc n'' , p''
 
 ∨-Seqₗ : {P : Prog} (p p' : Pos P) (Q : Prog) → (Seqₗ p Q ∨ Seqₗ p' Q ≡ Seqₗ (p ∨ p') Q)
 ∨-Seqₗ (Bot P) p' Q = refl
@@ -58,7 +56,7 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-Seqₗ (Ifₗ p Q₁) q Q = refl
 ∨-Seqₗ (Ifᵣ P p) q Q = refl
 ∨-Seqₗ (Par p p₁) q Q = refl
-∨-Seqₗ (While n p) q Q = refl
+∨-Seqₗ (While np) q Q = refl
 
 ∨-Seqᵣ : (P : Prog) {Q : Prog} (q q' : Pos Q) → (Seqᵣ P q ∨ Seqᵣ P q' ≡ Seqᵣ P (q ∨ q'))
 ∨-Seqᵣ P (Bot P₁) q' = refl
@@ -68,7 +66,7 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-Seqᵣ P (Ifₗ p Q) q = refl
 ∨-Seqᵣ P (Ifᵣ P₁ p) q = refl
 ∨-Seqᵣ P (Par p p₁) q = refl
-∨-Seqᵣ P (While n p) q = refl
+∨-Seqᵣ P (While np) q = refl
 
 ∨-Bot-l : {P : Prog} (p : Pos P) → (Bot P ∨ p ≡ p)
 ∨-Bot-l (Bot P) = refl
@@ -78,28 +76,28 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-Bot-l (Ifₗ p Q) = refl
 ∨-Bot-l (Ifᵣ P p) = refl
 ∨-Bot-l (Par p p₁) = refl
-∨-Bot-l (While n p) = refl
+∨-Bot-l (While np) = refl
 
-∨Wₙ-assoc : {P : Prog} (n n' n'' : ℕ) (p p' p'' : Pos P) → ((((n , p) ∨Wₙ (n' , p')) , ((n , p) ∨Wₚ (n' , p'))) ∨Wₙ (n'' , p'')) ≡ ((n , p) ∨Wₙ (((n' , p') ∨Wₙ (n'' , p'')) , ((n' , p') ∨Wₚ (n'' , p''))))
-∨Wₙ-assoc zero zero zero p p' p'' = refl
-∨Wₙ-assoc zero zero (suc n'') p p' p'' = refl
-∨Wₙ-assoc zero (suc n') zero p p' p'' = refl
-∨Wₙ-assoc zero (suc n') (suc n'') p p' p'' = refl
-∨Wₙ-assoc (suc n) zero zero p p' p'' = refl
-∨Wₙ-assoc (suc n) zero (suc n'') p p' p'' = refl
-∨Wₙ-assoc (suc n) (suc n') zero p p' p'' = refl
-∨Wₙ-assoc (suc n) (suc n') (suc n'') p p' p'' = cong suc (∨Wₙ-assoc n n' n'' p p' p'')
+-- ∨Wₙ-assoc : {P : Prog} (n n' n'' : ℕ) (p p' p'' : Pos P) → ((((n , p) ∨Wₙ (n' , p')) , ((n , p) ∨Wₚ (n' , p'))) ∨Wₙ (n'' , p'')) ≡ ((n , p) ∨Wₙ (((n' , p') ∨Wₙ (n'' , p'')) , ((n' , p') ∨Wₚ (n'' , p''))))
+-- ∨Wₙ-assoc zero zero zero p p' p'' = refl
+-- ∨Wₙ-assoc zero zero (suc n'') p p' p'' = refl
+-- ∨Wₙ-assoc zero (suc n') zero p p' p'' = refl
+-- ∨Wₙ-assoc zero (suc n') (suc n'') p p' p'' = refl
+-- ∨Wₙ-assoc (suc n) zero zero p p' p'' = refl
+-- ∨Wₙ-assoc (suc n) zero (suc n'') p p' p'' = refl
+-- ∨Wₙ-assoc (suc n) (suc n') zero p p' p'' = refl
+-- ∨Wₙ-assoc (suc n) (suc n') (suc n'') p p' p'' = cong suc (∨Wₙ-assoc n n' n'' p p' p'')
 
 ∨-assoc : {P : Prog} (p q r : Pos P) → ((p ∨ q) ∨ r ≡ p ∨ (q ∨ r))
-∨Wₚ-assoc : {P : Prog} (n n' n'' : ℕ) (p p' p'' : Pos P) → ((((n , p) ∨Wₙ (n' , p')) , ((n , p) ∨Wₚ (n' , p'))) ∨Wₚ (n'' , p'')) ≡ ((n , p) ∨Wₚ (((n' , p') ∨Wₙ (n'' , p'')) , ((n' , p') ∨Wₚ (n'' , p''))))
-∨Wₚ-assoc zero zero zero p p' p'' = ∨-assoc p p' p''
-∨Wₚ-assoc zero zero (suc n'') p p' p'' = refl
-∨Wₚ-assoc zero (suc n') zero p p' p'' = refl
-∨Wₚ-assoc zero (suc n') (suc n'') p p' p'' = refl
-∨Wₚ-assoc (suc n) zero zero p p' p'' = refl
-∨Wₚ-assoc (suc n) zero (suc n'') p p' p'' = refl
-∨Wₚ-assoc (suc n) (suc n') zero p p' p'' = refl
-∨Wₚ-assoc (suc n) (suc n') (suc n'') p p' p'' = ∨Wₚ-assoc n n' n'' p p' p''
+∨W-assoc : {P : Prog} (n n' n'' : ℕ) (p p' p'' : Pos P) → (((n , p) ∨W (n' , p')) ∨W (n'' , p'')) ≡ ((n , p) ∨W ((n' , p') ∨W (n'' , p'')))
+∨W-assoc zero zero zero p p' p'' = ≡-× refl (∨-assoc p p' p'')
+∨W-assoc zero zero (suc n'') p p' p'' = refl
+∨W-assoc zero (suc n') zero p p' p'' = refl
+∨W-assoc zero (suc n') (suc n'') p p' p'' = refl
+∨W-assoc (suc n) zero zero p p' p'' = refl
+∨W-assoc (suc n) zero (suc n'') p p' p'' = refl
+∨W-assoc (suc n) (suc n') zero p p' p'' = refl
+∨W-assoc (suc n) (suc n') (suc n'') p p' p'' = ≡-× (cong suc (cong proj₁ (∨W-assoc n n' n'' p p' p''))) (cong proj₂ (∨W-assoc n n' n'' p p' p''))
 ∨-assoc (Bot P) q r = refl
 ∨-assoc (Top P) q r = refl
 ∨-assoc (Seqₗ p Q) (Bot .(Seq _ Q)) r = refl
@@ -147,20 +145,16 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-assoc (Par p p₁) (Par q q₁) (Bot .(Par _ _)) = refl
 ∨-assoc (Par p p₁) (Par q q₁) (Top .(Par _ _)) = refl
 ∨-assoc (Par p p₁) (Par q q₁) (Par r r₁) = cong₂ (λ p q → Par p q) (∨-assoc p q r) (∨-assoc p₁ q₁ r₁)
-∨-assoc (While n p) (Bot .(While _)) r = refl
-∨-assoc (While n p) (Top .(While _)) r = refl
-∨-assoc (While n p) (While n₁ q) (Bot .(While _)) = refl
-∨-assoc (While n p) (While n₁ q) (Top .(While _)) = refl
-∨-assoc (While n p) (While n' p') (While n'' p'') = cong₂ While (∨Wₙ-assoc n n' n'' p p' p'') (∨Wₚ-assoc n n' n'' p p' p'')
-
-∨Wₙ-idem : {P : Prog} (n : ℕ) (p : Pos P) → ((n , p) ∨Wₙ (n , p)) ≡ n
-∨Wₙ-idem zero p = refl
-∨Wₙ-idem (suc n) p = cong suc (∨Wₙ-idem n p)
+∨-assoc (While np) (Bot .(While _)) r = refl
+∨-assoc (While np) (Top .(While _)) r = refl
+∨-assoc (While np) (While np') (Bot .(While _)) = refl
+∨-assoc (While np) (While np') (Top .(While _)) = refl
+∨-assoc (While (n , p)) (While (n' , p')) (While (n'' , p'')) = cong While (∨W-assoc n n' n'' p p' p'')
 
 ∨-idem : {P : Prog} (p : Pos P) → (p ∨ p ≡ p)
-∨Wₚ-idem : {P : Prog} (n : ℕ) (p : Pos P) → ((n , p) ∨Wₚ (n , p)) ≡ p
-∨Wₚ-idem zero p = ∨-idem p
-∨Wₚ-idem (suc n) p = ∨Wₚ-idem n p
+∨W-idem : {P : Prog} (np : ℕ × Pos P) → np ∨W np ≡ np
+∨W-idem (zero , p) = ≡-× refl (∨-idem p)
+∨W-idem (suc n , p) = ≡-× (cong suc (cong proj₁ (∨W-idem (n , p)))) (cong proj₂ (∨W-idem (n , p)))
 ∨-idem (Bot P) = refl
 ∨-idem (Top P) = refl
 ∨-idem (Seqₗ p Q) = cong (λ p → Seqₗ p Q) (∨-idem p)
@@ -168,20 +162,14 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-idem (Ifₗ p Q) = cong (λ p → Ifₗ p Q) (∨-idem p)
 ∨-idem (Ifᵣ P q) = cong (Ifᵣ P) (∨-idem q)
 ∨-idem (Par p q) = cong₂ (λ p q → Par p q) (∨-idem p) (∨-idem q)
-∨-idem (While n p) = cong₂ While (∨Wₙ-idem n p) (∨Wₚ-idem n p)
-
-∨Wₙ-comm : {P : Prog} (n n' : ℕ) (p p' : Pos P) → ((n , p) ∨Wₙ (n' , p')) ≡ ((n' , p') ∨Wₙ (n , p))
-∨Wₙ-comm zero zero p p' = refl
-∨Wₙ-comm zero (suc n') p p' = refl
-∨Wₙ-comm (suc n) zero p p' = refl
-∨Wₙ-comm (suc n) (suc n') p p' = cong suc (∨Wₙ-comm n n' p p')
+∨-idem (While np) = cong While (∨W-idem np)
 
 ∨-comm : {P : Prog} (p q : Pos P) → ((p ∨ q) ≡ (q ∨ p))
-∨Wₚ-comm : {P : Prog} (n n' : ℕ) (p p' : Pos P) → ((n , p) ∨Wₚ (n' , p')) ≡ ((n' , p') ∨Wₚ (n , p))
-∨Wₚ-comm zero zero p p' = ∨-comm p p'
-∨Wₚ-comm zero (suc n') p p' = refl
-∨Wₚ-comm (suc n) zero p p' = refl
-∨Wₚ-comm (suc n) (suc n') p p' = ∨Wₚ-comm n n' p p'
+∨W-comm : {P : Prog} (np np' : ℕ × Pos P) → (np ∨W np') ≡ (np' ∨W np)
+∨W-comm (zero , p) (zero , p') = ≡-× refl (∨-comm p p')
+∨W-comm (zero , p) (suc n' , p') = refl
+∨W-comm (suc n , p) (zero , p') = refl
+∨W-comm (suc n , p) (suc n' , p') = ≡-× (cong suc (cong proj₁ (∨W-comm (n , p) (n' , p')))) (cong proj₂ (∨W-comm (n , p) (n' , p')))
 ∨-comm (Bot P) (Bot .P) = refl
 ∨-comm (Bot P) (Top .P) = refl
 ∨-comm (Bot .(Seq _ Q)) (Seqₗ q Q) = refl
@@ -201,11 +189,11 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-comm (Bot .(If _ Q)) (Ifₗ q Q) = refl
 ∨-comm (Bot .(If P _)) (Ifᵣ P q) = refl
 ∨-comm (Bot .(Par _ _)) (Par q q₁) = refl
-∨-comm (Bot .(While _)) (While n q) = refl
+∨-comm (Bot .(While _)) (While np) = refl
 ∨-comm (Top .(If _ Q)) (Ifₗ q Q) = refl
 ∨-comm (Top .(If P _)) (Ifᵣ P q) = refl
 ∨-comm (Top .(Par _ _)) (Par q q₁) = refl
-∨-comm (Top .(While _)) (While n q) = refl
+∨-comm (Top .(While _)) (While np) = refl
 ∨-comm (Ifₗ p Q) (Bot .(If _ Q)) = refl
 ∨-comm (Ifₗ p Q) (Top .(If _ Q)) = refl
 ∨-comm (Ifₗ p Q) (Ifₗ q .Q) = cong (λ p → Ifₗ p Q) (∨-comm p q)
@@ -217,16 +205,16 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-comm (Par p p₁) (Bot .(Par _ _)) = refl
 ∨-comm (Par p p₁) (Top .(Par _ _)) = refl
 ∨-comm (Par p q) (Par p' q') = cong₂ (λ p q → Par p q) (∨-comm p p') (∨-comm q q')
-∨-comm (While n p) (Bot .(While _)) = refl
-∨-comm (While n p) (Top .(While _)) = refl
-∨-comm (While n p) (While n' p') = cong₂ While (∨Wₙ-comm n n' p p') (∨Wₚ-comm n n' p p')
-
-∨Wₙ-l-≤ : {P : Prog} (n n' : ℕ) (p p' : Pos P) → n ≤ℕ ((n , p) ∨Wₙ (n' , p'))
-∨Wₙ-l-≤ zero n' p p' = z≤n
-∨Wₙ-l-≤ (suc n) zero p p' = Data.Nat.Properties.≤-refl
-∨Wₙ-l-≤ (suc n) (suc n') p p' = ≤ℕ-suc (∨Wₙ-l-≤ n n' p p')
+∨-comm (While np) (Bot .(While _)) = refl
+∨-comm (While np) (Top .(While _)) = refl
+∨-comm (While np) (While np') = cong While (∨W-comm np np')
 
 ∨-l-≤ : {P : Prog} (p q : Pos P) → (p ≤ (p ∨ q))
+∨W-l-≤ : {P : Prog} (np np' : ℕ × Pos P) → np ≤W (np ∨W np')
+∨W-l-≤ (zero , p) (zero , p') = ≤W-zz (∨-l-≤ p p')
+∨W-l-≤ (zero , p) (suc n' , p') = ≤W-zs n' p p'
+∨W-l-≤ (suc n , p) (zero , p') = ≤W-refl (suc n , p)
+∨W-l-≤ (suc n , p) (suc n' , p') = ≤W-ss (∨W-l-≤ (n , p) (n' , p'))
 ∨-l-≤ (Bot P) q = ≤-Bot q
 ∨-l-≤ (Top P) (Bot .P) = ≤-refl (Top P)
 ∨-l-≤ (Top P) (Top .P) = ≤-refl (Top P)
@@ -243,7 +231,7 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-l-≤ (Top .(If _ Q)) (Ifₗ {P} p Q) = ≤-refl (Top (If P Q))
 ∨-l-≤ (Top .(If P _)) (Ifᵣ P {Q} q) = ≤-refl (Top (If P Q))
 ∨-l-≤ (Top .(Par _ _)) (Par {P} p {Q} q) = ≤-refl (Top (Par P Q))
-∨-l-≤ (Top .(While _)) (While {P} n p) = ≤-refl (Top (While P))
+∨-l-≤ (Top .(While _)) (While {P} np) = ≤-refl (Top (While P))
 ∨-l-≤ (Ifₗ {P} p Q) (Bot .(If P Q)) = ≤-refl (Ifₗ p Q)
 ∨-l-≤ (Ifₗ {P} p Q) (Top .(If P Q)) = ≤-Top (Ifₗ p Q)
 ∨-l-≤ (Ifₗ {P} p Q) (Ifₗ q .Q) = ≤-Ifₗ (∨-l-≤ p q) Q
@@ -255,15 +243,12 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-l-≤ (Par p q) (Bot .(Par _ _)) = ≤-refl (Par p q)
 ∨-l-≤ (Par p q) (Top .(Par _ _)) = ≤-Top (Par p q)
 ∨-l-≤ (Par p q) (Par p' q') = ≤-Par (∨-l-≤ p p') (∨-l-≤ q q')
-∨-l-≤ (While n p) (Bot .(While _)) = ≤-refl (While n p)
-∨-l-≤ (While n p) (Top .(While _)) = ≤-Top (While n p)
-∨-l-≤ (While zero p) (While zero p') = ≤-Whileₚ (∨-l-≤ p p')
-∨-l-≤ (While zero p) (While (suc n') p') = ≤-Whileₙ' (s≤s z≤n) p p'
-∨-l-≤ (While (suc n) p) (While zero p') = ≤-refl (While (suc n) p)
-∨-l-≤ (While (suc n) p) (While (suc n') p') = {!!}
+∨-l-≤ (While np) (Bot .(While _)) = ≤-refl (While np)
+∨-l-≤ (While np) (Top .(While _)) = ≤-Top (While np)
+∨-l-≤ (While np) (While np') = ≤-While (∨W-l-≤ np np')
 
--- ∨-r-≤ : {P : Prog} (p q : Pos P) → (q ≤ (p ∨ q))
--- ∨-r-≤ p q = coe (cong (λ p → q ≤ p) (∨-comm q p)) (∨-l-≤ q p)
+∨-r-≤ : {P : Prog} (p q : Pos P) → (q ≤ (p ∨ q))
+∨-r-≤ p q = ≤-trans (∨-l-≤ q p) (≡-≤ (∨-comm q p))
 
 -- ∨-↝-l : {P : Prog} {p p' : Pos P} → (p ↝ p') → (q : Pos P) → ((p ∨ q) ≤ (p' ∨ q))
 -- ∨-↝-l ↝-Act (Bot .Act) = ≤-step1 ↝-Act
@@ -289,20 +274,20 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 -- ∨-↝-l (↝-Seq₁ P Q) (Seqₗ q .Q) = ≤-step1 (↝-Seq₁ P Q)
 -- ∨-↝-l (↝-Seq₁ P Q) (Seqᵣ .P q) = ≤-step1 (↝-Seq₁ P Q)
 
--- ∨-≤-l : {P : Prog} {p p' : Pos P} → (p ≤ p') → (q : Pos P) → (p ∨ q ≤ p' ∨ q)
--- ∨-≤-l (≤-step r l) q = ≤-trans (∨-↝-l r q) (∨-≤-l l q)
--- ∨-≤-l (≤-refl p) q = ≤-refl (p ∨ q)
+-- -- ∨-≤-l : {P : Prog} {p p' : Pos P} → (p ≤ p') → (q : Pos P) → (p ∨ q ≤ p' ∨ q)
+-- -- ∨-≤-l (≤-step r l) q = ≤-trans (∨-↝-l r q) (∨-≤-l l q)
+-- -- ∨-≤-l (≤-refl p) q = ≤-refl (p ∨ q)
 
--- ∨-≤-r : {P : Prog} (p : Pos P) {q q' : Pos P} → (q ≤ q') → (p ∨ q ≤ p ∨ q')
--- ∨-≤-r p {q} {q'} l =
-  -- coe (cong (λ r → r ≤ (p ∨ q')) (∨-comm q p))
-  -- (coe (cong (λ r → (q ∨ p) ≤ r) (∨-comm q' p))
-  -- (∨-≤-l l p))
+-- -- ∨-≤-r : {P : Prog} (p : Pos P) {q q' : Pos P} → (q ≤ q') → (p ∨ q ≤ p ∨ q')
+-- -- ∨-≤-r p {q} {q'} l =
+  -- -- coe (cong (λ r → r ≤ (p ∨ q')) (∨-comm q p))
+  -- -- (coe (cong (λ r → (q ∨ p) ≤ r) (∨-comm q' p))
+  -- -- (∨-≤-l l p))
 
--- ∨-≤ : {P : Prog} {p p' q q' : Pos P} → (p ≤ p') → (q ≤ q') → (p ∨ q ≤ p' ∨ q')
--- ∨-≤ {p' = p'} {q = q} l r = ≤-trans (∨-≤-l l q) (∨-≤-r p' r)
+-- -- ∨-≤ : {P : Prog} {p p' q q' : Pos P} → (p ≤ p') → (q ≤ q') → (p ∨ q ≤ p' ∨ q')
+-- -- ∨-≤ {p' = p'} {q = q} l r = ≤-trans (∨-≤-l l q) (∨-≤-r p' r)
 
--- ∨-sup : {P : Prog} (p p' q : Pos P) → ((p ≤ p ∨ p') and (p' ≤ p ∨ p')) and ((r : Pos P) → (p ≤ r) → (p' ≤ r) → (p ∨ p' ≤ r))
--- proj₁ (proj₁ (∨-sup p p' q)) = ∨-l-≤ p p'
--- proj₂ (proj₁ (∨-sup p p' q)) = ∨-r-≤ p p'
--- proj₂ (∨-sup p p' q) r l l' = ≤-trans (∨-≤ l l') (≡-≤ (∨-idem r))
+-- -- ∨-sup : {P : Prog} (p p' q : Pos P) → ((p ≤ p ∨ p') and (p' ≤ p ∨ p')) and ((r : Pos P) → (p ≤ r) → (p' ≤ r) → (p ∨ p' ≤ r))
+-- -- proj₁ (proj₁ (∨-sup p p' q)) = ∨-l-≤ p p'
+-- -- proj₂ (proj₁ (∨-sup p p' q)) = ∨-r-≤ p p'
+-- -- proj₂ (∨-sup p p' q) r l l' = ≤-trans (∨-≤ l l') (≡-≤ (∨-idem r))
