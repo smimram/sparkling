@@ -127,6 +127,11 @@ p ≥ q = q ≤ p
   (λ m l → ≤-trans l (≤-trans (≤-Whileₚ (≤-Top p')) (≤-step (↝-While₁ P m) (≤-Whileₚ (≤-Bot p')))))
   n' l
 
+-- ≤-While-prop : {P : Prog} {n n' : ℕ} (l : n ≤ℕ n') (p p' : Pos P) → Set
+-- ≤-While-prop {P} {.0} {zero} z≤n p p' = (p ≤ p') → While 0 p ≤ While 0 p'
+-- ≤-While-prop {P} {.0} {suc n'} z≤n p p' = While zero p ≤ While (suc n') p'
+-- ≤-While-prop {P} {.(suc n)} {.(suc n')} (s≤s {n} {n'} l) p p' = {!≤-While-prop l n n'!}
+
 -- ≤-While : {P : Prog} {n n' : ℕ} (_ : n ≤ℕ n') {p p' : Pos P} (l : p ≤ p') → While n p ≤ While n' p'
 -- ≤-While ln {p = p} l = ≤-trans (≤-Whileₙ ln p) (≤-Whileₚ l)
 
