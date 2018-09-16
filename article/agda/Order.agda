@@ -8,7 +8,7 @@ open import Relation.Binary using ( Decidable )
 open import Relation.Nullary using ( yes ; no )
 open import Relation.Binary.PropositionalEquality
 open import Data.Empty
-open import Data.Nat.Base renaming (_≤_ to _≤ℕ_) renaming (_≟_ to _≟ℕ_) renaming (compare to ℕ-compare) hiding (_≥_)
+open import Data.Nat.Base renaming (_≤_ to _≤ℕ_) renaming (_≟_ to _≟ℕ_) hiding (_≥_)
 open import Program
 
 data _≤_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
@@ -55,9 +55,9 @@ p ≥ q = q ≤ p
 ≤-Par : { P Q : Prog } {p p' : Pos P} (l : p ≤ p') {q q' : Pos Q} (r : q ≤ q') → Par p q ≤ Par p' q'
 ≤-Par {p' = p'} l {q = q} r = ≤-trans (≤-Parₗ l q) (≤-Parᵣ p' r)
 
-≤-While-p : {P : Prog} {n : ℕ} {p p' : Pos P} (l : p ≤ p') → While n p ≤ While n p'
-≤-While-p {n = n} (≤-step s l) = ≤-step (↝-While n s) (≤-While-p l)
-≤-While-p {n = n} (≤-refl p) = ≤-refl (While n p)
+≤-Whileₚ : {P : Prog} {n : ℕ} {p p' : Pos P} (l : p ≤ p') → While n p ≤ While n p'
+≤-Whileₚ {n = n} (≤-step s l) = ≤-step (↝-While n s) (≤-Whileₚ l)
+≤-Whileₚ {n = n} (≤-refl p) = ≤-refl (While n p)
 
 ≤-Bot : {P : Prog} (p : Pos P) → (Bot P ≤ p)
 ≤-Top : {P : Prog} (p : Pos P) → (p ≤ Top P)
@@ -87,13 +87,13 @@ p ≥ q = q ≤ p
 ≤-Bot (Ifₗ {P} p Q) = ≤-step (↝-If₀ₗ P Q) (≤-Ifₗ (≤-Bot p) Q)
 ≤-Bot (Ifᵣ P {Q} q) = ≤-step (↝-If₀ᵣ P Q) (≤-Ifᵣ P (≤-Bot q))
 ≤-Bot (Par {P} p {Q} q) = ≤-step (↝-Par₀ P Q) (≤-Par (≤-Bot p) (≤-Bot q))
-≤-Bot (While {P} zero p) = ≤-step (↝-While₀ P) (≤-While-p (≤-Bot p))
+≤-Bot (While {P} zero p) = ≤-step (↝-While₀ P) (≤-Whileₚ (≤-Bot p))
 ≤-Bot (While {P} (suc n) p) =
   ≤-trans
   (≤-Bot (While n p))
-  (≤-trans (≤-While-p (≤-Top p))
+  (≤-trans (≤-Whileₚ (≤-Top p))
   (≤-step (↝-While₁ P n)
-  (≤-While-p (≤-Bot p))))
+  (≤-Whileₚ (≤-Bot p))))
 
 ≤-Top (Bot P) = ≤-Bot (Top P)
 ≤-Top (Top P) = ≤-refl (Top P)
@@ -106,7 +106,7 @@ p ≥ q = q ≤ p
 ≤-Top (Ifₗ {P} p Q) = ≤-trans (≤-Ifₗ (≤-Top p) Q) (≤-step1 (↝-If₁ₗ P Q))
 ≤-Top (Ifᵣ P {Q} q) = ≤-trans (≤-Ifᵣ P (≤-Top q)) (≤-step1 (↝-If₁ᵣ P Q))
 ≤-Top (Par {P} p {Q} q) = ≤-trans (≤-Par (≤-Top p) (≤-Top q)) (≤-step1 (↝-Par₁ P Q))
-≤-Top (While {P} n p) = ≤-trans (≤-While-p (≤-Top p)) (≤-step1 (↝-While₁' P n))
+≤-Top (While {P} n p) = ≤-trans (≤-Whileₚ (≤-Top p)) (≤-step1 (↝-While₁' P n))
 
 ℕ-rec-from : (P : ℕ → Set) (n : ℕ) (P₀ : P n) (Pᵢ : (n : ℕ) → P n → P (suc n)) → (m : ℕ) → (n ≤ℕ m) → P m
 ℕ-rec-from P zero P₀ Pᵢ zero x = P₀
@@ -114,14 +114,21 @@ p ≥ q = q ≤ p
 ℕ-rec-from P (suc n) P₀ Pᵢ zero ()
 ℕ-rec-from P (suc n) P₀ Pᵢ (suc m) (s≤s l) = ℕ-rec-from (λ z → P (suc z)) n P₀ (λ n₁ → Pᵢ (suc n₁)) m l
 
-≤-While-n : {P : Prog} {n n' : ℕ} → (n ≤ℕ n') → (p : Pos P) → While n p ≤ While n' p
-≤-While-n {P} {n} {n'} l p =
+≤-Whileₙ : {P : Prog} {n n' : ℕ} → (n ≤ℕ n') → (p : Pos P) → While n p ≤ While n' p
+≤-Whileₙ {P} {n} {n'} l p =
   ℕ-rec-from (λ n' → While n p ≤ While n' p) n (≤-refl (While n p))
-  ( λ m l → ≤-trans l (≤-trans (≤-While-p (≤-Top p)) (≤-step (↝-While₁ P m) (≤-While-p (≤-Bot p)))) )
+  ( λ m l → ≤-trans l (≤-trans (≤-Whileₚ (≤-Top p)) (≤-step (↝-While₁ P m) (≤-Whileₚ (≤-Bot p)))) )
   n' l
 
-≤-While : {P : Prog} {n n' : ℕ} (_ : n ≤ℕ n') {p p' : Pos P} (l : p ≤ p') → While n p ≤ While n' p'
-≤-While ln {p = p} l = ≤-trans (≤-While-n ln p) (≤-While-p l)
+≤-Whileₙ' : {P : Prog} {n n' : ℕ} → (suc n ≤ℕ n') → (p p' : Pos P) → While n p ≤ While n' p'
+≤-Whileₙ' {P} {n} {n'} l p p' =
+  ℕ-rec-from (λ n' → While n p ≤ While n' p') (suc n)
+  (≤-trans (≤-Whileₚ (≤-Top p)) (≤-step (↝-While₁ P n) (≤-Whileₚ (≤-Bot p'))))
+  (λ m l → ≤-trans l (≤-trans (≤-Whileₚ (≤-Top p')) (≤-step (↝-While₁ P m) (≤-Whileₚ (≤-Bot p')))))
+  n' l
+
+-- ≤-While : {P : Prog} {n n' : ℕ} (_ : n ≤ℕ n') {p p' : Pos P} (l : p ≤ p') → While n p ≤ While n' p'
+-- ≤-While ln {p = p} l = ≤-trans (≤-Whileₙ ln p) (≤-Whileₚ l)
 
 ≤-Seqₗ-Seqᵣ : {P Q : Prog} (p : Pos P) (q : Pos Q) → (Seqₗ p Q ≤ Seqᵣ P q)
 ≤-Seqₗ-Seqᵣ {P} {Q} p q =

@@ -4,8 +4,14 @@ open import Function using ( case_of_ )
 open import Relation.Binary.PropositionalEquality
 open import Data.Product
 open import Data.Nat.Base renaming (_≤_ to _≤ℕ_) renaming (compare to ℕ-compare)
+open import Data.Nat.Properties using ( )
 open import Program
 open import Order
+
+≤ℕ-suc : {n n' : ℕ} → (n ≤ℕ n') → (suc n ≤ℕ suc n')
+≤ℕ-suc {zero} {n'} l = s≤s l
+≤ℕ-suc {suc n} {zero} l = s≤s l
+≤ℕ-suc {suc n} {suc n'} l = s≤s l
 
 _∨_ : {P : Prog} (p q : Pos P) → Pos P
 _∨Wₙ_ : {P : Prog} → (np : ℕ × Pos P) → (np' : ℕ × Pos P) → ℕ
@@ -74,7 +80,26 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-Bot-l (Par p p₁) = refl
 ∨-Bot-l (While n p) = refl
 
+∨Wₙ-assoc : {P : Prog} (n n' n'' : ℕ) (p p' p'' : Pos P) → ((((n , p) ∨Wₙ (n' , p')) , ((n , p) ∨Wₚ (n' , p'))) ∨Wₙ (n'' , p'')) ≡ ((n , p) ∨Wₙ (((n' , p') ∨Wₙ (n'' , p'')) , ((n' , p') ∨Wₚ (n'' , p''))))
+∨Wₙ-assoc zero zero zero p p' p'' = refl
+∨Wₙ-assoc zero zero (suc n'') p p' p'' = refl
+∨Wₙ-assoc zero (suc n') zero p p' p'' = refl
+∨Wₙ-assoc zero (suc n') (suc n'') p p' p'' = refl
+∨Wₙ-assoc (suc n) zero zero p p' p'' = refl
+∨Wₙ-assoc (suc n) zero (suc n'') p p' p'' = refl
+∨Wₙ-assoc (suc n) (suc n') zero p p' p'' = refl
+∨Wₙ-assoc (suc n) (suc n') (suc n'') p p' p'' = cong suc (∨Wₙ-assoc n n' n'' p p' p'')
+
 ∨-assoc : {P : Prog} (p q r : Pos P) → ((p ∨ q) ∨ r ≡ p ∨ (q ∨ r))
+∨Wₚ-assoc : {P : Prog} (n n' n'' : ℕ) (p p' p'' : Pos P) → ((((n , p) ∨Wₙ (n' , p')) , ((n , p) ∨Wₚ (n' , p'))) ∨Wₚ (n'' , p'')) ≡ ((n , p) ∨Wₚ (((n' , p') ∨Wₙ (n'' , p'')) , ((n' , p') ∨Wₚ (n'' , p''))))
+∨Wₚ-assoc zero zero zero p p' p'' = ∨-assoc p p' p''
+∨Wₚ-assoc zero zero (suc n'') p p' p'' = refl
+∨Wₚ-assoc zero (suc n') zero p p' p'' = refl
+∨Wₚ-assoc zero (suc n') (suc n'') p p' p'' = refl
+∨Wₚ-assoc (suc n) zero zero p p' p'' = refl
+∨Wₚ-assoc (suc n) zero (suc n'') p p' p'' = refl
+∨Wₚ-assoc (suc n) (suc n') zero p p' p'' = refl
+∨Wₚ-assoc (suc n) (suc n') (suc n'') p p' p'' = ∨Wₚ-assoc n n' n'' p p' p''
 ∨-assoc (Bot P) q r = refl
 ∨-assoc (Top P) q r = refl
 ∨-assoc (Seqₗ p Q) (Bot .(Seq _ Q)) r = refl
@@ -126,77 +151,116 @@ While n p ∨ While n' p' = While ((n , p) ∨Wₙ (n' , p')) ((n , p) ∨Wₚ (
 ∨-assoc (While n p) (Top .(While _)) r = refl
 ∨-assoc (While n p) (While n₁ q) (Bot .(While _)) = refl
 ∨-assoc (While n p) (While n₁ q) (Top .(While _)) = refl
-∨-assoc (While zero p) (While zero p') (While zero p'') = cong₂ While refl (∨-assoc p p' p'')
-∨-assoc (While zero p) (While zero p') (While (suc n'') p'') = refl
-∨-assoc (While zero p) (While (suc n') p') (While zero p'') = refl
-∨-assoc (While zero p) (While (suc n') p') (While (suc n'') p'') = refl
-∨-assoc (While (suc n) p) (While zero p') (While zero p'') = refl
-∨-assoc (While (suc n) p) (While zero p') (While (suc n'') p'') = refl
-∨-assoc (While (suc n) p) (While (suc n') p') (While zero p'') = refl
-∨-assoc (While (suc n) p) (While (suc n') p') (While (suc n'') p'') = cong₂ While {!!} {!!}
+∨-assoc (While n p) (While n' p') (While n'' p'') = cong₂ While (∨Wₙ-assoc n n' n'' p p' p'') (∨Wₚ-assoc n n' n'' p p' p'')
 
--- ∨-assoc : {P : Prog} (p q r : Pos P) → ((p ∨ q) ∨ r ≡ p ∨ (q ∨ r))
--- ∨-assoc (Bot P) q r = refl
--- ∨-assoc (Top P) q r = refl
--- ∨-assoc (Seqₗ p Q) (Bot .(Seq _ Q)) r = refl
--- ∨-assoc (Seqₗ p Q) (Top .(Seq _ Q)) r = refl
--- ∨-assoc (Seqₗ p Q) (Seqₗ q .Q) (Bot .(Seq _ Q)) = refl
--- ∨-assoc (Seqₗ p Q) (Seqₗ q .Q) (Top .(Seq _ Q)) = refl
--- ∨-assoc (Seqₗ p Q) (Seqₗ q .Q) (Seqₗ r .Q) = cong (λ p → Seqₗ p Q) (∨-assoc p q r)
--- ∨-assoc (Seqₗ p Q) (Seqₗ q .Q) (Seqᵣ P r) = refl
--- ∨-assoc (Seqₗ p Q) (Seqᵣ P q) (Bot .(Seq P Q)) = refl
--- ∨-assoc (Seqₗ p Q) (Seqᵣ P q) (Top .(Seq P Q)) = refl
--- ∨-assoc (Seqₗ p Q) (Seqᵣ P q) (Seqₗ r .Q) = refl
--- ∨-assoc (Seqₗ p Q) (Seqᵣ P q) (Seqᵣ .P r) = refl
--- ∨-assoc (Seqᵣ P p) (Bot .(Seq P _)) r = refl
--- ∨-assoc (Seqᵣ P p) (Top .(Seq P _)) r = refl
--- ∨-assoc (Seqᵣ P p) (Seqₗ q Q) (Bot .(Seq P Q)) = refl
--- ∨-assoc (Seqᵣ P p) (Seqₗ q Q) (Top .(Seq P Q)) = refl
--- ∨-assoc (Seqᵣ P p) (Seqₗ q Q) (Seqₗ r .Q) = refl
--- ∨-assoc (Seqᵣ P p) (Seqₗ q Q) (Seqᵣ .P r) = refl
--- ∨-assoc (Seqᵣ P p) (Seqᵣ .P q) (Bot .(Seq P _)) = refl
--- ∨-assoc (Seqᵣ P p) (Seqᵣ .P q) (Top .(Seq P _)) = refl
--- ∨-assoc (Seqᵣ P p) (Seqᵣ .P q) (Seqₗ r Q) = refl
--- ∨-assoc (Seqᵣ P p) (Seqᵣ .P q) (Seqᵣ .P r) = cong (λ q → Seqᵣ P q) (∨-assoc p q r)
+∨Wₙ-idem : {P : Prog} (n : ℕ) (p : Pos P) → ((n , p) ∨Wₙ (n , p)) ≡ n
+∨Wₙ-idem zero p = refl
+∨Wₙ-idem (suc n) p = cong suc (∨Wₙ-idem n p)
 
--- ∨-idem : {P : Prog} (p : Pos P) → (p ∨ p ≡ p)
--- ∨-idem (Bot P) = refl
--- ∨-idem (Top P) = refl
--- ∨-idem (Seqₗ p Q) = trans (∨-Seqₗ p p Q) (cong (λ p → Seqₗ p Q) (∨-idem p))
--- ∨-idem (Seqᵣ P q) = trans (∨-Seqᵣ P q q) (cong (λ q → Seqᵣ P q) (∨-idem q))
+∨-idem : {P : Prog} (p : Pos P) → (p ∨ p ≡ p)
+∨Wₚ-idem : {P : Prog} (n : ℕ) (p : Pos P) → ((n , p) ∨Wₚ (n , p)) ≡ p
+∨Wₚ-idem zero p = ∨-idem p
+∨Wₚ-idem (suc n) p = ∨Wₚ-idem n p
+∨-idem (Bot P) = refl
+∨-idem (Top P) = refl
+∨-idem (Seqₗ p Q) = cong (λ p → Seqₗ p Q) (∨-idem p)
+∨-idem (Seqᵣ P q) = cong (λ q → Seqᵣ P q) (∨-idem q)
+∨-idem (Ifₗ p Q) = cong (λ p → Ifₗ p Q) (∨-idem p)
+∨-idem (Ifᵣ P q) = cong (Ifᵣ P) (∨-idem q)
+∨-idem (Par p q) = cong₂ (λ p q → Par p q) (∨-idem p) (∨-idem q)
+∨-idem (While n p) = cong₂ While (∨Wₙ-idem n p) (∨Wₚ-idem n p)
 
--- ∨-comm : {P : Prog} (p q : Pos P) → ((p ∨ q) ≡ (q ∨ p))
--- ∨-comm (Bot P) (Bot .P) = refl
--- ∨-comm (Bot P) (Top .P) = refl
--- ∨-comm (Bot .(Seq _ Q)) (Seqₗ q Q) = refl
--- ∨-comm (Bot .(Seq P _)) (Seqᵣ P q) = refl
--- ∨-comm (Top P) (Bot .P) = refl
--- ∨-comm (Top P) (Top .P) = refl
--- ∨-comm (Top .(Seq _ Q)) (Seqₗ q Q) = refl
--- ∨-comm (Top .(Seq P _)) (Seqᵣ P q) = refl
--- ∨-comm (Seqₗ p Q) (Bot .(Seq _ Q)) = refl
--- ∨-comm (Seqₗ p Q) (Top .(Seq _ Q)) = refl
--- ∨-comm (Seqₗ p Q) (Seqₗ q .Q) = trans (∨-Seqₗ p q Q) (trans (cong (λ p → Seqₗ p Q) (∨-comm p q)) (sym (∨-Seqₗ q p Q)))
--- ∨-comm (Seqₗ p Q) (Seqᵣ P q) = refl
--- ∨-comm (Seqᵣ P p) (Bot .(Seq P _)) = refl
--- ∨-comm (Seqᵣ P p) (Top .(Seq P _)) = refl
--- ∨-comm (Seqᵣ P p) (Seqₗ q Q) = refl
--- ∨-comm (Seqᵣ P p) (Seqᵣ .P q) = trans (∨-Seqᵣ P p q) (trans (cong (λ q → Seqᵣ P q) (∨-comm p q)) (sym (∨-Seqᵣ P q p)))
+∨Wₙ-comm : {P : Prog} (n n' : ℕ) (p p' : Pos P) → ((n , p) ∨Wₙ (n' , p')) ≡ ((n' , p') ∨Wₙ (n , p))
+∨Wₙ-comm zero zero p p' = refl
+∨Wₙ-comm zero (suc n') p p' = refl
+∨Wₙ-comm (suc n) zero p p' = refl
+∨Wₙ-comm (suc n) (suc n') p p' = cong suc (∨Wₙ-comm n n' p p')
 
--- ∨-l-≤ : {P : Prog} (p q : Pos P) → (p ≤ (p ∨ q))
--- ∨-l-≤ (Bot P) q = ≤-Bot q
--- ∨-l-≤ (Top P) (Bot .P) = ≤-refl (Top P)
--- ∨-l-≤ (Top P) (Top .P) = ≤-refl (Top P)
--- ∨-l-≤ (Top .(Seq _ Q)) (Seqₗ {P} q Q) = ≤-refl (Top (Seq P Q))
--- ∨-l-≤ (Top .(Seq P _)) (Seqᵣ P {Q} q) = ≤-refl (Top (Seq P Q))
--- ∨-l-≤ (Seqₗ p Q) (Bot .(Seq _ Q)) = ≤-refl (Seqₗ p Q)
--- ∨-l-≤ (Seqₗ p Q) (Top .(Seq _ Q)) = ≤-Top (Seqₗ p Q)
--- ∨-l-≤ (Seqₗ p Q) (Seqₗ q .Q) = ≤-Seqₗ (∨-l-≤ p q) Q
--- ∨-l-≤ (Seqₗ p Q) (Seqᵣ P q) = ≤-Seqₗ-Seqᵣ p q
--- ∨-l-≤ (Seqᵣ P p) (Bot .(Seq P _)) = ≤-refl (Seqᵣ P p)
--- ∨-l-≤ (Seqᵣ P p) (Top .(Seq P _)) = ≤-Top (Seqᵣ P p)
--- ∨-l-≤ (Seqᵣ P p) (Seqₗ q Q) = ≤-Seqᵣ P (≤-refl p)
--- ∨-l-≤ (Seqᵣ P p) (Seqᵣ .P q) = ≤-Seqᵣ P (∨-l-≤ p q)
+∨-comm : {P : Prog} (p q : Pos P) → ((p ∨ q) ≡ (q ∨ p))
+∨Wₚ-comm : {P : Prog} (n n' : ℕ) (p p' : Pos P) → ((n , p) ∨Wₚ (n' , p')) ≡ ((n' , p') ∨Wₚ (n , p))
+∨Wₚ-comm zero zero p p' = ∨-comm p p'
+∨Wₚ-comm zero (suc n') p p' = refl
+∨Wₚ-comm (suc n) zero p p' = refl
+∨Wₚ-comm (suc n) (suc n') p p' = ∨Wₚ-comm n n' p p'
+∨-comm (Bot P) (Bot .P) = refl
+∨-comm (Bot P) (Top .P) = refl
+∨-comm (Bot .(Seq _ Q)) (Seqₗ q Q) = refl
+∨-comm (Bot .(Seq P _)) (Seqᵣ P q) = refl
+∨-comm (Top P) (Bot .P) = refl
+∨-comm (Top P) (Top .P) = refl
+∨-comm (Top .(Seq _ Q)) (Seqₗ q Q) = refl
+∨-comm (Top .(Seq P _)) (Seqᵣ P q) = refl
+∨-comm (Seqₗ p Q) (Bot .(Seq _ Q)) = refl
+∨-comm (Seqₗ p Q) (Top .(Seq _ Q)) = refl
+∨-comm (Seqₗ p Q) (Seqₗ q .Q) = trans (∨-Seqₗ p q Q) (trans (cong (λ p → Seqₗ p Q) (∨-comm p q)) (sym (∨-Seqₗ q p Q)))
+∨-comm (Seqₗ p Q) (Seqᵣ P q) = refl
+∨-comm (Seqᵣ P p) (Bot .(Seq P _)) = refl
+∨-comm (Seqᵣ P p) (Top .(Seq P _)) = refl
+∨-comm (Seqᵣ P p) (Seqₗ q Q) = refl
+∨-comm (Seqᵣ P p) (Seqᵣ .P q) = trans (∨-Seqᵣ P p q) (trans (cong (λ q → Seqᵣ P q) (∨-comm p q)) (sym (∨-Seqᵣ P q p)))
+∨-comm (Bot .(If _ Q)) (Ifₗ q Q) = refl
+∨-comm (Bot .(If P _)) (Ifᵣ P q) = refl
+∨-comm (Bot .(Par _ _)) (Par q q₁) = refl
+∨-comm (Bot .(While _)) (While n q) = refl
+∨-comm (Top .(If _ Q)) (Ifₗ q Q) = refl
+∨-comm (Top .(If P _)) (Ifᵣ P q) = refl
+∨-comm (Top .(Par _ _)) (Par q q₁) = refl
+∨-comm (Top .(While _)) (While n q) = refl
+∨-comm (Ifₗ p Q) (Bot .(If _ Q)) = refl
+∨-comm (Ifₗ p Q) (Top .(If _ Q)) = refl
+∨-comm (Ifₗ p Q) (Ifₗ q .Q) = cong (λ p → Ifₗ p Q) (∨-comm p q)
+∨-comm (Ifₗ p Q) (Ifᵣ P q) = refl
+∨-comm (Ifᵣ P p) (Bot .(If P _)) = refl
+∨-comm (Ifᵣ P p) (Top .(If P _)) = refl
+∨-comm (Ifᵣ P p) (Ifₗ q Q) = refl
+∨-comm (Ifᵣ P p) (Ifᵣ .P q) = cong (λ q → Ifᵣ P q) (∨-comm p q)
+∨-comm (Par p p₁) (Bot .(Par _ _)) = refl
+∨-comm (Par p p₁) (Top .(Par _ _)) = refl
+∨-comm (Par p q) (Par p' q') = cong₂ (λ p q → Par p q) (∨-comm p p') (∨-comm q q')
+∨-comm (While n p) (Bot .(While _)) = refl
+∨-comm (While n p) (Top .(While _)) = refl
+∨-comm (While n p) (While n' p') = cong₂ While (∨Wₙ-comm n n' p p') (∨Wₚ-comm n n' p p')
+
+∨Wₙ-l-≤ : {P : Prog} (n n' : ℕ) (p p' : Pos P) → n ≤ℕ ((n , p) ∨Wₙ (n' , p'))
+∨Wₙ-l-≤ zero n' p p' = z≤n
+∨Wₙ-l-≤ (suc n) zero p p' = Data.Nat.Properties.≤-refl
+∨Wₙ-l-≤ (suc n) (suc n') p p' = ≤ℕ-suc (∨Wₙ-l-≤ n n' p p')
+
+∨-l-≤ : {P : Prog} (p q : Pos P) → (p ≤ (p ∨ q))
+∨-l-≤ (Bot P) q = ≤-Bot q
+∨-l-≤ (Top P) (Bot .P) = ≤-refl (Top P)
+∨-l-≤ (Top P) (Top .P) = ≤-refl (Top P)
+∨-l-≤ (Top .(Seq _ Q)) (Seqₗ {P} q Q) = ≤-refl (Top (Seq P Q))
+∨-l-≤ (Top .(Seq P _)) (Seqᵣ P {Q} q) = ≤-refl (Top (Seq P Q))
+∨-l-≤ (Seqₗ p Q) (Bot .(Seq _ Q)) = ≤-refl (Seqₗ p Q)
+∨-l-≤ (Seqₗ p Q) (Top .(Seq _ Q)) = ≤-Top (Seqₗ p Q)
+∨-l-≤ (Seqₗ p Q) (Seqₗ q .Q) = ≤-Seqₗ (∨-l-≤ p q) Q
+∨-l-≤ (Seqₗ p Q) (Seqᵣ P q) = ≤-Seqₗ-Seqᵣ p q
+∨-l-≤ (Seqᵣ P p) (Bot .(Seq P _)) = ≤-refl (Seqᵣ P p)
+∨-l-≤ (Seqᵣ P p) (Top .(Seq P _)) = ≤-Top (Seqᵣ P p)
+∨-l-≤ (Seqᵣ P p) (Seqₗ q Q) = ≤-Seqᵣ P (≤-refl p)
+∨-l-≤ (Seqᵣ P p) (Seqᵣ .P q) = ≤-Seqᵣ P (∨-l-≤ p q)
+∨-l-≤ (Top .(If _ Q)) (Ifₗ {P} p Q) = ≤-refl (Top (If P Q))
+∨-l-≤ (Top .(If P _)) (Ifᵣ P {Q} q) = ≤-refl (Top (If P Q))
+∨-l-≤ (Top .(Par _ _)) (Par {P} p {Q} q) = ≤-refl (Top (Par P Q))
+∨-l-≤ (Top .(While _)) (While {P} n p) = ≤-refl (Top (While P))
+∨-l-≤ (Ifₗ {P} p Q) (Bot .(If P Q)) = ≤-refl (Ifₗ p Q)
+∨-l-≤ (Ifₗ {P} p Q) (Top .(If P Q)) = ≤-Top (Ifₗ p Q)
+∨-l-≤ (Ifₗ {P} p Q) (Ifₗ q .Q) = ≤-Ifₗ (∨-l-≤ p q) Q
+∨-l-≤ (Ifₗ {.P} p Q) (Ifᵣ P q) = ≤-Top (Ifₗ p Q)
+∨-l-≤ (Ifᵣ P {Q} q) (Bot .(If P Q)) = ≤-refl (Ifᵣ P q)
+∨-l-≤ (Ifᵣ P {Q} q) (Top .(If P Q)) = ≤-Top (Ifᵣ P q)
+∨-l-≤ (Ifᵣ P {.Q} q) (Ifₗ r Q) = ≤-Top (Ifᵣ P q)
+∨-l-≤ (Ifᵣ P {Q} q) (Ifᵣ .P q') = ≤-Ifᵣ P (∨-l-≤ q q')
+∨-l-≤ (Par p q) (Bot .(Par _ _)) = ≤-refl (Par p q)
+∨-l-≤ (Par p q) (Top .(Par _ _)) = ≤-Top (Par p q)
+∨-l-≤ (Par p q) (Par p' q') = ≤-Par (∨-l-≤ p p') (∨-l-≤ q q')
+∨-l-≤ (While n p) (Bot .(While _)) = ≤-refl (While n p)
+∨-l-≤ (While n p) (Top .(While _)) = ≤-Top (While n p)
+∨-l-≤ (While zero p) (While zero p') = ≤-Whileₚ (∨-l-≤ p p')
+∨-l-≤ (While zero p) (While (suc n') p') = ≤-Whileₙ' (s≤s z≤n) p p'
+∨-l-≤ (While (suc n) p) (While zero p') = ≤-refl (While (suc n) p)
+∨-l-≤ (While (suc n) p) (While (suc n') p') = {!!}
 
 -- ∨-r-≤ : {P : Prog} (p q : Pos P) → (q ≤ (p ∨ q))
 -- ∨-r-≤ p q = coe (cong (λ p → q ≤ p) (∨-comm q p)) (∨-l-≤ q p)
