@@ -250,29 +250,47 @@ While np ∨ While np' = While (np ∨W np')
 ∨-r-≤ : {P : Prog} (p q : Pos P) → (q ≤ (p ∨ q))
 ∨-r-≤ p q = ≤-trans (∨-l-≤ q p) (≡-≤ (∨-comm q p))
 
--- ∨-↝-l : {P : Prog} {p p' : Pos P} → (p ↝ p') → (q : Pos P) → ((p ∨ q) ≤ (p' ∨ q))
--- ∨-↝-l ↝-Act (Bot .Act) = ≤-step1 ↝-Act
--- ∨-↝-l ↝-Act (Top .Act) = ≤-refl (Top Act)
--- ∨-↝-l (↝-Seq₀ P Q) (Bot .(Seq P Q)) = ≤-step1 (↝-Seq₀ P Q)
--- ∨-↝-l (↝-Seq₀ P Q) (Top .(Seq P Q)) = ≤-refl (Top (Seq P Q))
--- ∨-↝-l (↝-Seq₀ P Q) (Seqₗ q .Q) = ≤-refl (Seqₗ q Q)
--- ∨-↝-l (↝-Seq₀ P Q) (Seqᵣ .P q) = ≤-refl (Seqᵣ P q)
--- ∨-↝-l (↝-Seqₗ {p' = p'} r Q) (Bot .(Seq _ Q)) = ≤-step1 (↝-Seqₗ r Q)
--- ∨-↝-l (↝-Seqₗ {P} r Q) (Top .(Seq _ Q)) = ≤-refl (Top (Seq P Q))
--- ∨-↝-l (↝-Seqₗ r Q) (Seqₗ q .Q) = ≤-Seqₗ (∨-↝-l r q) Q
--- ∨-↝-l (↝-Seqₗ r Q) (Seqᵣ P q) = ≤-Seqᵣ P (≤-refl q)
--- ∨-↝-l (↝-Seqₘ P Q) (Bot .(Seq P Q)) = ≤-step1 (↝-Seqₘ P Q)
--- ∨-↝-l (↝-Seqₘ P Q) (Top .(Seq P Q)) = ≤-refl (Top (Seq P Q))
--- ∨-↝-l (↝-Seqₘ P Q) (Seqₗ q .Q) = ≤-step1 (↝-Seqₘ P Q)
--- ∨-↝-l (↝-Seqₘ P Q) (Seqᵣ .P q) = ≤-refl (Seqᵣ P q)
--- ∨-↝-l (↝-Seqᵣ P {q' = q'} r) (Bot .(Seq P _)) = ≤-step1 (↝-Seqᵣ P r)
--- ∨-↝-l (↝-Seqᵣ P {Q} r) (Top .(Seq P _)) = ≤-refl (Top (Seq P Q))
--- ∨-↝-l (↝-Seqᵣ P {q' = q'} r) (Seqₗ q Q) = ≤-step1 (↝-Seqᵣ P r)
--- ∨-↝-l (↝-Seqᵣ P r) (Seqᵣ .P q) = ≤-Seqᵣ P (∨-↝-l r q)
--- ∨-↝-l (↝-Seq₁ P Q) (Bot .(Seq P Q)) = ≤-step1 (↝-Seq₁ P Q)
--- ∨-↝-l (↝-Seq₁ P Q) (Top .(Seq P Q)) = ≤-refl (Top (Seq P Q))
--- ∨-↝-l (↝-Seq₁ P Q) (Seqₗ q .Q) = ≤-step1 (↝-Seq₁ P Q)
--- ∨-↝-l (↝-Seq₁ P Q) (Seqᵣ .P q) = ≤-step1 (↝-Seq₁ P Q)
+∨-↝-l : {P : Prog} {p p' : Pos P} → (p ↝ p') → (q : Pos P) → ((p ∨ q) ≤ (p' ∨ q))
+∨-↝-l ↝-Act (Bot .Act) = ≤-step1 ↝-Act
+∨-↝-l ↝-Act (Top .Act) = ≤-refl (Top Act)
+∨-↝-l (↝-Seq₀ P Q) (Bot .(Seq P Q)) = ≤-step1 (↝-Seq₀ P Q)
+∨-↝-l (↝-Seq₀ P Q) (Top .(Seq P Q)) = ≤-refl (Top (Seq P Q))
+∨-↝-l (↝-Seq₀ P Q) (Seqₗ q .Q) = ≤-refl (Seqₗ q Q)
+∨-↝-l (↝-Seq₀ P Q) (Seqᵣ .P q) = ≤-refl (Seqᵣ P q)
+∨-↝-l (↝-Seqₗ {p' = p'} r Q) (Bot .(Seq _ Q)) = ≤-step1 (↝-Seqₗ r Q)
+∨-↝-l (↝-Seqₗ {P} r Q) (Top .(Seq _ Q)) = ≤-refl (Top (Seq P Q))
+∨-↝-l (↝-Seqₗ r Q) (Seqₗ q .Q) = ≤-Seqₗ (∨-↝-l r q) Q
+∨-↝-l (↝-Seqₗ r Q) (Seqᵣ P q) = ≤-Seqᵣ P (≤-refl q)
+∨-↝-l (↝-Seqₘ P Q) (Bot .(Seq P Q)) = ≤-step1 (↝-Seqₘ P Q)
+∨-↝-l (↝-Seqₘ P Q) (Top .(Seq P Q)) = ≤-refl (Top (Seq P Q))
+∨-↝-l (↝-Seqₘ P Q) (Seqₗ q .Q) = ≤-step1 (↝-Seqₘ P Q)
+∨-↝-l (↝-Seqₘ P Q) (Seqᵣ .P q) = ≤-refl (Seqᵣ P q)
+∨-↝-l (↝-Seqᵣ P {q' = q'} r) (Bot .(Seq P _)) = ≤-step1 (↝-Seqᵣ P r)
+∨-↝-l (↝-Seqᵣ P {Q} r) (Top .(Seq P _)) = ≤-refl (Top (Seq P Q))
+∨-↝-l (↝-Seqᵣ P {q' = q'} r) (Seqₗ q Q) = ≤-step1 (↝-Seqᵣ P r)
+∨-↝-l (↝-Seqᵣ P r) (Seqᵣ .P q) = ≤-Seqᵣ P (∨-↝-l r q)
+∨-↝-l (↝-Seq₁ P Q) (Bot .(Seq P Q)) = ≤-step1 (↝-Seq₁ P Q)
+∨-↝-l (↝-Seq₁ P Q) (Top .(Seq P Q)) = ≤-refl (Top (Seq P Q))
+∨-↝-l (↝-Seq₁ P Q) (Seqₗ q .Q) = ≤-step1 (↝-Seq₁ P Q)
+∨-↝-l (↝-Seq₁ P Q) (Seqᵣ .P q) = ≤-step1 (↝-Seq₁ P Q)
+∨-↝-l (↝-If₀ₗ P Q) (Bot .(If P Q)) = ≤-step (↝-If₀ₗ P Q) (≤-refl (Ifₗ (Bot P) Q))
+∨-↝-l (↝-If₀ₗ P Q) (Top .(If P Q)) = ≤-refl (Top (If P Q))
+∨-↝-l (↝-If₀ₗ P Q) (Ifₗ q .Q) = ≤-refl (Ifₗ q Q)
+∨-↝-l (↝-If₀ₗ P Q) (Ifᵣ .P q) = ≤-Top (Ifᵣ P q)
+∨-↝-l (↝-Ifₗ p Q) q = {!!}
+∨-↝-l (↝-If₁ₗ P Q) q = {!!}
+∨-↝-l (↝-If₀ᵣ P Q) q = {!!}
+∨-↝-l (↝-Ifᵣ P p) q = {!!}
+∨-↝-l (↝-If₁ᵣ P Q) q = {!!}
+∨-↝-l (↝-Par₀ P Q) q = {!!}
+∨-↝-l (↝-Parₗ p q₁) q = {!!}
+∨-↝-l (↝-Parᵣ p p₁) q = {!!}
+∨-↝-l (↝-Par₁ P Q) q = {!!}
+∨-↝-l (↝-While₀ P) q = {!!}
+∨-↝-l (↝-While₀' P) q = {!!}
+∨-↝-l (↝-While n p) q = {!!}
+∨-↝-l (↝-While₁ P n) q = {!!}
+∨-↝-l (↝-While₁' P n) q = {!!}
 
 -- -- ∨-≤-l : {P : Prog} {p p' : Pos P} → (p ≤ p') → (q : Pos P) → (p ∨ q ≤ p' ∨ q)
 -- -- ∨-≤-l (≤-step r l) q = ≤-trans (∨-↝-l r q) (∨-≤-l l q)
