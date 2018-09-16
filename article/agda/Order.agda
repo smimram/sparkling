@@ -36,6 +36,9 @@ data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
 ≤W-refl (zero , p) = ≤W-zz (≤-refl p)
 ≤W-refl (suc n , p) = ≤W-ss (≤W-refl (n , p))
 
+≡-≤W : {P : Prog} {np np' : ℕ × Pos P} → np ≡ np' → np ≤W np'
+≡-≤W {_} {np} refl = ≤W-refl np
+
 ≡-≤ : {P : Prog} {p q : Pos P} → (p ≡ q) → p ≤ q
 ≡-≤ {P} {p} {q} l = transport (λ q → p ≤ q) l (≤-refl p)
 

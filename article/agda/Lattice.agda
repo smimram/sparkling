@@ -8,6 +8,9 @@ open import Data.Nat.Properties using ( )
 open import Program
 open import Order
 
+≡-comm : {A : Set} {a b : A} → (a ≡ b) → (b ≡ a)
+≡-comm refl = refl
+
 ≤ℕ-suc : {n n' : ℕ} → (n ≤ℕ n') → (suc n ≤ℕ suc n')
 ≤ℕ-suc {zero} {n'} l = s≤s l
 ≤ℕ-suc {suc n} {zero} l = s≤s l
@@ -47,6 +50,10 @@ While np ∨ While np' = While (np ∨W np')
 (zero , p) ∨W (suc n' , p') = suc n' , p'
 (suc n , p) ∨W (zero , p') = suc n , p
 (suc n , p) ∨W (suc n' , p') = let n'' , p'' = (n , p) ∨W (n' , p') in suc n'' , p''
+
+∨W-unitₗ : {P : Prog} (np : ℕ × Pos P) → (zero , Bot P) ∨W np ≡ np
+∨W-unitₗ (zero , p) = refl
+∨W-unitₗ (suc n , p) = refl
 
 ∨-Seqₗ : {P : Prog} (p p' : Pos P) (Q : Prog) → (Seqₗ p Q ∨ Seqₗ p' Q ≡ Seqₗ (p ∨ p') Q)
 ∨-Seqₗ (Bot P) p' Q = refl
@@ -273,24 +280,57 @@ While np ∨ While np' = While (np ∨W np')
 ∨-↝-l (↝-Seq₁ P Q) (Top .(Seq P Q)) = ≤-refl (Top (Seq P Q))
 ∨-↝-l (↝-Seq₁ P Q) (Seqₗ q .Q) = ≤-step1 (↝-Seq₁ P Q)
 ∨-↝-l (↝-Seq₁ P Q) (Seqᵣ .P q) = ≤-step1 (↝-Seq₁ P Q)
-∨-↝-l (↝-If₀ₗ P Q) (Bot .(If P Q)) = ≤-step (↝-If₀ₗ P Q) (≤-refl (Ifₗ (Bot P) Q))
+∨-↝-l (↝-If₀ₗ P Q) (Bot .(If P Q)) = ≤-step1 (↝-If₀ₗ P Q)
 ∨-↝-l (↝-If₀ₗ P Q) (Top .(If P Q)) = ≤-refl (Top (If P Q))
 ∨-↝-l (↝-If₀ₗ P Q) (Ifₗ q .Q) = ≤-refl (Ifₗ q Q)
 ∨-↝-l (↝-If₀ₗ P Q) (Ifᵣ .P q) = ≤-Top (Ifᵣ P q)
-∨-↝-l (↝-Ifₗ p Q) q = {!!}
-∨-↝-l (↝-If₁ₗ P Q) q = {!!}
-∨-↝-l (↝-If₀ᵣ P Q) q = {!!}
-∨-↝-l (↝-Ifᵣ P p) q = {!!}
-∨-↝-l (↝-If₁ᵣ P Q) q = {!!}
-∨-↝-l (↝-Par₀ P Q) q = {!!}
-∨-↝-l (↝-Parₗ p q₁) q = {!!}
-∨-↝-l (↝-Parᵣ p p₁) q = {!!}
-∨-↝-l (↝-Par₁ P Q) q = {!!}
-∨-↝-l (↝-While₀ P) q = {!!}
-∨-↝-l (↝-While₀' P) q = {!!}
-∨-↝-l (↝-While n p) q = {!!}
-∨-↝-l (↝-While₁ P n) q = {!!}
-∨-↝-l (↝-While₁' P n) q = {!!}
+∨-↝-l (↝-Ifₗ r Q) (Bot .(If _ Q)) = ≤-step1 (↝-Ifₗ r Q)
+∨-↝-l (↝-Ifₗ {P} p Q) (Top .(If _ Q)) = ≤-refl (Top (If P Q))
+∨-↝-l (↝-Ifₗ r Q) (Ifₗ p' .Q) = ≤-Ifₗ (∨-↝-l r p') Q
+∨-↝-l (↝-Ifₗ p Q) (Ifᵣ P q) = ≤-refl (Top (If P Q))
+∨-↝-l (↝-If₁ₗ P Q) (Bot .(If P Q)) = ≤-step1 (↝-If₁ₗ P Q)
+∨-↝-l (↝-If₁ₗ P Q) (Top .(If P Q)) = ≤-refl (Top (If P Q))
+∨-↝-l (↝-If₁ₗ P Q) (Ifₗ q .Q) = ≤-step1 (↝-If₁ₗ P Q)
+∨-↝-l (↝-If₁ₗ P Q) (Ifᵣ .P q) = ≤-refl (Top (If P Q))
+∨-↝-l (↝-If₀ᵣ P Q) (Bot .(If P Q)) = ≤-step1 (↝-If₀ᵣ P Q)
+∨-↝-l (↝-If₀ᵣ P Q) (Top .(If P Q)) = ≤-refl (Top (If P Q))
+∨-↝-l (↝-If₀ᵣ P Q) (Ifₗ q .Q) = ≤-Top (Ifₗ q Q)
+∨-↝-l (↝-If₀ᵣ P Q) (Ifᵣ .P q) = ≤-refl (Ifᵣ P q)
+∨-↝-l (↝-Ifᵣ P p) (Bot .(If P _)) = ≤-step1 (↝-Ifᵣ P p)
+∨-↝-l (↝-Ifᵣ P {Q} r) (Top .(If P _)) = ≤-refl (Top (If P Q))
+∨-↝-l (↝-Ifᵣ P p) (Ifₗ q Q) = ≤-refl (Top (If P Q))
+∨-↝-l (↝-Ifᵣ P p) (Ifᵣ .P q) = ≤-Ifᵣ P (∨-↝-l p q)
+∨-↝-l (↝-If₁ᵣ P Q) (Bot .(If P Q)) = ≤-step1 (↝-If₁ᵣ P Q)
+∨-↝-l (↝-If₁ᵣ P Q) (Top .(If P Q)) = ≤-refl (Top (If P Q))
+∨-↝-l (↝-If₁ᵣ P Q) (Ifₗ q .Q) = ≤-refl (Top (If P Q))
+∨-↝-l (↝-If₁ᵣ P Q) (Ifᵣ .P q) = ≤-step1 (↝-If₁ᵣ P Q)
+∨-↝-l (↝-Par₀ P Q) (Bot .(Par P Q)) = ≤-step1 (↝-Par₀ P Q)
+∨-↝-l (↝-Par₀ P Q) (Top .(Par P Q)) = ≤-refl (Top (Par P Q))
+∨-↝-l (↝-Par₀ P Q) (Par q q₁) = ≤-refl (Par q q₁)
+∨-↝-l (↝-Parₗ p q₁) (Bot .(Par _ _)) = ≤-step1 (↝-Parₗ p q₁)
+∨-↝-l (↝-Parₗ {P} p {Q} q) (Top .(Par _ _)) = ≤-refl (Top (Par P Q))
+∨-↝-l (↝-Parₗ p q) (Par p' q') = ≤-Par (∨-↝-l p p') (≤-refl (q ∨ q'))
+∨-↝-l (↝-Parᵣ p p₁) (Bot .(Par _ _)) = ≤-step1 (↝-Parᵣ p p₁)
+∨-↝-l (↝-Parᵣ {P} p {Q} q) (Top .(Par _ _)) = ≤-refl (Top (Par P Q))
+∨-↝-l (↝-Parᵣ p q) (Par p' q') = ≤-Par (≤-refl (p ∨ p')) (∨-↝-l q q')
+∨-↝-l (↝-Par₁ P Q) (Bot .(Par P Q)) = ≤-step1 (↝-Par₁ P Q)
+∨-↝-l (↝-Par₁ P Q) (Top .(Par P Q)) = ≤-refl (Top (Par P Q))
+∨-↝-l (↝-Par₁ P Q) (Par q q₁) = ≤-step1 (↝-Par₁ P Q)
+∨-↝-l (↝-While₀ P) (Bot .(While P)) = ≤-step1 (↝-While₀ P)
+∨-↝-l (↝-While₀ P) (Top .(While P)) = ≤-refl (Top (While P))
+∨-↝-l (↝-While₀ P) (While np) = ≤-While (≡-≤W (≡-comm (∨W-unitₗ np)))
+∨-↝-l (↝-While₀' P) (Bot .(While P)) = ≤-step1 (↝-While₀' P)
+∨-↝-l (↝-While₀' P) (Top .(While P)) = ≤-refl (Top (While P))
+∨-↝-l (↝-While₀' P) (While np) = ≤-Top (While np)
+∨-↝-l (↝-While n p) (Bot .(While _)) = ≤-step1 (↝-While n p)
+∨-↝-l (↝-While {P} n p) (Top .(While _)) = ≤-refl (Top (While P))
+∨-↝-l (↝-While n p) (While np) = {!!}
+∨-↝-l (↝-While₁ P n) (Bot .(While P)) = ≤-step1 (↝-While₁ P n)
+∨-↝-l (↝-While₁ P n) (Top .(While P)) = ≤-refl (Top (While P))
+∨-↝-l (↝-While₁ P n) (While np) = {!!}
+∨-↝-l (↝-While₁' P n) (Bot .(While P)) = ≤-step1 (↝-While₁' P n)
+∨-↝-l (↝-While₁' P n) (Top .(While P)) = ≤-refl (Top (While P))
+∨-↝-l (↝-While₁' P n) (While np) = {!≤-Top (While ((n , Top P) ∨W np))!}
 
 -- -- ∨-≤-l : {P : Prog} {p p' : Pos P} → (p ≤ p') → (q : Pos P) → (p ∨ q ≤ p' ∨ q)
 -- -- ∨-≤-l (≤-step r l) q = ≤-trans (∨-↝-l r q) (∨-≤-l l q)

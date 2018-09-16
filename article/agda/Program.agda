@@ -34,8 +34,8 @@ data _↝_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
   ↝-Ifᵣ : (P : Prog) {Q : Prog} {q q' : Pos Q} → q ↝ q' → Ifᵣ P q ↝ Ifᵣ P q'
   ↝-If₁ᵣ : (P Q : Prog) → Ifᵣ P (Top Q) ↝ Top (If P Q)
   ↝-Par₀ : (P Q : Prog) → Bot (Par P Q) ↝ Par (Bot P) (Bot Q)
-  ↝-Parₗ : {P Q : Prog} {p p' : Pos P} → p ↝ p' → (q : Pos Q) → Par p q ↝ Par p' q
-  ↝-Parᵣ : {P Q : Prog} (p : Pos P) {q q' : Pos Q} → q ↝ q' → Par p q ↝ Par p q'
+  ↝-Parₗ : {P : Prog} {p p' : Pos P} → p ↝ p' → {Q : Prog} → (q : Pos Q) → Par p q ↝ Par p' q
+  ↝-Parᵣ : {P : Prog} (p : Pos P) {Q : Prog} {q q' : Pos Q} → q ↝ q' → Par p q ↝ Par p q'
   ↝-Par₁ : (P Q : Prog) → Par (Top P) (Top Q) ↝ Top (Par P Q)
   ↝-While₀ : (P : Prog) → Bot (While P) ↝ While (0 , Bot P)
   ↝-While₀' : (P : Prog) → Bot (While P) ↝ Top (While P)
