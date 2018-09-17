@@ -354,20 +354,22 @@ While np ∨ While np' = While (np ∨W np')
 ∨-↝-l (↝-While₁' P n) (Top .(While P)) = ≤-refl (Top (While P))
 ∨-↝-l (↝-While₁' P n) (While np) = ≤-Top (While ((n , Top P) ∨W np))
 
--- -- ∨-≤-l : {P : Prog} {p p' : Pos P} → (p ≤ p') → (q : Pos P) → (p ∨ q ≤ p' ∨ q)
--- -- ∨-≤-l (≤-step r l) q = ≤-trans (∨-↝-l r q) (∨-≤-l l q)
--- -- ∨-≤-l (≤-refl p) q = ≤-refl (p ∨ q)
+∨-≤-l : {P : Prog} {p p' : Pos P} → (p ≤ p') → (q : Pos P) → (p ∨ q ≤ p' ∨ q)
+∨-≤-l (≤-step r l) q = ≤-trans (∨-↝-l r q) (∨-≤-l l q)
+∨-≤-l (≤-refl p) q = ≤-refl (p ∨ q)
 
--- -- ∨-≤-r : {P : Prog} (p : Pos P) {q q' : Pos P} → (q ≤ q') → (p ∨ q ≤ p ∨ q')
--- -- ∨-≤-r p {q} {q'} l =
-  -- -- coe (cong (λ r → r ≤ (p ∨ q')) (∨-comm q p))
-  -- -- (coe (cong (λ r → (q ∨ p) ≤ r) (∨-comm q' p))
-  -- -- (∨-≤-l l p))
+∨-≤-r : {P : Prog} (p : Pos P) {q q' : Pos P} → (q ≤ q') → (p ∨ q ≤ p ∨ q')
+∨-≤-r p {q} {q'} l =
+  ≤-trans (≡-≤ (∨-comm p q))
+  (≤-trans (∨-≤-l l p)
+  (≡-≤ (∨-comm q' p)))
 
--- -- ∨-≤ : {P : Prog} {p p' q q' : Pos P} → (p ≤ p') → (q ≤ q') → (p ∨ q ≤ p' ∨ q')
--- -- ∨-≤ {p' = p'} {q = q} l r = ≤-trans (∨-≤-l l q) (∨-≤-r p' r)
+∨-≤ : {P : Prog} {p p' q q' : Pos P} → (p ≤ p') → (q ≤ q') → (p ∨ q ≤ p' ∨ q')
+∨-≤ {p' = p'} {q = q} l r = ≤-trans (∨-≤-l l q) (∨-≤-r p' r)
 
--- -- ∨-sup : {P : Prog} (p p' q : Pos P) → ((p ≤ p ∨ p') and (p' ≤ p ∨ p')) and ((r : Pos P) → (p ≤ r) → (p' ≤ r) → (p ∨ p' ≤ r))
--- -- proj₁ (proj₁ (∨-sup p p' q)) = ∨-l-≤ p p'
--- -- proj₂ (proj₁ (∨-sup p p' q)) = ∨-r-≤ p p'
--- -- proj₂ (∨-sup p p' q) r l l' = ≤-trans (∨-≤ l l') (≡-≤ (∨-idem r))
+open import Logic
+
+∨-sup : {P : Prog} (p p' q : Pos P) → ((p ≤ p ∨ p') and (p' ≤ p ∨ p')) and ((r : Pos P) → (p ≤ r) → (p' ≤ r) → (p ∨ p' ≤ r))
+proj₁ (proj₁ (∨-sup p p' q)) = ∨-l-≤ p p'
+proj₂ (proj₁ (∨-sup p p' q)) = ∨-r-≤ p p'
+proj₂ (∨-sup p p' q) r l l' = ≤-trans (∨-≤ l l') (≡-≤ (∨-idem r))
