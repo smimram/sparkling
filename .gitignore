@@ -11,5 +11,6 @@
 *.cmx
 *.cmxa
 *.o
+*.agdai
 ._d
 ._ncdi
