@@ -11,6 +11,10 @@ open import Order
 ≡-comm : {A : Set} {a b : A} → (a ≡ b) → (b ≡ a)
 ≡-comm refl = refl
 
+≤ℕ-refl : (n : ℕ) → (n ≤ℕ n)
+≤ℕ-refl zero = z≤n
+≤ℕ-refl (suc n) = s≤s (≤ℕ-refl n)
+
 ≤ℕ-suc : {n n' : ℕ} → (n ≤ℕ n') → (suc n ≤ℕ suc n')
 ≤ℕ-suc {zero} {n'} l = s≤s l
 ≤ℕ-suc {suc n} {zero} l = s≤s l
@@ -19,7 +23,13 @@ open import Order
 ≡-× : {A B : Set} {a a' : A} {b b' : B} → (a ≡ a') → (b ≡ b') → (a , b) ≡ (a' , b')
 ≡-× refl refl = refl
 
+_∨Wₙ_ : ℕ → ℕ → ℕ
+zero ∨Wₙ n = n
+suc n ∨Wₙ zero = suc n
+suc n ∨Wₙ suc n' = suc (n ∨Wₙ n')
+
 _∨_ : {P : Prog} (p q : Pos P) → Pos P
+_∨Wₚ_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Pos P
 _∨W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → ℕ × Pos P
 infix 40 _∨_
 Bot P ∨ q = q
@@ -46,16 +56,11 @@ Par p q ∨ Par p' q' = Par (p ∨ p') (q ∨ q')
 While (n , p) ∨ Bot .(While _) = While (n , p)
 While {P} (n , p) ∨ Top .(While _) = Top (While P)
 While np ∨ While np' = While (np ∨W np')
-(zero , p) ∨W (zero , p') = zero , p ∨ p'
-(zero , p) ∨W (suc n' , p') = suc n' , p'
-(suc n , p) ∨W (zero , p') = suc n , p
-(suc n , p) ∨W (suc n' , p') = let n'' , p'' = (n , p) ∨W (n' , p') in suc n'' , p''
-
-_∨Wₙ_ : ℕ → ℕ → ℕ
-zero ∨Wₙ zero = zero
-zero ∨Wₙ suc n' = suc n'
-suc n ∨Wₙ zero = suc n
-suc n ∨Wₙ suc n' = suc (n ∨Wₙ n')
+(zero , p) ∨Wₚ (zero , p') = p ∨ p'
+(zero , p) ∨Wₚ (suc n' , p') = p'
+(suc n , p) ∨Wₚ (zero , p') = p
+(suc n , p) ∨Wₚ (suc n' , p') = (n , p) ∨Wₚ (n' , p')
+(n , p) ∨W (n' , p') = n ∨Wₙ n' , (n , p) ∨Wₚ (n' , p')
 
 ∨W-proj₁ : {P : Prog} (np np' : ℕ × Pos P) → proj₁ (np ∨W np') ≡ ((proj₁ np) ∨Wₙ (proj₁ np'))
 ∨W-proj₁ (zero , p) (zero , p') = refl
@@ -63,14 +68,9 @@ suc n ∨Wₙ suc n' = suc (n ∨Wₙ n')
 ∨W-proj₁ (suc n , p) (zero , p') = refl
 ∨W-proj₁ (suc n , p) (suc n' , p') = cong suc (∨W-proj₁ (n , p) (n' , p'))
 
--- _∨Wₙ_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → ℕ
--- np ∨Wₙ np' = proj₁ (np ∨W np')
-
--- ∨Wₙ-l : {P : Prog} (n : ℕ) (p p' : Pos P) (np : ℕ × Pos P) → ((n , p) ∨Wₙ np) ≡ ((n , p') ∨Wₙ np)
--- ∨Wₙ-l zero p p' (zero , q) = refl
--- ∨Wₙ-l zero p p' (suc m , q) = refl
--- ∨Wₙ-l (suc n) p p' (zero , q) = refl
--- ∨Wₙ-l (suc n) p p' (suc m , q) = cong suc (∨Wₙ-l n p p' (m , q))
+∨Wₚ-unitₗ : {P : Prog} → (np : ℕ × Pos P) → (0 , Bot P) ∨Wₚ np ≡ proj₂ np
+∨Wₚ-unitₗ (zero , p) = refl
+∨Wₚ-unitₗ (suc n , p) = refl
 
 ∨W-unitₗ : {P : Prog} (np : ℕ × Pos P) → (zero , Bot P) ∨W np ≡ np
 ∨W-unitₗ (zero , p) = refl
@@ -285,6 +285,16 @@ suc n ∨Wₙ suc n' = suc (n ∨Wₙ n')
 -- ∨W-≤-l (≤W-ss l) mq = {!!}
 
 ∨-↝-l : {P : Prog} {p p' : Pos P} → (p ↝ p') → (q : Pos P) → ((p ∨ q) ≤ (p' ∨ q))
+-- ∨W-↝-l : {P : Prog} (n : ℕ) → {p p' : Pos P} → (p ↝ p') → (mq : ℕ × Pos P) → ((n , p) ∨W mq) ≤W ((n , p') ∨W mq)
+-- ∨W-↝-l zero l (zero , q) = ≤W-zz (∨-↝-l l q)
+-- ∨W-↝-l zero l (suc m , q) = ≤W-refl (suc m , q)
+-- ∨W-↝-l (suc n) l (zero , q) = ≤W-ss (≤W-nn n (≤-step1 l))
+-- ∨W-↝-l (suc n) l (suc m , q) = ≤W-ss (∨W-↝-l n l (m , q))
+∨Wₚ-↝-l : {P : Prog} (n : ℕ) → {p p' : Pos P} → (p ↝ p') → (mq : ℕ × Pos P) → ((n , p) ∨Wₚ mq) ≤ ((n , p') ∨Wₚ mq)
+∨Wₚ-↝-l zero l (zero , q) = ∨-↝-l l q
+∨Wₚ-↝-l zero l (suc m , q) = ≤-refl q
+∨Wₚ-↝-l (suc n) l (zero , q) = ≤-step1 l
+∨Wₚ-↝-l (suc n) l (suc m , q) = ∨Wₚ-↝-l n l (m , q)
 ∨-↝-l ↝-Act (Bot .Act) = ≤-step1 ↝-Act
 ∨-↝-l ↝-Act (Top .Act) = ≤-refl (Top Act)
 ∨-↝-l (↝-Seq₀ P Q) (Bot .(Seq P Q)) = ≤-step1 (↝-Seq₀ P Q)
@@ -351,14 +361,13 @@ suc n ∨Wₙ suc n' = suc (n ∨Wₙ n')
 ∨-↝-l (↝-While₀' P) (While np) = ≤-Top (While np)
 ∨-↝-l (↝-While n p) (Bot .(While _)) = ≤-step1 (↝-While n p)
 ∨-↝-l (↝-While {P} n p) (Top .(While _)) = ≤-refl (Top (While P))
-∨-↝-l (↝-While n p) (While np) = ≤-While {!≤W-trans ? ?!}
--- Goal: (proj₁ ((n , .p) ∨W np) , proj₂ ((n , .p) ∨W np)) ≤W
-      -- (proj₁ ((n , .p') ∨W np) , proj₂ ((n , .p') ∨W np))
+∨-↝-l (↝-While n r) (While (n' , p)) = ≤-While (≤W-nn (n ∨Wₙ n') (∨Wₚ-↝-l n r (n' , p)))
 ∨-↝-l (↝-While₁ P n) (Bot .(While P)) = ≤-step1 (↝-While₁ P n)
 ∨-↝-l (↝-While₁ P n) (Top .(While P)) = ≤-refl (Top (While P))
 ∨-↝-l (↝-While₁ P zero) (While (zero , p)) = ≤-While (≤W-zs zero (Top P) (Bot P))
-∨-↝-l (↝-While₁ P zero) (While (suc n' , p)) = ≤-While (≤W-ss {!!})
-∨-↝-l (↝-While₁ P (suc n)) (While (n' , p)) = ≤-While {!!}
+∨-↝-l (↝-While₁ P zero) (While (suc n' , p)) = ≤-While (≤W-ss (≤W-nn n' (≡-≤ (≡-comm (∨Wₚ-unitₗ (n' , p))))))
+∨-↝-l (↝-While₁ P (suc n)) (While (zero , p)) = ≤-While (≤W-ss (<ℕ-≤W (≤ℕ-refl (suc n)) (Top P) (Bot P)))
+∨-↝-l (↝-While₁ P (suc n)) (While (suc n' , p)) = ≤-While (≤W-ss {!!})
 ∨-↝-l (↝-While₁' P n) (Bot .(While P)) = ≤-step1 (↝-While₁' P n)
 ∨-↝-l (↝-While₁' P n) (Top .(While P)) = ≤-refl (Top (While P))
 ∨-↝-l (↝-While₁' P n) (While np) = ≤-Top (While ((n , Top P) ∨W np))

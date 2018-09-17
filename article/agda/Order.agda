@@ -25,6 +25,10 @@ data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
   ≤W-zs : {P : Prog} (n' : ℕ) (p p' : Pos P) → (zero , p) ≤W (suc n' , p')
   ≤W-ss : {P : Prog} {n n' : ℕ} {p p' : Pos P} → (n , p) ≤W (n' , p') → (suc n , p) ≤W (suc n' , p')
 
+≤W-nn : {P : Prog} → (n : ℕ) → {p p' : Pos P} → p ≤ p' → (n , p) ≤W (n , p')
+≤W-nn zero l = ≤W-zz l
+≤W-nn (suc n) l = ≤W-ss (≤W-nn n l)
+
 ≤W-prop : {P : Prog} {n n' : ℕ} {p p' : Pos P} → ((n , p) ≤W (n' , p')) → ((n ≡ n') × p ≤ p') ⊎ (n <ℕ n')
 ≤W-prop (≤W-zz l) = inj₁ (refl , l)
 ≤W-prop (≤W-zs n' p p') = inj₂ (s≤s z≤n)
@@ -40,8 +44,16 @@ data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
 ≤-≤W zero l = ≤W-zz l
 ≤-≤W (suc n) l = ≤W-ss (≤-≤W n l)
 
+<ℕ-≤W : {P : Prog} {n n' : ℕ} → (n <ℕ n') → (p q : Pos P) → (n , p) ≤W (n' , q)
+<ℕ-≤W {n = zero} {zero} () p q
+<ℕ-≤W {n = zero} {suc n'} l p q = ≤W-zs n' p q
+<ℕ-≤W {n = suc n} {.(suc (suc _))} (s≤s (s≤s l)) p q = ≤W-ss (<ℕ-≤W (s≤s l) p q)
+
 ≡-≤W : {P : Prog} {np np' : ℕ × Pos P} → np ≡ np' → np ≤W np'
 ≡-≤W {_} {np} refl = ≤W-refl np
+
+≡-≤W' : {P : Prog} {n n' : ℕ} {p p' : Pos P} → n ≡ n' → p ≡ p' → (n , p) ≤W (n' , p')
+≡-≤W' {n = n} {p = p} refl refl = ≤W-refl (n , p)
 
 ≡-≤ : {P : Prog} {p q : Pos P} → (p ≡ q) → p ≤ q
 ≡-≤ {P} {p} {q} l = transport (λ q → p ≤ q) l (≤-refl p)
@@ -54,7 +66,7 @@ data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
 ≤W-trans {np = .0 , p} {.0 , p'} {.0 , p''} (≤W-zz l) (≤W-zz l') = ≤W-zz (≤-trans l l')
 ≤W-trans {np = .0 , p} {.0 , p'} {.(suc n') , p''} (≤W-zz l) (≤W-zs n' .p' .p'') = ≤W-zs n' p p''
 ≤W-trans {np = .0 , p} {.(suc n') , p'} {.(suc _) , p''} (≤W-zs n' .p .p') (≤W-ss {n' = n₁} l') = ≤W-zs n₁ p p''
-≤W-trans {np = .(suc _) , p} {.(suc _) , p'} {.(suc _) , p''} (≤W-ss l) (≤W-ss l') = ≤W-ss {!≤W-trans l l'!}
+≤W-trans {np = .(suc _) , p} {.(suc _) , p'} {.(suc _) , p''} (≤W-ss l) (≤W-ss l') = ≤W-ss (≤W-trans l l')
 
 ≤-step1 : {P : Prog} {p q : Pos P} → (p ↝ q) → (p ≤ q)
 ≤-step1 {_} {_} {q} r = ≤-step r (≤-refl q)
