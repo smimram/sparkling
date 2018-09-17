@@ -50,6 +50,12 @@ data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
 ≤-trans (≤-step r l) l' = ≤-step r (≤-trans l l')
 ≤-trans (≤-refl p) l' = l'
 
+≤W-trans : {P : Prog} {np np' np'' : ℕ × Pos P} → np ≤W np' → np' ≤W np'' → np ≤W np''
+≤W-trans {np = .0 , p} {.0 , p'} {.0 , p''} (≤W-zz l) (≤W-zz l') = ≤W-zz (≤-trans l l')
+≤W-trans {np = .0 , p} {.0 , p'} {.(suc n') , p''} (≤W-zz l) (≤W-zs n' .p' .p'') = ≤W-zs n' p p''
+≤W-trans {np = .0 , p} {.(suc n') , p'} {.(suc _) , p''} (≤W-zs n' .p .p') (≤W-ss {n' = n₁} l') = ≤W-zs n₁ p p''
+≤W-trans {np = .(suc _) , p} {.(suc _) , p'} {.(suc _) , p''} (≤W-ss l) (≤W-ss l') = ≤W-ss {!≤W-trans l l'!}
+
 ≤-step1 : {P : Prog} {p q : Pos P} → (p ↝ q) → (p ≤ q)
 ≤-step1 {_} {_} {q} r = ≤-step r (≤-refl q)
 

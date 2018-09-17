@@ -51,6 +51,27 @@ While np ∨ While np' = While (np ∨W np')
 (suc n , p) ∨W (zero , p') = suc n , p
 (suc n , p) ∨W (suc n' , p') = let n'' , p'' = (n , p) ∨W (n' , p') in suc n'' , p''
 
+_∨Wₙ_ : ℕ → ℕ → ℕ
+zero ∨Wₙ zero = zero
+zero ∨Wₙ suc n' = suc n'
+suc n ∨Wₙ zero = suc n
+suc n ∨Wₙ suc n' = suc (n ∨Wₙ n')
+
+∨W-proj₁ : {P : Prog} (np np' : ℕ × Pos P) → proj₁ (np ∨W np') ≡ ((proj₁ np) ∨Wₙ (proj₁ np'))
+∨W-proj₁ (zero , p) (zero , p') = refl
+∨W-proj₁ (zero , p) (suc n' , p') = refl
+∨W-proj₁ (suc n , p) (zero , p') = refl
+∨W-proj₁ (suc n , p) (suc n' , p') = cong suc (∨W-proj₁ (n , p) (n' , p'))
+
+-- _∨Wₙ_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → ℕ
+-- np ∨Wₙ np' = proj₁ (np ∨W np')
+
+-- ∨Wₙ-l : {P : Prog} (n : ℕ) (p p' : Pos P) (np : ℕ × Pos P) → ((n , p) ∨Wₙ np) ≡ ((n , p') ∨Wₙ np)
+-- ∨Wₙ-l zero p p' (zero , q) = refl
+-- ∨Wₙ-l zero p p' (suc m , q) = refl
+-- ∨Wₙ-l (suc n) p p' (zero , q) = refl
+-- ∨Wₙ-l (suc n) p p' (suc m , q) = cong suc (∨Wₙ-l n p p' (m , q))
+
 ∨W-unitₗ : {P : Prog} (np : ℕ × Pos P) → (zero , Bot P) ∨W np ≡ np
 ∨W-unitₗ (zero , p) = refl
 ∨W-unitₗ (suc n , p) = refl
@@ -330,13 +351,14 @@ While np ∨ While np' = While (np ∨W np')
 ∨-↝-l (↝-While₀' P) (While np) = ≤-Top (While np)
 ∨-↝-l (↝-While n p) (Bot .(While _)) = ≤-step1 (↝-While n p)
 ∨-↝-l (↝-While {P} n p) (Top .(While _)) = ≤-refl (Top (While P))
-∨-↝-l (↝-While n p) (While np) = {!!}
--- ≤-While {!≤-≤W ? ?!}
+∨-↝-l (↝-While n p) (While np) = ≤-While {!≤W-trans ? ?!}
+-- Goal: (proj₁ ((n , .p) ∨W np) , proj₂ ((n , .p) ∨W np)) ≤W
+      -- (proj₁ ((n , .p') ∨W np) , proj₂ ((n , .p') ∨W np))
 ∨-↝-l (↝-While₁ P n) (Bot .(While P)) = ≤-step1 (↝-While₁ P n)
 ∨-↝-l (↝-While₁ P n) (Top .(While P)) = ≤-refl (Top (While P))
 ∨-↝-l (↝-While₁ P zero) (While (zero , p)) = ≤-While (≤W-zs zero (Top P) (Bot P))
 ∨-↝-l (↝-While₁ P zero) (While (suc n' , p)) = ≤-While (≤W-ss {!!})
-∨-↝-l (↝-While₁ P (suc n)) (While (n' , p)) = {!!}
+∨-↝-l (↝-While₁ P (suc n)) (While (n' , p)) = ≤-While {!!}
 ∨-↝-l (↝-While₁' P n) (Bot .(While P)) = ≤-step1 (↝-While₁' P n)
 ∨-↝-l (↝-While₁' P n) (Top .(While P)) = ≤-refl (Top (While P))
 ∨-↝-l (↝-While₁' P n) (While np) = ≤-Top (While ((n , Top P) ∨W np))
