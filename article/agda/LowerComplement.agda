@@ -20,9 +20,13 @@ data _¬>_ : {P : Prog} (p q : Pos P) → Set where
   ¬>-Ifₗ' : {P : Prog} (p : Pos P) (Q : Prog) → Ifᵣ P (Top Q) ¬> Ifₗ p Q
   ¬>-Ifᵣ : (P : Prog) {Q : Prog} {q q' : Pos Q} → (q ¬> q') → Ifᵣ P q ¬> Ifᵣ P q'
   ¬>-Ifᵣ' : (P : Prog) {Q : Prog} (q : Pos Q) → Ifₗ (Top P) Q ¬> Ifᵣ P q
+  -- We have a problem with par in the case of equality ....
   ¬>-Parₗ : {P : Prog} {p p' : Pos P} → (p ¬> p') → {Q : Prog} (q : Pos Q) → Par p (Top Q) ¬> Par p' q
   ¬>-Parᵣ : {P : Prog} (p : Pos P) {Q : Prog} {q q' : Pos Q} → (q ¬> q') → Par (Top P) q ¬> Par p q'
   ¬>-While : {P : Prog} (n : ℕ) {p p' : Pos P} → (p ¬> p') → While (n , p) ¬> While (n , p')
+
+¬>-refl : {P : Prog} (p : Pos P) →  ∃[ q ] (p ≤ q and q ¬> p)
+¬>-refl p = {!!}
 
 -- ¬>-refl : {P : Prog} (p : Pos P) → p ¬> p
 -- ¬>-refl (Bot P) = ¬>-Bot
@@ -87,22 +91,38 @@ data _¬>_ : {P : Prog} (p q : Pos P) → Set where
 ¬>-sound (¬>-Parᵣ p r) (≤-step (↝-Parᵣ p₁ s) l) l' = {!!}
 ¬>-sound (¬>-Parᵣ p r) (≤-step (↝-Par₁ P Q) l) l' = ⊥-elim (¬≤-Top-Par l)
 ¬>-sound (¬>-Parᵣ p r) (≤-refl .(Par (Top _) _)) l' = {!!}
-¬>-sound (¬>-While n r) (≤-step (↝-While₀ P) l) l' = ?
-¬>-sound (¬>-While n r) (≤-step (↝-While₀' P) l) l' = ?
-¬>-sound (¬>-While n r) (≤-step (↝-While n₁ s) l) l' = ?
-¬>-sound (¬>-While n r) (≤-step (↝-While₁ P n₁) l) l' = ?
-¬>-sound (¬>-While n r) (≤-step (↝-While₁' P n₁) l) l' = ?
+¬>-sound (¬>-While n r) (≤-step (↝-While₀ P) l) l' = ⊥-elim (¬≤-While-Bot l')
+¬>-sound (¬>-While n r) (≤-step (↝-While₀' P) l) l' = {!!}
+¬>-sound (¬>-While n r) (≤-step (↝-While n₁ s) l) l' = {!!}
+¬>-sound (¬>-While n r) (≤-step (↝-While₁ P n₁) l) l' = {!!}
+¬>-sound (¬>-While n r) (≤-step (↝-While₁' P n₁) l) l' = {!!}
 ¬>-sound (¬>-While n r) (≤-refl .(While (n , _))) l' = {!!}
 
--- ¬>-complete : {P : Prog} (p : Pos P) (x : Pos P) → (p ≤ x) or (∃[ q ] ((q ¬> p) and (x ≤ q)))
--- ¬>-complete (Bot P) x = inj₁ (≤-Bot x)
--- ¬>-complete (Top P) x = inj₂ ( Top P , ¬>-Top , ≤-Top x )
--- ¬>-complete (Seqₗ p Q) (Bot .(Seq _ Q)) = inj₂ (Seqₗ p Q , ¬>-Seqₗ (¬>-refl p) Q , ≤-Bot (Seqₗ p Q))
--- ¬>-complete (Seqₗ p Q) (Top .(Seq _ Q)) = inj₁ (≤-Top (Seqₗ p Q))
--- ¬>-complete (Seqₗ p Q) (Seqₗ x .Q) = case ¬>-complete p x of λ { (inj₁ l) → inj₁ (≤-Seqₗ l Q) ; (inj₂ (q , n , l)) → inj₂ (Seqₗ q Q , ¬>-Seqₗ n Q , ≤-Seqₗ l Q) }
--- ¬>-complete (Seqₗ p Q) (Seqᵣ P x) = inj₁ (≤-Seqₗ-Seqᵣ p x)
--- ¬>-complete (Seqᵣ P p) (Bot .(Seq P _)) = inj₂ (Seqᵣ P p , ¬>-refl (Seqᵣ P p) , ≤-Bot (Seqᵣ P p))
--- ¬>-complete (Seqᵣ P p) (Top .(Seq P _)) = inj₁ (≤-Top (Seqᵣ P p))
--- ¬>-complete (Seqᵣ P p) (Seqₗ x Q) = inj₂ (Seqᵣ P p , ¬>-Seqᵣ P (¬>-refl p) , ≤-Seqₗ-Seqᵣ x p)
--- ¬>-complete (Seqᵣ P q) (Seqᵣ .P x) = case ¬>-complete q x of λ { (inj₁ l) → inj₁ (≤-Seqᵣ P l) ; (inj₂ (q , n , l)) → inj₂ (Seqᵣ P q , ¬>-Seqᵣ P n , ≤-Seqᵣ P l) }
-
+¬>-complete : {P : Prog} (p : Pos P) (x : Pos P) → (p ≤ x) or (∃[ q ] ((q ¬> p) and (x ≤ q)))
+¬>-complete (Bot P) x = inj₁ (≤-Bot x)
+¬>-complete (Top P) x = inj₂ ( Top P , ¬>-Top , ≤-Top x )
+¬>-complete (Seqₗ {P} p Q) (Bot .(Seq _ Q)) = {!!}
+-- inj₂ (Seqₗ p Q , ¬>-Seqₗ (¬>-refl p) Q , ≤-Bot (Seqₗ p Q))
+¬>-complete (Seqₗ p Q) (Top .(Seq _ Q)) = inj₁ (≤-Top (Seqₗ p Q))
+¬>-complete (Seqₗ p Q) (Seqₗ x .Q) = case ¬>-complete p x of λ { (inj₁ l) → inj₁ (≤-Seqₗ l Q) ; (inj₂ (q , n , l)) → inj₂ (Seqₗ q Q , ¬>-Seqₗ n Q , ≤-Seqₗ l Q) }
+¬>-complete (Seqₗ p Q) (Seqᵣ P x) = inj₁ (≤-Seqₗ-Seqᵣ p x)
+¬>-complete (Seqᵣ P p) (Bot .(Seq P _)) = {!!}
+-- inj₂ (Seqᵣ P p , ¬>-refl (Seqᵣ P p) , ≤-Bot (Seqᵣ P p))
+¬>-complete (Seqᵣ P p) (Top .(Seq P _)) = inj₁ (≤-Top (Seqᵣ P p))
+¬>-complete (Seqᵣ P p) (Seqₗ x Q) = {!!}
+-- inj₂ (Seqᵣ P p , ¬>-Seqᵣ P (¬>-refl p) , ≤-Seqₗ-Seqᵣ x p)
+¬>-complete (Seqᵣ P q) (Seqᵣ .P x) = case ¬>-complete q x of λ { (inj₁ l) → inj₁ (≤-Seqᵣ P l) ; (inj₂ (q , n , l)) → inj₂ (Seqᵣ P q , ¬>-Seqᵣ P n , ≤-Seqᵣ P l) }
+¬>-complete (Ifₗ p Q) (Bot .(If _ Q)) = {!!}
+¬>-complete (Ifₗ p Q) (Top .(If _ Q)) = {!!}
+¬>-complete (Ifₗ p Q) (Ifₗ p' .Q) = {!!}
+¬>-complete (Ifₗ p Q) (Ifᵣ P q') = {!!}
+¬>-complete (Ifᵣ P p) (Bot .(If P _)) = {!!}
+¬>-complete (Ifᵣ P p) (Top .(If P _)) = {!!}
+¬>-complete (Ifᵣ P p) (Ifₗ p' Q) = {!!}
+¬>-complete (Ifᵣ P p) (Ifᵣ .P q') = {!!}
+¬>-complete (Par p q) (Bot .(Par _ _)) = {!!}
+¬>-complete (Par p q) (Top .(Par _ _)) = {!!}
+¬>-complete (Par p q) (Par p' q') = {!!}
+¬>-complete (While np) (Bot .(While _)) = {!!}
+¬>-complete (While np) (Top .(While _)) = {!!}
+¬>-complete (While np) (While np') = {!!}

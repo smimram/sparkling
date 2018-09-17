@@ -6,19 +6,9 @@ open import Data.Sum using ( _⊎_ ; inj₁ ; inj₂ )
 open import Data.Product
 open import Data.Nat.Base renaming (_≤_ to _≤ℕ_) renaming (compare to ℕ-compare)
 open import Data.Nat.Properties renaming ( ≤-refl to ≤ℕ-refl ) renaming ( ≤-trans to ≤ℕ-trans )
+open import Base
 open import Program
 open import Order
-
-≡-comm : {A : Set} {a b : A} → (a ≡ b) → (b ≡ a)
-≡-comm refl = refl
-
-≤ℕ-suc : {n n' : ℕ} → (n ≤ℕ n') → (suc n ≤ℕ suc n')
-≤ℕ-suc {zero} {n'} l = s≤s l
-≤ℕ-suc {suc n} {zero} l = s≤s l
-≤ℕ-suc {suc n} {suc n'} l = s≤s l
-
-≡-× : {A B : Set} {a a' : A} {b b' : B} → (a ≡ a') → (b ≡ b') → (a , b) ≡ (a' , b')
-≡-× refl refl = refl
 
 _∨Wₙ_ : ℕ → ℕ → ℕ
 zero ∨Wₙ n = n
