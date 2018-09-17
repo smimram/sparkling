@@ -17,7 +17,7 @@ _<ℕ_ : ℕ → ℕ → Set
 m <ℕ n = suc m ≤ℕ n
 
 data _≤_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
-  ≤-step : {P : Prog} {p q r : Pos P} → (p ↝ q) → (q ≤ r) → p ≤ r
+  ≤-step : {P : Prog} {p q r : Pos P} (s : p ↝ q) (l : q ≤ r) → p ≤ r
   ≤-refl : {P : Prog} (p : Pos P) → p ≤ p
 
 data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
@@ -213,6 +213,44 @@ p ≥ q = q ≤ p
 ¬≤-Seqᵣ-Seqₗ (≤-step (↝-Seqᵣ P x) l) = ¬≤-Seqᵣ-Seqₗ l
 ¬≤-Seqᵣ-Seqₗ (≤-step (↝-Seq₁ P Q) l) = ¬≤-Top-Seqₗ l
 
+¬≤-Ifₗ-Bot : {P Q : Prog} {p : Pos P} → Ifₗ p Q ≤ Bot (If P Q) → ⊥
+¬≤-Ifₗ-Bot (≤-step (↝-Ifₗ r Q) l) = ¬≤-Ifₗ-Bot l
+¬≤-Ifₗ-Bot (≤-step (↝-If₁ₗ P Q) l) = ¬≤-Top-Bot l
+
+¬≤-Top-Ifₗ : {P Q : Prog} {p : Pos P} → Top (If P Q) ≤ Ifₗ p Q → ⊥
+¬≤-Top-Ifₗ (≤-step () l)
+
+¬≤-Top-Ifᵣ : {P Q : Prog} {q : Pos Q} → Top (If P Q) ≤ Ifᵣ P q → ⊥
+¬≤-Top-Ifᵣ (≤-step () l)
+
+¬≤-Ifₗ-Ifᵣ : {P Q : Prog} {p : Pos P} {q : Pos Q} → Ifₗ p Q ≤ Ifᵣ P q → ⊥
+¬≤-Ifₗ-Ifᵣ (≤-step (↝-Ifₗ x Q) l) = ¬≤-Ifₗ-Ifᵣ l
+¬≤-Ifₗ-Ifᵣ (≤-step (↝-If₁ₗ P Q) l) = ¬≤-Top-Ifᵣ l
+
+¬≤-Ifᵣ-Ifₗ : {P Q : Prog} {p : Pos P} {q : Pos Q} → Ifᵣ P q ≤ Ifₗ p Q → ⊥
+¬≤-Ifᵣ-Ifₗ (≤-step (↝-Ifᵣ P s) l) = ¬≤-Ifᵣ-Ifₗ l
+¬≤-Ifᵣ-Ifₗ (≤-step (↝-If₁ᵣ P Q) l) = ¬≤-Top-Ifₗ l
+
+¬≤-Ifᵣ-Bot : {P Q : Prog} {q : Pos Q} → Ifᵣ P q ≤ Bot (If P Q) → ⊥
+¬≤-Ifᵣ-Bot (≤-step (↝-Ifᵣ P s) l) = ¬≤-Ifᵣ-Bot l
+¬≤-Ifᵣ-Bot (≤-step (↝-If₁ᵣ P Q) l) = ¬≤-Top-Bot l
+
+¬≤-Par-Bot : {P Q : Prog} {p : Pos P} {q : Pos Q} → Par p q ≤ Bot (Par P Q) → ⊥
+¬≤-Par-Bot (≤-step (↝-Parₗ s q) l) = ¬≤-Par-Bot l
+¬≤-Par-Bot (≤-step (↝-Parᵣ p s) l) = ¬≤-Par-Bot l
+¬≤-Par-Bot (≤-step (↝-Par₁ P Q) l) = ¬≤-Top-Bot l
+
+¬≤-Top-Par : {P Q : Prog} {p : Pos P} {q : Pos Q} → Top (Par P Q) ≤ Par p q → ⊥
+¬≤-Top-Par (≤-step () l)
+
+¬≤-While-Bot : {P : Prog} {n : ℕ} {p : Pos P} → While (n , p) ≤ Bot (While P) → ⊥
+¬≤-While-Bot (≤-step (↝-While n s) l) = ¬≤-While-Bot l
+¬≤-While-Bot (≤-step (↝-While₁ P n) l) = ¬≤-While-Bot l
+¬≤-While-Bot (≤-step (↝-While₁' P n) l) = ¬≤-Top-Bot l
+
+¬≤-Top-While : {P : Prog} {n : ℕ} {p : Pos P} → Top (While P) ≤ While (n , p) → ⊥
+¬≤-Top-While (≤-step () l)
+
 ≤-Seqₗ' : {P : Prog} {p p' : Pos P} {Q : Prog} → Seqₗ p Q ≤ Seqₗ p' Q → p ≤ p'
 ≤-Seqₗ' (≤-step (↝-Seqₗ r Q) l) = ≤-step r (≤-Seqₗ' l)
 ≤-Seqₗ' {_} {.(Top P)} {p'} (≤-step (↝-Seqₘ P Q) l) = ⊥-elim (¬≤-Seqᵣ-Seqₗ l)
@@ -222,6 +260,16 @@ p ≥ q = q ≤ p
 ≤-Seqᵣ' (≤-step (↝-Seqᵣ P r) l) = ≤-step r (≤-Seqᵣ' l)
 ≤-Seqᵣ' (≤-step (↝-Seq₁ P Q) l) = ⊥-elim (¬≤-Top-Seqᵣ l)
 ≤-Seqᵣ' {q = q} (≤-refl .(Seqᵣ _ _)) = ≤-refl q
+
+≤-Ifₗ' : {P : Prog} {p p' : Pos P} {Q : Prog} → Ifₗ p Q ≤ Ifₗ p' Q → p ≤ p'
+≤-Ifₗ' (≤-step (↝-Ifₗ r Q) l) = ≤-step r (≤-Ifₗ' l)
+≤-Ifₗ' (≤-step (↝-If₁ₗ P Q) l) = ⊥-elim (¬≤-Top-Ifₗ l)
+≤-Ifₗ' {p = p} (≤-refl .(Ifₗ _ _)) = ≤-refl p
+
+≤-Ifᵣ' : {P : Prog} {Q : Prog} {q q' : Pos Q} → Ifᵣ P q ≤ Ifᵣ P q' → q ≤ q'
+≤-Ifᵣ' (≤-step (↝-Ifᵣ P s) l) = ≤-step s (≤-Ifᵣ' l)
+≤-Ifᵣ' (≤-step (↝-If₁ᵣ P Q) l) = ⊥-elim (¬≤-Top-Ifᵣ l)
+≤-Ifᵣ' {q = q} (≤-refl .(Ifᵣ _ _)) = ≤-refl q
 
 ≤-Bot-≡ : {P : Prog} {p : Pos P} → (p ≤ Bot P) → (p ≡ Bot P)
 ≤-Bot-≡ (≤-step ↝-Act l) = refl
