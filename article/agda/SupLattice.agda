@@ -1,20 +1,16 @@
-module Lattice where
+module SupLattice where
 
 open import Function using ( case_of_ )
 open import Relation.Binary.PropositionalEquality
 open import Data.Sum using ( _⊎_ ; inj₁ ; inj₂ )
 open import Data.Product
 open import Data.Nat.Base renaming (_≤_ to _≤ℕ_) renaming (compare to ℕ-compare)
-open import Data.Nat.Properties using ( )
+open import Data.Nat.Properties renaming ( ≤-refl to ≤ℕ-refl ) renaming ( ≤-trans to ≤ℕ-trans )
 open import Program
 open import Order
 
 ≡-comm : {A : Set} {a b : A} → (a ≡ b) → (b ≡ a)
 ≡-comm refl = refl
-
-≤ℕ-refl : (n : ℕ) → (n ≤ℕ n)
-≤ℕ-refl zero = z≤n
-≤ℕ-refl (suc n) = s≤s (≤ℕ-refl n)
 
 ≤ℕ-suc : {n n' : ℕ} → (n ≤ℕ n') → (suc n ≤ℕ suc n')
 ≤ℕ-suc {zero} {n'} l = s≤s l
@@ -278,7 +274,7 @@ While np ∨ While np' = While (np ∨W np')
 ∨Wₙ-↝-l : {P : Prog} (n : ℕ) (np' : ℕ × Pos P) → ((n , Top P) ∨W np') ≤W ((suc n , Bot P) ∨W np')
 ∨Wₙ-↝-l zero (zero , p') = ≤W-intro (inj₂ (s≤s z≤n))
 ∨Wₙ-↝-l zero (suc n' , p') = ≤W-intro (inj₁ (refl , ≡-≤ (≡-comm (∨Wₚ-unitₗ (n' , p')))))
-∨Wₙ-↝-l (suc n) (zero , p') = ≤W-ss (≤W-intro (inj₂ (≤ℕ-refl (suc n))))
+∨Wₙ-↝-l (suc n) (zero , p') = ≤W-ss (≤W-intro (inj₂ ≤ℕ-refl))
 ∨Wₙ-↝-l (suc n) (suc n' , p') = ≤W-ss (∨Wₙ-↝-l n (n' , p'))
 ∨-↝-l ↝-Act (Bot .Act) = ≤-step1 ↝-Act
 ∨-↝-l ↝-Act (Top .Act) = ≤-refl (Top Act)
