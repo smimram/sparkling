@@ -2,6 +2,7 @@ module Lattice where
 
 open import Function using ( case_of_ )
 open import Relation.Binary.PropositionalEquality
+open import Data.Sum using ( _⊎_ ; inj₁ ; inj₂ )
 open import Data.Product
 open import Data.Nat.Base renaming (_≤_ to _≤ℕ_) renaming (compare to ℕ-compare)
 open import Data.Nat.Properties using ( )
@@ -105,16 +106,6 @@ While np ∨ While np' = While (np ∨W np')
 ∨-Bot-l (Ifᵣ P p) = refl
 ∨-Bot-l (Par p p₁) = refl
 ∨-Bot-l (While np) = refl
-
--- ∨Wₙ-assoc : {P : Prog} (n n' n'' : ℕ) (p p' p'' : Pos P) → ((((n , p) ∨Wₙ (n' , p')) , ((n , p) ∨Wₚ (n' , p'))) ∨Wₙ (n'' , p'')) ≡ ((n , p) ∨Wₙ (((n' , p') ∨Wₙ (n'' , p'')) , ((n' , p') ∨Wₚ (n'' , p''))))
--- ∨Wₙ-assoc zero zero zero p p' p'' = refl
--- ∨Wₙ-assoc zero zero (suc n'') p p' p'' = refl
--- ∨Wₙ-assoc zero (suc n') zero p p' p'' = refl
--- ∨Wₙ-assoc zero (suc n') (suc n'') p p' p'' = refl
--- ∨Wₙ-assoc (suc n) zero zero p p' p'' = refl
--- ∨Wₙ-assoc (suc n) zero (suc n'') p p' p'' = refl
--- ∨Wₙ-assoc (suc n) (suc n') zero p p' p'' = refl
--- ∨Wₙ-assoc (suc n) (suc n') (suc n'') p p' p'' = cong suc (∨Wₙ-assoc n n' n'' p p' p'')
 
 ∨-assoc : {P : Prog} (p q r : Pos P) → ((p ∨ q) ∨ r ≡ p ∨ (q ∨ r))
 ∨W-assoc : {P : Prog} (n n' n'' : ℕ) (p p' p'' : Pos P) → (((n , p) ∨W (n' , p')) ∨W (n'' , p'')) ≡ ((n , p) ∨W ((n' , p') ∨W (n'' , p'')))
@@ -278,23 +269,17 @@ While np ∨ While np' = While (np ∨W np')
 ∨-r-≤ : {P : Prog} (p q : Pos P) → (q ≤ (p ∨ q))
 ∨-r-≤ p q = ≤-trans (∨-l-≤ q p) (≡-≤ (∨-comm q p))
 
--- ∨W-≤-l : {P : Prog} → {np np' : ℕ × Pos P} → (np ≤W np') → (mq : ℕ × Pos P) → (np ∨W mq) ≤W (np' ∨W mq)
--- ∨W-≤-l (≤W-zz l) (zero , q) = ≤W-zz {!!}
--- ∨W-≤-l (≤W-zz l) (suc m , q) = {!!}
--- ∨W-≤-l (≤W-zs n' p p') mq = {!!}
--- ∨W-≤-l (≤W-ss l) mq = {!!}
-
 ∨-↝-l : {P : Prog} {p p' : Pos P} → (p ↝ p') → (q : Pos P) → ((p ∨ q) ≤ (p' ∨ q))
--- ∨W-↝-l : {P : Prog} (n : ℕ) → {p p' : Pos P} → (p ↝ p') → (mq : ℕ × Pos P) → ((n , p) ∨W mq) ≤W ((n , p') ∨W mq)
--- ∨W-↝-l zero l (zero , q) = ≤W-zz (∨-↝-l l q)
--- ∨W-↝-l zero l (suc m , q) = ≤W-refl (suc m , q)
--- ∨W-↝-l (suc n) l (zero , q) = ≤W-ss (≤W-nn n (≤-step1 l))
--- ∨W-↝-l (suc n) l (suc m , q) = ≤W-ss (∨W-↝-l n l (m , q))
 ∨Wₚ-↝-l : {P : Prog} (n : ℕ) → {p p' : Pos P} → (p ↝ p') → (mq : ℕ × Pos P) → ((n , p) ∨Wₚ mq) ≤ ((n , p') ∨Wₚ mq)
 ∨Wₚ-↝-l zero l (zero , q) = ∨-↝-l l q
 ∨Wₚ-↝-l zero l (suc m , q) = ≤-refl q
 ∨Wₚ-↝-l (suc n) l (zero , q) = ≤-step1 l
 ∨Wₚ-↝-l (suc n) l (suc m , q) = ∨Wₚ-↝-l n l (m , q)
+∨Wₙ-↝-l : {P : Prog} (n : ℕ) (np' : ℕ × Pos P) → ((n , Top P) ∨W np') ≤W ((suc n , Bot P) ∨W np')
+∨Wₙ-↝-l zero (zero , p') = ≤W-intro (inj₂ (s≤s z≤n))
+∨Wₙ-↝-l zero (suc n' , p') = ≤W-intro (inj₁ (refl , ≡-≤ (≡-comm (∨Wₚ-unitₗ (n' , p')))))
+∨Wₙ-↝-l (suc n) (zero , p') = ≤W-ss (≤W-intro (inj₂ (≤ℕ-refl (suc n))))
+∨Wₙ-↝-l (suc n) (suc n' , p') = ≤W-ss (∨Wₙ-↝-l n (n' , p'))
 ∨-↝-l ↝-Act (Bot .Act) = ≤-step1 ↝-Act
 ∨-↝-l ↝-Act (Top .Act) = ≤-refl (Top Act)
 ∨-↝-l (↝-Seq₀ P Q) (Bot .(Seq P Q)) = ≤-step1 (↝-Seq₀ P Q)
@@ -364,10 +349,7 @@ While np ∨ While np' = While (np ∨W np')
 ∨-↝-l (↝-While n r) (While (n' , p)) = ≤-While (≤W-nn (n ∨Wₙ n') (∨Wₚ-↝-l n r (n' , p)))
 ∨-↝-l (↝-While₁ P n) (Bot .(While P)) = ≤-step1 (↝-While₁ P n)
 ∨-↝-l (↝-While₁ P n) (Top .(While P)) = ≤-refl (Top (While P))
-∨-↝-l (↝-While₁ P zero) (While (zero , p)) = ≤-While (≤W-zs zero (Top P) (Bot P))
-∨-↝-l (↝-While₁ P zero) (While (suc n' , p)) = ≤-While (≤W-ss (≤W-nn n' (≡-≤ (≡-comm (∨Wₚ-unitₗ (n' , p))))))
-∨-↝-l (↝-While₁ P (suc n)) (While (zero , p)) = ≤-While (≤W-ss (<ℕ-≤W (≤ℕ-refl (suc n)) (Top P) (Bot P)))
-∨-↝-l (↝-While₁ P (suc n)) (While (suc n' , p)) = ≤-While (≤W-ss {!!})
+∨-↝-l (↝-While₁ P n) (While (n' , p)) = ≤-While (∨Wₙ-↝-l n (n' , p))
 ∨-↝-l (↝-While₁' P n) (Bot .(While P)) = ≤-step1 (↝-While₁' P n)
 ∨-↝-l (↝-While₁' P n) (Top .(While P)) = ≤-refl (Top (While P))
 ∨-↝-l (↝-While₁' P n) (While np) = ≤-Top (While ((n , Top P) ∨W np))

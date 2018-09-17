@@ -29,12 +29,12 @@ data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
 ≤W-nn zero l = ≤W-zz l
 ≤W-nn (suc n) l = ≤W-ss (≤W-nn n l)
 
-≤W-prop : {P : Prog} {n n' : ℕ} {p p' : Pos P} → ((n , p) ≤W (n' , p')) → ((n ≡ n') × p ≤ p') ⊎ (n <ℕ n')
-≤W-prop (≤W-zz l) = inj₁ (refl , l)
-≤W-prop (≤W-zs n' p p') = inj₂ (s≤s z≤n)
-≤W-prop (≤W-ss l) with ≤W-prop l
-≤W-prop (≤W-ss _) | inj₁ (e , l) = inj₁ (cong suc e , l)
-≤W-prop (≤W-ss _) | inj₂ l = inj₂ (s≤s l)
+≤W-elim : {P : Prog} {n n' : ℕ} {p p' : Pos P} → ((n , p) ≤W (n' , p')) → ((n ≡ n') × p ≤ p') ⊎ (n <ℕ n')
+≤W-elim (≤W-zz l) = inj₁ (refl , l)
+≤W-elim (≤W-zs n' p p') = inj₂ (s≤s z≤n)
+≤W-elim (≤W-ss l) with ≤W-elim l
+≤W-elim (≤W-ss _) | inj₁ (e , l) = inj₁ (cong suc e , l)
+≤W-elim (≤W-ss _) | inj₂ l = inj₂ (s≤s l)
 
 ≤W-refl : {P : Prog} (np : ℕ × Pos P) → np ≤W np
 ≤W-refl (zero , p) = ≤W-zz (≤-refl p)
@@ -67,6 +67,10 @@ data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
 ≤W-trans {np = .0 , p} {.0 , p'} {.(suc n') , p''} (≤W-zz l) (≤W-zs n' .p' .p'') = ≤W-zs n' p p''
 ≤W-trans {np = .0 , p} {.(suc n') , p'} {.(suc _) , p''} (≤W-zs n' .p .p') (≤W-ss {n' = n₁} l') = ≤W-zs n₁ p p''
 ≤W-trans {np = .(suc _) , p} {.(suc _) , p'} {.(suc _) , p''} (≤W-ss l) (≤W-ss l') = ≤W-ss (≤W-trans l l')
+
+≤W-intro : {P : Prog} {n n' : ℕ} {p p' : Pos P} → ((n ≡ n') × p ≤ p') ⊎ (n <ℕ n') → ((n , p) ≤W (n' , p'))
+≤W-intro {n' = n'} (inj₁ (e , l)) = ≤W-trans (≡-≤W' e refl) (≤-≤W n' l)
+≤W-intro {p = p} {p'} (inj₂ l) = <ℕ-≤W l p p'
 
 ≤-step1 : {P : Prog} {p q : Pos P} → (p ↝ q) → (p ≤ q)
 ≤-step1 {_} {_} {q} r = ≤-step r (≤-refl q)
@@ -174,7 +178,7 @@ p ≥ q = q ≤ p
   n' l
 
 ≤-While : {P : Prog} {n n' : ℕ} {p p' : Pos P} → ((n , p) ≤W (n' , p')) → While (n , p) ≤ While (n' , p')
-≤-While l with ≤W-prop l
+≤-While l with ≤W-elim l
 ≤-While {_} {n} {n'} {p} {p'} _ | inj₁ (e , l) = transport (λ n' → While (n , p) ≤ While (n' , p')) e (≤-Whileₚ l)
 ≤-While {p = p} {p' = p'} _ | inj₂ l = ≤-Whileₙ' l p p'
 
