@@ -4,8 +4,8 @@ open import Function using ( case_of_ )
 open import Relation.Binary.PropositionalEquality
 open import Data.Sum using ( _⊎_ ; inj₁ ; inj₂ )
 open import Data.Product
-open import Data.Nat.Base renaming (_≤_ to _≤ℕ_) renaming (compare to ℕ-compare)
-open import Data.Nat.Properties renaming ( ≤-refl to ≤ℕ-refl ) renaming ( ≤-trans to ≤ℕ-trans )
+open import Data.Nat.Base renaming (_≤_ to _≤ℕ_  ; compare to ℕ-compare)
+open import Data.Nat.Properties renaming ( ≤-refl to ≤ℕ-refl ; ≤-trans to ≤ℕ-trans )
 open import Base
 open import Program
 open import Order

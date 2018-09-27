@@ -10,11 +10,8 @@ open import Relation.Binary.PropositionalEquality
 open import Data.Empty
 open import Data.Product
 open import Data.Sum
-open import Data.Nat.Base renaming (_≤_ to _≤ℕ_) renaming (_≟_ to _≟ℕ_) hiding (_≥_)
+open import Data.Nat.Base renaming (_≤_ to _≤ℕ_ ; _<_ to _<ℕ_ ; _≟_ to _≟ℕ_) hiding (_≥_)
 open import Program
-
-_<ℕ_ : ℕ → ℕ → Set
-m <ℕ n = suc m ≤ℕ n
 
 data _≤_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
   ≤-step : {P : Prog} {p q r : Pos P} (s : p ↝ q) (l : q ≤ r) → p ≤ r
@@ -24,6 +21,12 @@ data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
   ≤W-zz : {P : Prog} {p p' : Pos P} (l : p ≤ p') → (zero , p) ≤W (zero , p')
   ≤W-zs : {P : Prog} (n' : ℕ) (p p' : Pos P) → (zero , p) ≤W (suc n' , p')
   ≤W-ss : {P : Prog} {n n' : ℕ} {p p' : Pos P} → (n , p) ≤W (n' , p') → (suc n , p) ≤W (suc n' , p')
+
+_<_ : {P : Prog} (p : Pos P) (q : Pos P) → Set
+p < q = ∃[ p' ] ((p ↝ p') × (p' ≤ q))
+
+_≥_ : {P : Prog} (p : Pos P) (q : Pos P) → Set
+p ≥ q = q ≤ p
 
 ≤W-nn : {P : Prog} → (n : ℕ) → {p p' : Pos P} → p ≤ p' → (n , p) ≤W (n , p')
 ≤W-nn zero l = ≤W-zz l
@@ -74,9 +77,6 @@ data _≤W_ : {P : Prog} → (ℕ × Pos P) → (ℕ × Pos P) → Set where
 
 ≤-step1 : {P : Prog} {p q : Pos P} → (p ↝ q) → (p ≤ q)
 ≤-step1 {_} {_} {q} r = ≤-step r (≤-refl q)
-
-_≥_ : {P : Prog} (p : Pos P) (q : Pos P) → Set
-p ≥ q = q ≤ p
 
 ≤-Seqₗ : {P : Prog} {p p' : Pos P} (l : p ≤ p') (Q : Prog) → Seqₗ p Q ≤ Seqₗ p' Q
 ≤-Seqₗ (≤-step s l) Q = ≤-step (↝-Seqₗ s Q) (≤-Seqₗ l Q)
