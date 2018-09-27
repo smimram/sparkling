@@ -7,7 +7,6 @@ data Prog : Set where
   Act : Prog
   Seq : Prog → Prog → Prog
   If : Prog → Prog → Prog
-  Par : Prog → Prog → Prog
   While : Prog → Prog
 
 data Pos : Prog → Set where
@@ -17,7 +16,6 @@ data Pos : Prog → Set where
   Seqᵣ : (P : Prog) → {Q : Prog} → Pos Q → Pos (Seq P Q)
   Ifₗ : {P : Prog} → Pos P → (Q : Prog) → Pos (If P Q)
   Ifᵣ : (P : Prog) → {Q : Prog} → Pos Q → Pos (If P Q)
-  Par : {P : Prog} → Pos P → {Q : Prog} → Pos Q → Pos (Par P Q)
   While : {P : Prog} → (ℕ × Pos P) → Pos (While P)
 
 data _↝_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
@@ -33,10 +31,6 @@ data _↝_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
   ↝-If₀ᵣ : (P Q : Prog) → Bot (If P Q) ↝ Ifᵣ P (Bot Q)
   ↝-Ifᵣ : (P : Prog) {Q : Prog} {q q' : Pos Q} → q ↝ q' → Ifᵣ P q ↝ Ifᵣ P q'
   ↝-If₁ᵣ : (P Q : Prog) → Ifᵣ P (Top Q) ↝ Top (If P Q)
-  ↝-Par₀ : (P Q : Prog) → Bot (Par P Q) ↝ Par (Bot P) (Bot Q)
-  ↝-Parₗ : {P : Prog} {p p' : Pos P} → p ↝ p' → {Q : Prog} → (q : Pos Q) → Par p q ↝ Par p' q
-  ↝-Parᵣ : {P : Prog} (p : Pos P) {Q : Prog} {q q' : Pos Q} → q ↝ q' → Par p q ↝ Par p q'
-  ↝-Par₁ : (P Q : Prog) → Par (Top P) (Top Q) ↝ Top (Par P Q)
   ↝-While₀ : (P : Prog) → Bot (While P) ↝ While (0 , Bot P)
   ↝-While₀' : (P : Prog) → Bot (While P) ↝ Top (While P)
   ↝-While : {P : Prog} {p p' : Pos P} (n : ℕ) → (p ↝ p') → While (n , p) ↝ While (n , p')

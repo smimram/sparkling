@@ -94,17 +94,6 @@ p ≥ q = q ≤ p
 ≤-Ifᵣ P (≤-step s l) = ≤-step (↝-Ifᵣ P s) (≤-Ifᵣ P l)
 ≤-Ifᵣ P (≤-refl p) = ≤-refl (Ifᵣ P p)
 
-≤-Parₗ : {P : Prog} {p p' : Pos P} (l : p ≤ p') {Q : Prog} (q : Pos Q) → Par p q ≤ Par p' q
-≤-Parₗ (≤-step s l) q = ≤-step (↝-Parₗ s q) (≤-Parₗ l q)
-≤-Parₗ (≤-refl p) q = ≤-refl (Par p q)
-
-≤-Parᵣ : {P : Prog} (p : Pos P) {Q : Prog} {q q' : Pos Q} (l : q ≤ q') → Par p q ≤ Par p q'
-≤-Parᵣ p (≤-step s l) = ≤-step (↝-Parᵣ p s) (≤-Parᵣ p l)
-≤-Parᵣ p (≤-refl q) = ≤-refl (Par p q)
-
-≤-Par : { P Q : Prog } {p p' : Pos P} (l : p ≤ p') {q q' : Pos Q} (r : q ≤ q') → Par p q ≤ Par p' q'
-≤-Par {p' = p'} l {q = q} r = ≤-trans (≤-Parₗ l q) (≤-Parᵣ p' r)
-
 ≤-Whileₚ : {P : Prog} {n : ℕ} {p p' : Pos P} (l : p ≤ p') → While (n , p) ≤ While (n , p')
 ≤-Whileₚ {n = n} (≤-step s l) = ≤-step (↝-While n s) (≤-Whileₚ l)
 ≤-Whileₚ {n = n} (≤-refl p) = ≤-refl (While (n , p))
@@ -123,10 +112,6 @@ p ≥ q = q ≤ p
   ≤-step (↝-If₀ₗ P Q)
   (≤-trans (≤-Ifₗ (≤-Bot (Top P)) Q)
   (≤-step1 (↝-If₁ₗ P Q)))
-≤-Bot (Top (Par P Q)) =
-  ≤-step (↝-Par₀ P Q)
-  (≤-trans (≤-Par (≤-Bot (Top P)) (≤-Bot (Top Q)))
-  (≤-step1 (↝-Par₁ P Q)))
 ≤-Bot (Top (While P)) = ≤-step1 (↝-While₀' P)
 ≤-Bot (Seqₗ {P} p Q) = ≤-step (↝-Seq₀ P Q) (≤-Seqₗ (≤-Bot p) Q)
 ≤-Bot (Seqᵣ P {Q} q) =
@@ -136,7 +121,6 @@ p ≥ q = q ≤ p
   (≤-Seqᵣ P (≤-Bot q))))
 ≤-Bot (Ifₗ {P} p Q) = ≤-step (↝-If₀ₗ P Q) (≤-Ifₗ (≤-Bot p) Q)
 ≤-Bot (Ifᵣ P {Q} q) = ≤-step (↝-If₀ᵣ P Q) (≤-Ifᵣ P (≤-Bot q))
-≤-Bot (Par {P} p {Q} q) = ≤-step (↝-Par₀ P Q) (≤-Par (≤-Bot p) (≤-Bot q))
 ≤-Bot (While {P} (zero , p)) = ≤-step (↝-While₀ P) (≤-Whileₚ (≤-Bot p))
 ≤-Bot (While {P} (suc n , p)) =
   ≤-trans
@@ -155,7 +139,6 @@ p ≥ q = q ≤ p
 ≤-Top (Seqᵣ P {Q} q) = ≤-trans (≤-Seqᵣ P (≤-Top q)) (≤-step1 (↝-Seq₁ P Q))
 ≤-Top (Ifₗ {P} p Q) = ≤-trans (≤-Ifₗ (≤-Top p) Q) (≤-step1 (↝-If₁ₗ P Q))
 ≤-Top (Ifᵣ P {Q} q) = ≤-trans (≤-Ifᵣ P (≤-Top q)) (≤-step1 (↝-If₁ᵣ P Q))
-≤-Top (Par {P} p {Q} q) = ≤-trans (≤-Par (≤-Top p) (≤-Top q)) (≤-step1 (↝-Par₁ P Q))
 ≤-Top (While {P} (n , p)) = ≤-trans (≤-Whileₚ (≤-Top p)) (≤-step1 (↝-While₁' P n))
 
 ℕ-rec-from : (P : ℕ → Set) (n : ℕ) (P₀ : P n) (Pᵢ : (n : ℕ) → P n → P (suc n)) → (m : ℕ) → (n ≤ℕ m) → P m
@@ -235,14 +218,6 @@ p ≥ q = q ≤ p
 ¬≤-Ifᵣ-Bot (≤-step (↝-Ifᵣ P s) l) = ¬≤-Ifᵣ-Bot l
 ¬≤-Ifᵣ-Bot (≤-step (↝-If₁ᵣ P Q) l) = ¬≤-Top-Bot l
 
-¬≤-Par-Bot : {P Q : Prog} {p : Pos P} {q : Pos Q} → Par p q ≤ Bot (Par P Q) → ⊥
-¬≤-Par-Bot (≤-step (↝-Parₗ s q) l) = ¬≤-Par-Bot l
-¬≤-Par-Bot (≤-step (↝-Parᵣ p s) l) = ¬≤-Par-Bot l
-¬≤-Par-Bot (≤-step (↝-Par₁ P Q) l) = ¬≤-Top-Bot l
-
-¬≤-Top-Par : {P Q : Prog} {p : Pos P} {q : Pos Q} → Top (Par P Q) ≤ Par p q → ⊥
-¬≤-Top-Par (≤-step () l)
-
 ¬≤-While-Bot : {P : Prog} {n : ℕ} {p : Pos P} → While (n , p) ≤ Bot (While P) → ⊥
 ¬≤-While-Bot (≤-step (↝-While n s) l) = ¬≤-While-Bot l
 ¬≤-While-Bot (≤-step (↝-While₁ P n) l) = ¬≤-While-Bot l
@@ -284,10 +259,6 @@ p ≥ q = q ≤ p
 ≤-Bot-≡ (≤-step (↝-If₀ᵣ P Q) l) = case ≤-Bot-≡ l of λ()
 ≤-Bot-≡ (≤-step (↝-Ifᵣ P x) l) = case ≤-Bot-≡ l of λ()
 ≤-Bot-≡ (≤-step (↝-If₁ᵣ P Q) l) = case ≤-Bot-≡ l of λ()
-≤-Bot-≡ (≤-step (↝-Par₀ P Q) l) = case ≤-Bot-≡ l of λ()
-≤-Bot-≡ (≤-step (↝-Parₗ x q) l) = case ≤-Bot-≡ l of λ()
-≤-Bot-≡ (≤-step (↝-Parᵣ p x) l) = case ≤-Bot-≡ l of λ()
-≤-Bot-≡ (≤-step (↝-Par₁ P Q) l) = case ≤-Bot-≡ l of λ()
 ≤-Bot-≡ (≤-step (↝-While₀ P) l) = case ≤-Bot-≡ l of λ()
 ≤-Bot-≡ (≤-step (↝-While₀' P) l) = case ≤-Bot-≡ l of λ()
 ≤-Bot-≡ (≤-step (↝-While n x) l) = case ≤-Bot-≡ l of λ()
@@ -323,10 +294,6 @@ p ≥ q = q ≤ p
 ≤-asym (≤-step (↝-If₀ᵣ P Q) l) l' = {!!}
 ≤-asym (≤-step (↝-Ifᵣ P x) l) l' = {!!}
 ≤-asym (≤-step (↝-If₁ᵣ P Q) l) l' = {!!}
-≤-asym (≤-step (↝-Par₀ P Q) l) l' = {!!}
-≤-asym (≤-step (↝-Parₗ x q) l) l' = {!!}
-≤-asym (≤-step (↝-Parᵣ p x) l) l' = {!!}
-≤-asym (≤-step (↝-Par₁ P Q) l) l' = {!!}
 ≤-asym (≤-step (↝-While₀ P) l) l' = {!!}
 ≤-asym (≤-step (↝-While₀' P) l) l' = {!!}
 ≤-asym (≤-step (↝-While n x) l) l' = {!!}
@@ -342,13 +309,11 @@ p ≥ q = q ≤ p
 ≤-dec (Top .(Seq P _)) (Seqᵣ P q) = no ¬≤-Top-Seqᵣ
 ≤-dec (Top .(If _ Q)) (Ifₗ q Q) = {!!}
 ≤-dec (Top .(If P _)) (Ifᵣ P q) = {!!}
-≤-dec (Top .(Par _ _)) (Par q q₁) = {!!}
 ≤-dec (Top .(While _)) (While (n , p)) = {!!}
 ≤-dec (Seqₗ p Q) q = {!!}
 ≤-dec (Seqᵣ P p) q = {!!}
 ≤-dec (Ifₗ p Q) q = {!!}
 ≤-dec (Ifᵣ P p) q = {!!}
-≤-dec (Par p p₁) q = {!!}
 ≤-dec (While (n , p)) q = {!!}
 
 -- ≤-dec : {P : Prog} → Decidable (_≤_ {P})

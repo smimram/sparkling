@@ -20,9 +20,6 @@ data _¬>_ : {P : Prog} (p q : Pos P) → Set where
   ¬>-Ifₗ' : {P : Prog} (p : Pos P) (Q : Prog) → Ifᵣ P (Top Q) ¬> Ifₗ p Q
   ¬>-Ifᵣ : (P : Prog) {Q : Prog} {q q' : Pos Q} → (q ¬> q') → Ifᵣ P q ¬> Ifᵣ P q'
   ¬>-Ifᵣ' : (P : Prog) {Q : Prog} (q : Pos Q) → Ifₗ (Top P) Q ¬> Ifᵣ P q
-  -- We have a problem with par in the case of equality ....
-  ¬>-Parₗ : {P : Prog} {p p' : Pos P} → (p ¬> p') → {Q : Prog} (q : Pos Q) → Par p (Top Q) ¬> Par p' q
-  ¬>-Parᵣ : {P : Prog} (p : Pos P) {Q : Prog} {q q' : Pos Q} → (q ¬> q') → Par (Top P) q ¬> Par p q'
   ¬>-While : {P : Prog} (n : ℕ) {p p' : Pos P} → (p ¬> p') → While (n , p) ¬> While (n , p')
 
 ¬>-refl : {P : Prog} (p : Pos P) →  ∃[ q ] (p ≤ q and q ¬> p)
@@ -35,7 +32,6 @@ data _¬>_ : {P : Prog} (p q : Pos P) → Set where
 -- ¬>-refl (Seqᵣ P q) = ¬>-Seqᵣ P (¬>-refl q)
 -- ¬>-refl (Ifₗ p Q) = ¬>-Ifₗ (¬>-refl p) Q
 -- ¬>-refl (Ifᵣ P q) = ¬>-Ifᵣ P (¬>-refl q)
--- ¬>-refl (Par p q) = {!¬!}
 -- ¬>-refl (While np) = {!!}
 
 ¬>-sound : {P : Prog} {x : Pos P} {p q : Pos P} → (p ¬> q) → (x ≤ p) → (q ≤ x) → x ≡ q
@@ -81,16 +77,6 @@ data _¬>_ : {P : Prog} (p q : Pos P) → Set where
 ¬>-sound (¬>-Ifᵣ' P q) (≤-step (↝-Ifᵣ .P s) l) l' = ⊥-elim (¬≤-Ifᵣ-Ifₗ l)
 ¬>-sound (¬>-Ifᵣ' P q) (≤-step (↝-If₁ᵣ .P Q) l) l' = ⊥-elim (¬≤-Top-Ifₗ l)
 ¬>-sound (¬>-Ifᵣ' P q) (≤-refl .(Ifₗ (Top P) _)) l' = ⊥-elim (¬≤-Ifᵣ-Ifₗ l')
-¬>-sound (¬>-Parₗ r q) (≤-step (↝-Par₀ P Q) l) l' = ⊥-elim (¬≤-Par-Bot l')
-¬>-sound (¬>-Parₗ r q) (≤-step (↝-Parₗ s q₁) l) l' = {!!}
-¬>-sound (¬>-Parₗ r q) (≤-step (↝-Parᵣ p s) l) l' = {!!}
-¬>-sound (¬>-Parₗ r q) (≤-step (↝-Par₁ P Q) l) l' = ⊥-elim (¬≤-Top-Par l)
-¬>-sound (¬>-Parₗ r q) (≤-refl .(Par _ (Top _))) l' = {!!}
-¬>-sound (¬>-Parᵣ p r) (≤-step (↝-Par₀ P Q) l) l' = ⊥-elim (¬≤-Par-Bot l')
-¬>-sound (¬>-Parᵣ p r) (≤-step (↝-Parₗ s q) l) l' = {!!}
-¬>-sound (¬>-Parᵣ p r) (≤-step (↝-Parᵣ p₁ s) l) l' = {!!}
-¬>-sound (¬>-Parᵣ p r) (≤-step (↝-Par₁ P Q) l) l' = ⊥-elim (¬≤-Top-Par l)
-¬>-sound (¬>-Parᵣ p r) (≤-refl .(Par (Top _) _)) l' = {!!}
 ¬>-sound (¬>-While n r) (≤-step (↝-While₀ P) l) l' = ⊥-elim (¬≤-While-Bot l')
 ¬>-sound (¬>-While n r) (≤-step (↝-While₀' P) l) l' = {!!}
 ¬>-sound (¬>-While n r) (≤-step (↝-While n₁ s) l) l' = {!!}
@@ -120,9 +106,6 @@ data _¬>_ : {P : Prog} (p q : Pos P) → Set where
 ¬>-complete (Ifᵣ P p) (Top .(If P _)) = {!!}
 ¬>-complete (Ifᵣ P p) (Ifₗ p' Q) = {!!}
 ¬>-complete (Ifᵣ P p) (Ifᵣ .P q') = {!!}
-¬>-complete (Par p q) (Bot .(Par _ _)) = {!!}
-¬>-complete (Par p q) (Top .(Par _ _)) = {!!}
-¬>-complete (Par p q) (Par p' q') = {!!}
 ¬>-complete (While np) (Bot .(While _)) = {!!}
 ¬>-complete (While np) (Top .(While _)) = {!!}
 ¬>-complete (While np) (While np') = {!!}
