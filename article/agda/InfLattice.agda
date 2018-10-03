@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 module InfLattice where
 
 open import Function using ( case_of_ )
@@ -45,3 +47,24 @@ While np ∧ While np' = While (np ∧W np')
 (suc n , p) ∧Wₚ (zero , p') = p'
 (suc n , p) ∧Wₚ (suc n' , p') = (n , p) ∧Wₚ (n' , p')
 (n , p) ∧W (n' , p') = n ∧Wₙ n' , (n , p) ∧Wₚ (n' , p')
+
+∧-Bot-l : {P : Prog} (p : Pos P) → (Bot P ∧ p ≡ p)
+∧-Bot-l p = {!!}
+
+∧-assoc : {P : Prog} (p q r : Pos P) → ((p ∧ q) ∧ r ≡ p ∧ (q ∧ r))
+∧-assoc p q r = {!!}
+
+∧-idem : {P : Prog} (p : Pos P) → (p ∧ p ≡ p)
+∧-idem p = {!!}
+
+∧-comm : {P : Prog} (p q : Pos P) → ((p ∧ q) ≡ (q ∧ p))
+∧-comm p q = {!!}
+
+∧-l-≤ : {P : Prog} (p q : Pos P) → (p ≤ (p ∧ q))
+∧-l-≤ p q = {!!}
+
+∧-r-≤ : {P : Prog} (p q : Pos P) → (q ≤ (p ∧ q))
+∧-r-≤ p q = ≤-trans (∧-l-≤ q p) (≡-≤ (∧-comm q p))
+
+∧-≤ : {P : Prog} {p p' q q' : Pos P} → (p ≤ p') → (q ≤ q') → (p ∧ q ≤ p' ∧ q')
+∧-≤ lp lq = {!!}
