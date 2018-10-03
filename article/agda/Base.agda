@@ -1,4 +1,5 @@
 open import Relation.Binary.PropositionalEquality
+open import Data.Empty
 open import Data.Product
 open import Data.Nat.Base renaming (_≤_ to _≤ℕ_) renaming (compare to ℕ-compare)
 
@@ -20,3 +21,6 @@ open import Data.Nat.Base renaming (_≤_ to _≤ℕ_) renaming (compare to ℕ-
 ≤ℕ-suc {zero} {n'} l = s≤s l
 ≤ℕ-suc {suc n} {zero} l = s≤s l
 ≤ℕ-suc {suc n} {suc n'} l = s≤s l
+
+suc-acyclic : {n : ℕ} → (suc n ≤ℕ n) → ⊥
+suc-acyclic (s≤s l) = suc-acyclic l

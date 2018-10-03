@@ -11,6 +11,7 @@ open import Data.Empty
 open import Data.Product
 open import Data.Sum
 open import Data.Nat.Base renaming (_≤_ to _≤ℕ_ ; _<_ to _<ℕ_ ; _≟_ to _≟ℕ_) hiding (_≥_)
+open import Data.Nat.Properties renaming (≤-refl to ≤ℕ-refl ; ≤-trans to ≤ℕ-trans ; ≤-antisym to ≤ℕ-antisym) hiding (≤-step)
 open import Program
 
 data _≤_ : {P : Prog} (p : Pos P) (q : Pos P) → Set where
@@ -51,6 +52,15 @@ p ≥ q = q ≤ p
 <ℕ-≤W {n = zero} {zero} () p q
 <ℕ-≤W {n = zero} {suc n'} l p q = ≤W-zs n' p q
 <ℕ-≤W {n = suc n} {.(suc (suc _))} (s≤s (s≤s l)) p q = ≤W-ss (<ℕ-≤W (s≤s l) p q)
+
+≤W-≤ℕ : {P : Prog} {n n' : ℕ} → {p q : Pos P} → (n , p) ≤W (n' , q) → n ≤ℕ n'
+≤W-≤ℕ (≤W-zz l) = z≤n
+≤W-≤ℕ (≤W-zs n' p p') = z≤n
+≤W-≤ℕ (≤W-ss l) = s≤s (≤W-≤ℕ l)
+
+≤W-≤ : {P : Prog} {n : ℕ} {p p' : Pos P} → (n , p) ≤W (n , p') → p ≤ p'
+≤W-≤ (≤W-zz l) = l
+≤W-≤ (≤W-ss l) = ≤W-≤ l
 
 ≡-≤W : {P : Prog} {np np' : ℕ × Pos P} → np ≡ np' → np ≤W np'
 ≡-≤W {_} {np} refl = ≤W-refl np
@@ -226,6 +236,24 @@ p ≥ q = q ≤ p
 ¬≤-Top-While : {P : Prog} {n : ℕ} {p : Pos P} → Top (While P) ≤ While (n , p) → ⊥
 ¬≤-Top-While (≤-step () l)
 
+≤-While-suc : {P : Prog} {n n' : ℕ} → {p p' : Pos P} → While (n , p) ≤ While (n' , p') → While (suc n , p) ≤ While (suc n' , p')
+≤-While-suc (≤-step (↝-While n s) l) = ≤-step (↝-While (suc n) s) (≤-While-suc l)
+≤-While-suc (≤-step (↝-While₁ P n) l) = ≤-step (↝-While₁ P (suc n)) (≤-While-suc l)
+≤-While-suc (≤-step (↝-While₁' P n) l) = ⊥-elim (¬≤-Top-While l)
+≤-While-suc {P} {n} {.n} {p} {.p} (≤-refl .(While (n , p))) = ≤-refl (While (suc n , p))
+
+≤-While-elim : {P : Prog} {n n' : ℕ} {p p' : Pos P} → (While (n , p) ≤ While (n' , p')) → (n , p) ≤W (n' , p')
+≤-While-elim (≤-step (↝-While n s) l) = ≤W-trans (≤-≤W n (≤-step1 s)) (≤-While-elim l)
+≤-While-elim (≤-step (↝-While₁ P n) l) = ≤W-trans (<ℕ-≤W (s≤s ≤ℕ-refl) (Top P) (Bot P)) (≤-While-elim l)
+≤-While-elim (≤-step (↝-While₁' P n) l) = ⊥-elim (¬≤-Top-While l)
+≤-While-elim {n = n} {p = p} (≤-refl .(While (_ , _))) = ≤W-refl (n , p)
+
+≤-While-elimₙ : {P : Prog} {n n' : ℕ} {p p' : Pos P} → (While (n , p) ≤ While (n' , p')) → n ≤ℕ n'
+≤-While-elimₙ l = ≤W-≤ℕ (≤-While-elim l)
+
+≤-While-elimₚ : {P : Prog} {n : ℕ} {p p' : Pos P} → (While (n , p) ≤ While (n , p')) → p ≤ p'
+≤-While-elimₚ l = {!!}
+
 ≤-Seqₗ' : {P : Prog} {p p' : Pos P} {Q : Prog} → Seqₗ p Q ≤ Seqₗ p' Q → p ≤ p'
 ≤-Seqₗ' (≤-step (↝-Seqₗ r Q) l) = ≤-step r (≤-Seqₗ' l)
 ≤-Seqₗ' {_} {.(Top P)} {p'} (≤-step (↝-Seqₘ P Q) l) = ⊥-elim (¬≤-Seqᵣ-Seqₗ l)
@@ -270,36 +298,36 @@ p ≥ q = q ≤ p
 ≤-Top-≡ p (≤-step () l)
 ≤-Top-≡ .(Top _) (≤-refl .(Top _)) = refl
 
-≤-asym : {P : Prog} {p q : Pos P} → (p ≤ q) → (q ≤ p) → p ≡ q
-≤-asym (≤-step ↝-Act l) (≤-step ↝-Act l') = refl
-≤-asym (≤-step ↝-Act l) (≤-refl .(Bot Act)) = refl
-≤-asym (≤-step (↝-Seq₀ P Q) l) (≤-step (↝-Seq₀ .P .Q) l') = refl
-≤-asym (≤-step (↝-Seq₀ P Q) l) (≤-step (↝-Seqₗ x .Q) l') = ⊥-elim (¬≤-Seqₗ-Bot l')
-≤-asym (≤-step (↝-Seq₀ P Q) l) (≤-step (↝-Seqₘ .P .Q) l') = ⊥-elim (¬≤-Seqᵣ-Bot l')
-≤-asym (≤-step (↝-Seq₀ P Q) l) (≤-step (↝-Seqᵣ .P x) l') =  ⊥-elim (¬≤-Seqᵣ-Bot l')
-≤-asym (≤-step (↝-Seq₀ P Q) l) (≤-step (↝-Seq₁ .P .Q) l') = ⊥-elim (¬≤-Top-Bot l')
-≤-asym (≤-step (↝-Seq₀ P Q) l) (≤-refl .(Bot (Seq P Q))) = refl
-≤-asym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seq₀ P .Q) l') = ⊥-elim (¬≤-Seqₗ-Bot l)
-≤-asym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqₗ p' .Q) l') = cong (λ p → Seqₗ p Q) (≤-asym (≤-step p (≤-Seqₗ' l)) (≤-step p' (≤-Seqₗ' l')))
-≤-asym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqₘ P .Q) l') = {!!}
-≤-asym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqᵣ P q) l') = {!!}
-≤-asym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seq₁ P .Q) l') = {!!}
-≤-asym (≤-step (↝-Seqₗ p Q) l) (≤-refl .(Seqₗ _ Q)) = refl
-≤-asym (≤-step (↝-Seqₘ P Q) l) l' = {!!}
-≤-asym (≤-step (↝-Seqᵣ P x) l) l' = {!!}
-≤-asym (≤-step (↝-Seq₁ P Q) l) l' = {!!}
-≤-asym (≤-step (↝-If₀ₗ P Q) l) l' = {!!}
-≤-asym (≤-step (↝-Ifₗ x Q) l) l' = {!!}
-≤-asym (≤-step (↝-If₁ₗ P Q) l) l' = {!!}
-≤-asym (≤-step (↝-If₀ᵣ P Q) l) l' = {!!}
-≤-asym (≤-step (↝-Ifᵣ P x) l) l' = {!!}
-≤-asym (≤-step (↝-If₁ᵣ P Q) l) l' = {!!}
-≤-asym (≤-step (↝-While₀ P) l) l' = {!!}
-≤-asym (≤-step (↝-While₀' P) l) l' = {!!}
-≤-asym (≤-step (↝-While n x) l) l' = {!!}
-≤-asym (≤-step (↝-While₁ P n) l) l' = {!!}
-≤-asym (≤-step (↝-While₁' P n) l) l' = {!!}
-≤-asym (≤-refl p) l' = refl
+≤-antisym : {P : Prog} {p q : Pos P} → (p ≤ q) → (q ≤ p) → p ≡ q
+≤-antisym (≤-step ↝-Act l) (≤-step ↝-Act l') = refl
+≤-antisym (≤-step ↝-Act l) (≤-refl .(Bot Act)) = refl
+≤-antisym (≤-step (↝-Seq₀ P Q) l) (≤-step (↝-Seq₀ .P .Q) l') = refl
+≤-antisym (≤-step (↝-Seq₀ P Q) l) (≤-step (↝-Seqₗ x .Q) l') = ⊥-elim (¬≤-Seqₗ-Bot l')
+≤-antisym (≤-step (↝-Seq₀ P Q) l) (≤-step (↝-Seqₘ .P .Q) l') = ⊥-elim (¬≤-Seqᵣ-Bot l')
+≤-antisym (≤-step (↝-Seq₀ P Q) l) (≤-step (↝-Seqᵣ .P x) l') =  ⊥-elim (¬≤-Seqᵣ-Bot l')
+≤-antisym (≤-step (↝-Seq₀ P Q) l) (≤-step (↝-Seq₁ .P .Q) l') = ⊥-elim (¬≤-Top-Bot l')
+≤-antisym (≤-step (↝-Seq₀ P Q) l) (≤-refl .(Bot (Seq P Q))) = refl
+≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seq₀ P .Q) l') = ⊥-elim (¬≤-Seqₗ-Bot l)
+≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqₗ p' .Q) l') = cong (λ p → Seqₗ p Q) (≤-antisym (≤-step p (≤-Seqₗ' l)) (≤-step p' (≤-Seqₗ' l')))
+≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqₘ P .Q) l') = {!!}
+≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqᵣ P q) l') = {!!}
+≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seq₁ P .Q) l') = {!!}
+≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-refl .(Seqₗ _ Q)) = refl
+≤-antisym (≤-step (↝-Seqₘ P Q) l) l' = {!!}
+≤-antisym (≤-step (↝-Seqᵣ P x) l) l' = {!!}
+≤-antisym (≤-step (↝-Seq₁ P Q) l) l' = {!!}
+≤-antisym (≤-step (↝-If₀ₗ P Q) l) l' = {!!}
+≤-antisym (≤-step (↝-Ifₗ x Q) l) l' = {!!}
+≤-antisym (≤-step (↝-If₁ₗ P Q) l) l' = {!!}
+≤-antisym (≤-step (↝-If₀ᵣ P Q) l) l' = {!!}
+≤-antisym (≤-step (↝-Ifᵣ P x) l) l' = {!!}
+≤-antisym (≤-step (↝-If₁ᵣ P Q) l) l' = {!!}
+≤-antisym (≤-step (↝-While₀ P) l) l' = {!!}
+≤-antisym (≤-step (↝-While₀' P) l) l' = {!!}
+≤-antisym (≤-step (↝-While n x) l) l' = {!!}
+≤-antisym (≤-step (↝-While₁ P n) l) l' = {!!}
+≤-antisym (≤-step (↝-While₁' P n) l) l' = {!!}
+≤-antisym (≤-refl p) l' = refl
 
 ≤-dec : {P : Prog} → Decidable (_≤_ {P})
 ≤-dec (Bot P) q = yes (≤-Bot q)
@@ -315,18 +343,3 @@ p ≥ q = q ≤ p
 ≤-dec (Ifₗ p Q) q = {!!}
 ≤-dec (Ifᵣ P p) q = {!!}
 ≤-dec (While (n , p)) q = {!!}
-
--- ≤-dec : {P : Prog} → Decidable (_≤_ {P})
--- ≤-dec (Bot P) q = yes (≤-Bot q)
--- ≤-dec (Top P) (Bot .P) = no ¬≤-Top-Bot
--- ≤-dec (Top P) (Top .P) = yes (≤-refl (Top P))
--- ≤-dec (Top .(Seq _ Q)) (Seqₗ q Q) = no ¬≤-Top-Seqₗ
--- ≤-dec (Top .(Seq P _)) (Seqᵣ P q) = no ¬≤-Top-Seqᵣ
--- ≤-dec (Seqₗ p Q) (Bot .(Seq _ Q)) = no ¬≤-Seqₗ-Bot
--- ≤-dec (Seqₗ p Q) (Top .(Seq _ Q)) = yes (≤-Top (Seqₗ p Q))
--- ≤-dec (Seqₗ p Q) (Seqₗ q .Q) =  case ≤-dec p q of λ { (yes l) → yes (≤-Seqₗ l Q) ; (no ¬l) → no (λ l → ¬l (≤-Seqₗ' l)) }
--- ≤-dec (Seqₗ p Q) (Seqᵣ P q) = yes (≤-Seqₗ-Seqᵣ p q)
--- ≤-dec (Seqᵣ P p) (Bot .(Seq P _)) = no ¬≤-Seqᵣ-Bot
--- ≤-dec (Seqᵣ P p) (Top .(Seq P _)) = yes (≤-Top (Seqᵣ P p))
--- ≤-dec (Seqᵣ P p) (Seqₗ q Q) = no ¬≤-Seqᵣ-Seqₗ
--- ≤-dec (Seqᵣ P p) (Seqᵣ .P q) = case ≤-dec p q of λ { (yes l) → yes (≤-Seqᵣ P l) ; (no ¬l) → no λ l → ¬l (≤-Seqᵣ' l)}
