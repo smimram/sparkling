@@ -113,4 +113,4 @@ data _¬>_ : {P : Prog} (p q : Pos P) → Set where
 ¬>-complete (While (zero , p)) (While (zero , p')) = case ¬>-complete p p' of λ { (inj₁ l) → inj₁ (≤-Whileₚ l) ; (inj₂ (q , n , l)) → inj₂ (While (zero , q) , ¬>-While zero n , ≤-Whileₚ l) }
 ¬>-complete (While (zero , p)) (While (suc n' , p')) = inj₁ (≤-Whileₙ' (s≤s z≤n) p p')
 ¬>-complete (While (suc n , p)) (While (zero , p')) = inj₂ (While (suc n , p) , ¬>-refl (While (suc n , p)) , ≤-Whileₙ' (s≤s z≤n) p' p)
-¬>-complete (While (suc n , p)) (While (suc n' , p')) = case ¬>-complete (While (n , p)) (While (n' , p')) of λ { (inj₁ l) → inj₁ (≤-While-suc l) ; (inj₂ (q , n , l)) → inj₂ ({!!} , {!!} , {!!}) }
+¬>-complete (While (suc n , p)) (While (suc n' , p')) = case ¬>-complete (While (n , p)) (While (n' , p')) of λ { (inj₁ l) → inj₁ (≤-While-suc l) ; (inj₂ (.(While (_ , _)) , ¬>-While _ {q} nl , l)) → inj₂ (While (suc n , q) , ¬>-While (suc n) nl , ≤-While (≤W-ss (≤-While-elim l))) }

@@ -252,7 +252,7 @@ p ≥ q = q ≤ p
 ≤-While-elimₙ l = ≤W-≤ℕ (≤-While-elim l)
 
 ≤-While-elimₚ : {P : Prog} {n : ℕ} {p p' : Pos P} → (While (n , p) ≤ While (n , p')) → p ≤ p'
-≤-While-elimₚ l = {!!}
+≤-While-elimₚ l = ≤W-≤ (≤-While-elim l)
 
 ≤-Seqₗ' : {P : Prog} {p p' : Pos P} {Q : Prog} → Seqₗ p Q ≤ Seqₗ p' Q → p ≤ p'
 ≤-Seqₗ' (≤-step (↝-Seqₗ r Q) l) = ≤-step r (≤-Seqₗ' l)
@@ -335,11 +335,20 @@ p ≥ q = q ≤ p
 ≤-dec (Top P) (Top .P) = yes (≤-refl (Top P))
 ≤-dec (Top .(Seq _ Q)) (Seqₗ q Q) = no ¬≤-Top-Seqₗ
 ≤-dec (Top .(Seq P _)) (Seqᵣ P q) = no ¬≤-Top-Seqᵣ
-≤-dec (Top .(If _ Q)) (Ifₗ q Q) = {!!}
-≤-dec (Top .(If P _)) (Ifᵣ P q) = {!!}
-≤-dec (Top .(While _)) (While (n , p)) = {!!}
-≤-dec (Seqₗ p Q) q = {!!}
-≤-dec (Seqᵣ P p) q = {!!}
-≤-dec (Ifₗ p Q) q = {!!}
+≤-dec (Top .(If _ Q)) (Ifₗ q Q) = no ¬≤-Top-Ifₗ
+≤-dec (Top .(If P _)) (Ifᵣ P q) = no ¬≤-Top-Ifᵣ
+≤-dec (Top .(While _)) (While (n , p)) = no ¬≤-Top-While
+≤-dec (Seqₗ p Q) (Bot .(Seq _ Q)) = no ¬≤-Seqₗ-Bot
+≤-dec (Seqₗ p Q) (Top .(Seq _ Q)) = yes (≤-Top (Seqₗ p Q))
+≤-dec (Seqₗ p Q) (Seqₗ q .Q) = {!≤-dec p q!}
+≤-dec (Seqₗ p Q) (Seqᵣ P q) = yes {!!}
+≤-dec (Seqᵣ P p) (Bot .(Seq P _)) = no ¬≤-Seqᵣ-Bot
+≤-dec (Seqᵣ P p) (Top .(Seq P _)) = yes (≤-Top (Seqᵣ P p))
+≤-dec (Seqᵣ P p) (Seqₗ q Q) = no ¬≤-Seqᵣ-Seqₗ
+≤-dec (Seqᵣ P p) (Seqᵣ .P q) = {!!}
+≤-dec (Ifₗ p Q) (Bot .(If _ Q)) = no ¬≤-Ifₗ-Bot
+≤-dec (Ifₗ p Q) (Top .(If _ Q)) = yes (≤-Top (Ifₗ p Q))
+≤-dec (Ifₗ p Q) (Ifₗ q .Q) = {!!}
+≤-dec (Ifₗ p Q) (Ifᵣ P q) = {!!}
 ≤-dec (Ifᵣ P p) q = {!!}
 ≤-dec (While (n , p)) q = {!!}
