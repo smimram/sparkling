@@ -33,6 +33,9 @@ p ≥ q = q ≤ p
 ≤W-nn zero l = ≤W-zz l
 ≤W-nn (suc n) l = ≤W-ss (≤W-nn n l)
 
+≤W-ss' : {P : Prog} → {n n' : ℕ} → {p p' : Pos P} → (suc n , p) ≤W (suc n' , p') → (n , p) ≤W (n' , p')
+≤W-ss' (≤W-ss l) = l
+
 ≤W-elim : {P : Prog} {n n' : ℕ} {p p' : Pos P} → ((n , p) ≤W (n' , p')) → ((n ≡ n') × p ≤ p') ⊎ (n <ℕ n')
 ≤W-elim (≤W-zz l) = inj₁ (refl , l)
 ≤W-elim (≤W-zs n' p p') = inj₂ (s≤s z≤n)
@@ -242,6 +245,10 @@ p ≥ q = q ≤ p
 ≤-While-suc (≤-step (↝-While₁' P n) l) = ⊥-elim (¬≤-Top-While l)
 ≤-While-suc {P} {n} {.n} {p} {.p} (≤-refl .(While (n , p))) = ≤-refl (While (suc n , p))
 
+---
+--- Elimination lemmas
+---
+
 ≤-While-elim : {P : Prog} {n n' : ℕ} {p p' : Pos P} → (While (n , p) ≤ While (n' , p')) → (n , p) ≤W (n' , p')
 ≤-While-elim (≤-step (↝-While n s) l) = ≤W-trans (≤-≤W n (≤-step1 s)) (≤-While-elim l)
 ≤-While-elim (≤-step (↝-While₁ P n) l) = ≤W-trans (<ℕ-≤W (s≤s ≤ℕ-refl) (Top P) (Bot P)) (≤-While-elim l)
@@ -309,9 +316,9 @@ p ≥ q = q ≤ p
 ≤-antisym (≤-step (↝-Seq₀ P Q) l) (≤-refl .(Bot (Seq P Q))) = refl
 ≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seq₀ P .Q) l') = ⊥-elim (¬≤-Seqₗ-Bot l)
 ≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqₗ p' .Q) l') = cong (λ p → Seqₗ p Q) (≤-antisym (≤-step p (≤-Seqₗ' l)) (≤-step p' (≤-Seqₗ' l')))
-≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqₘ P .Q) l') = {!!}
-≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqᵣ P q) l') = {!!}
-≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seq₁ P .Q) l') = {!!}
+≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqₘ P .Q) l') = cong (λ p → Seqₗ p Q) (≤-antisym (≤-Top {!!}) {!!})
+≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seqᵣ P q) l') = ⊥-elim (¬≤-Seqᵣ-Seqₗ l')
+≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-step (↝-Seq₁ P .Q) l') = ⊥-elim (¬≤-Top-Seqₗ l')
 ≤-antisym (≤-step (↝-Seqₗ p Q) l) (≤-refl .(Seqₗ _ Q)) = refl
 ≤-antisym (≤-step (↝-Seqₘ P Q) l) l' = {!!}
 ≤-antisym (≤-step (↝-Seqᵣ P x) l) l' = {!!}
@@ -340,15 +347,23 @@ p ≥ q = q ≤ p
 ≤-dec (Top .(While _)) (While (n , p)) = no ¬≤-Top-While
 ≤-dec (Seqₗ p Q) (Bot .(Seq _ Q)) = no ¬≤-Seqₗ-Bot
 ≤-dec (Seqₗ p Q) (Top .(Seq _ Q)) = yes (≤-Top (Seqₗ p Q))
-≤-dec (Seqₗ p Q) (Seqₗ q .Q) = {!≤-dec p q!}
-≤-dec (Seqₗ p Q) (Seqᵣ P q) = yes {!!}
+≤-dec (Seqₗ p Q) (Seqₗ q .Q) = case ≤-dec p q of λ { (yes p) → yes (≤-Seqₗ p Q) ; (no ¬p) → no (λ l → ¬p (≤-Seqₗ' l)) }
+≤-dec (Seqₗ p Q) (Seqᵣ P q) = yes (≤-Seqₗ-Seqᵣ p q)
 ≤-dec (Seqᵣ P p) (Bot .(Seq P _)) = no ¬≤-Seqᵣ-Bot
 ≤-dec (Seqᵣ P p) (Top .(Seq P _)) = yes (≤-Top (Seqᵣ P p))
 ≤-dec (Seqᵣ P p) (Seqₗ q Q) = no ¬≤-Seqᵣ-Seqₗ
-≤-dec (Seqᵣ P p) (Seqᵣ .P q) = {!!}
+≤-dec (Seqᵣ P p) (Seqᵣ .P q) = case ≤-dec p q of λ { (yes p) → yes (≤-Seqᵣ P p) ; (no ¬p) → no (λ l → ¬p (≤-Seqᵣ' l)) }
 ≤-dec (Ifₗ p Q) (Bot .(If _ Q)) = no ¬≤-Ifₗ-Bot
 ≤-dec (Ifₗ p Q) (Top .(If _ Q)) = yes (≤-Top (Ifₗ p Q))
-≤-dec (Ifₗ p Q) (Ifₗ q .Q) = {!!}
-≤-dec (Ifₗ p Q) (Ifᵣ P q) = {!!}
-≤-dec (Ifᵣ P p) q = {!!}
-≤-dec (While (n , p)) q = {!!}
+≤-dec (Ifₗ p Q) (Ifₗ q .Q) = case ≤-dec p q of λ { (yes p) → yes (≤-Ifₗ p Q) ; (no ¬p) → no (λ l → ¬p (≤-Ifₗ' l)) }
+≤-dec (Ifₗ p Q) (Ifᵣ P q) = no ¬≤-Ifₗ-Ifᵣ 
+≤-dec (Ifᵣ P p) (Bot .(If P _)) = no ¬≤-Ifᵣ-Bot
+≤-dec (Ifᵣ P p) (Top .(If P _)) = yes (≤-Top (Ifᵣ P p))
+≤-dec (Ifᵣ P p) (Ifₗ q Q) = no ¬≤-Ifᵣ-Ifₗ
+≤-dec (Ifᵣ P p) (Ifᵣ .P q) = case ≤-dec p q of λ { (yes p) → yes (≤-Ifᵣ P p) ; (no ¬p) → no (λ l → ¬p (≤-Ifᵣ' l)) }
+≤-dec (While (n , p)) (Bot .(While _)) = no ¬≤-While-Bot
+≤-dec (While (n , p)) (Top .(While _)) = yes (≤-Top (While (n , p)))
+≤-dec (While (zero , p)) (While (zero , p')) = case ≤-dec p p' of λ { (yes p) → yes (≤-Whileₚ p) ; (no ¬p) → no (λ l → ¬p (≤-While-elimₚ l)) }
+≤-dec (While (zero , p)) (While (suc n' , p')) = yes (≤-Whileₙ' (s≤s z≤n) p p')
+≤-dec (While (suc n , p)) (While (zero , p')) = no {!!}
+≤-dec (While (suc n , p)) (While (suc n' , p')) = case ≤-dec (While (n , p)) (While (n' , p')) of λ { (yes p) → yes (≤-While (≤W-ss (≤-While-elim p))) ; (no ¬p) → no (λ l → ¬p (≤-While (≤W-ss' (≤-While-elim l)))) }
