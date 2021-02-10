@@ -38,25 +38,16 @@ let rec to_string p =
     | p -> "(" ^ to_string p ^ ")"
   in
   match p with
-  | Seq l ->
-    String.concat ";" (List.map to_string l)
-  | Par l ->
-    String.concat "|" (List.map to_string l)
-  | Action (P m) ->
-    "P(" ^ m ^ ")"
-  | Action (V m) ->
-    "V(" ^ m ^ ")"
+  | Seq l -> String.concat ";" (List.map to_string l)
+  | Par l -> String.concat "|" (List.map to_string l)
+  | Action (P m) -> "P(" ^ m ^ ")"
+  | Action (V m) -> "V(" ^ m ^ ")"
   | Action (Cmd _) -> "?"
-  | If (_,p1,p2) ->
-    Printf.sprintf "(%s)+(%s)" (to_string p1) (to_string p2)
-  | While (_,p) ->
-    "W(" ^ to_string p ^ ")"
+  | If (_,p1,p2) -> Printf.sprintf "(%s)+(%s)" (to_string p1) (to_string p2)
+  | While (_,p) -> "W(" ^ to_string p ^ ")"
   | Call _ -> "C"
 
-(* let prog_to_string = to_string *)
-
-module Pos =
-struct
+module Pos = struct
   exception Incompatible
 
   type t =
@@ -78,26 +69,19 @@ struct
     | Seq l, PSeq (n, t) ->
       (* TODO: enhance this *)
       let ans = ref "" in
-      for _ = 0 to n - 1 do
-        ans := !ans ^ "X;"
-      done;
+      for _ = 0 to n - 1 do ans := !ans ^ "X;" done;
       ans := !ans ^ to_string (List.ith l n) t;
-      for _ = 0 to (List.length l) - (n+1) - 1 do
-        ans := !ans ^ ";_"
-      done;
+      for _ = 0 to (List.length l) - (n+1) - 1 do ans := !ans ^ ";_" done;
       !ans
     | _, PSeq _ -> assert false
     | Par ll, PPar l ->
       String.concat "|" (List.map2 to_string ll l)
     | _, PPar _ -> assert false
     | If (_, p, _), PIf (b,t) ->
-      if b then
-        to_string p t ^ "+_"
-      else
-        "_+" ^ to_string p t
+      if b then to_string p t ^ "+_"
+      else "_+" ^ to_string p t
     | _, PIf _ -> assert false
-    | While (_, p), PWhile t ->
-      "W" ^ to_string p t
+    | While (_, p), PWhile t -> "W" ^ to_string p t
     | _, PWhile _ -> assert false
 
   let rec to_string_simple t =
@@ -109,9 +93,7 @@ struct
     | PBot -> "."
     | PTop -> "!"
     | PSeq (n, t) ->
-      if n = max_int then
-        "...;" ^ (to_string t)
-      else
+      if n = max_int then "...;" ^ (to_string t) else
         let ans = ref "" in
         for _ = 0 to n - 1 do ans := !ans ^ "X;" done;
         ans := !ans ^ to_string t;
@@ -119,10 +101,8 @@ struct
     | PPar l ->
       String.concat "|" (List.map to_string l)
     | PIf (b,t) ->
-      if b then
-        to_string t ^ "+_"
-      else
-        "_+" ^ to_string t
+      if b then to_string t ^ "+_"
+      else "_+" ^ to_string t
     | PWhile t -> "W(" ^ to_string_simple t ^ ")"
 
   let bot (_ : 'a prog) = PBot
@@ -154,26 +134,22 @@ struct
   let ge t1 t2 = le t2 t1
 end
 
-module Int =
-struct
+module Int = struct
   open Pos
 
   type t = Pos.t * Pos.t
 
   let everything p = bot p, top p
 
-  let to_string p (t1,t2) =
-    Pos.to_string p t1 ^ " -- " ^ Pos.to_string p t2
+  let to_string p (t1,t2) = Pos.to_string p t1 ^ " -- " ^ Pos.to_string p t2
 
-  let to_string_simple (t1,t2) =
-    Pos.to_string_simple t1 ^ " -- " ^ Pos.to_string_simple t2
+  let to_string_simple (t1,t2) = Pos.to_string_simple t1 ^ " -- " ^ Pos.to_string_simple t2
 
   let valid (t1,t2) = le t1 t2
 
   let make i =
     let valid = valid i in
-    if not valid then
-      debug (Printf.sprintf "Int.make: invalid interval %s." (to_string_simple i));
+    if not valid then debug (Printf.sprintf "Int.make: invalid interval %s." (to_string_simple i));
     assert valid;
     i
 
@@ -359,21 +335,17 @@ struct
 
   let meet p i j =
     let m = meet p i j in
-    if !debug_meet then
-      debug (Printf.sprintf "Int.meet: %s /\\ %s = %s." (to_string p i) (to_string p j) (String.concat " , " (List.map (to_string p) m)));
+    if !debug_meet then debug (Printf.sprintf "Int.meet: %s /\\ %s = %s." (to_string p i) (to_string p j) (String.concat " , " (List.map (to_string p) m)));
     m
 
-  let included p i j =
-    meet p i j = [i]
+  let included p i j = meet p i j = [i]
 
-  let belongs p x i =
-    included p (x,x) i
+  let belongs p x i = included p (x,x) i
 
   let rec compl p i =
     let t1,t2 = i in
     let compl p i =
-      if !debug_compl_full then
-        Printf.printf "C: %s\n%!" (to_string p i);
+      if !debug_compl_full then Printf.printf "C: %s\n%!" (to_string p i);
       let (b,m,e) as ans = compl p i in
       (* TODO: show b and e too *)
       if !debug_compl_full then
@@ -610,26 +582,18 @@ struct
 
   let everything p = [Int.everything p]
 
+  (** Add an interval in a region. *)
   let add p i a =
     let i_included = ref false in
     let a =
       List.filter
         (fun j ->
            let ninc_ji = not (Int.included p j i) in
-           if Int.included p i j && ninc_ji then
-             i_included := true;
+           if Int.included p i j && ninc_ji then i_included := true;
            ninc_ji
         ) a
     in
     if !i_included then a else (i::a)
-
-(*
-  let add i a =
-    if Int.degenerated i then
-      a
-    else
-      add i a
-*)
 
   let join p a b = List.fold_left (fun ans i -> add p i ans) b a
 
@@ -875,32 +839,4 @@ struct
     let ans = ref "" in
     iter_breadth (*iter_depth*) (fun t1 _ t2 -> ans := Printf.sprintf "%s\n    \"%s\" -> \"%s\";" !ans (Pos.to_string p t1) (Pos.to_string p t2)) g;
     Printf.sprintf "digraph region {%s\n}\n" !ans
-
-(*
-    let explored = ref [] in
-    let rec succ p =
-      explored := p :: !explored;
-      let s = list_assoc_all p c in
-      let s =
-        list_may_map
-         (fun q ->
-            if List.mem q !explored then
-              None
-            else
-              (*
-              Some
-                {
-                  path = []
-                }
-              *)
-              None
-         ) s
-      in
-        {
-          pos = p;
-          succ = s;
-        }
-    in
-      succ Pos.bot
- *)
 end
