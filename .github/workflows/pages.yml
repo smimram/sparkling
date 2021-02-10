@@ -14,7 +14,7 @@ jobs:
         run: |
           mkdir public
           cat > public/index.html <<EOL
-          <!doctype html>
+          <!DOCTYPE html>
           <html>
             <head>
               <title>GitHub Pages deployed!</title>
