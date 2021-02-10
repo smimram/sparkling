@@ -12,6 +12,12 @@ philosophers:
 	dune exec ./sparkling.exe philo.sparkling
 	rm philo.sparkling
 
+conflicts:
+	menhir --explain parser.mly
+	rm -f parser.ml parser.mli
+	less parser.conflicts
+	rm -f parser.conflicts
+
 ci:
 	svn ci -m "Worked on sparkling."
 

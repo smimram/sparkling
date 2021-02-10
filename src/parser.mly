@@ -15,12 +15,16 @@
 %token <int> V_INT
 %token <bool> V_BOOL
 
-%nonassoc NOT
-%nonassoc ELSE
-%nonassoc LE
-%left ISEQ
-%left PLUS
 %left PAR
+%nonassoc ELSE
+%nonassoc WHILE
+%left OR
+%left AND
+%nonassoc LE LT
+%left ISEQ
+%left PLUS MINUS
+%left MULT
+%nonassoc NOT
 %left DOT SEMICOLON
 
 %start main
