@@ -7,3 +7,9 @@ let () =
   let f = Lang.forbidden p in
   Printf.printf "forbidden:\n%s\n%!" (Region.to_string p f);
   Printf.printf "forbidden normalized:\n%s\n%!" (Region.to_string p (Region.normalize p f));
+  let f = Region.compl p f in
+  Printf.printf "fundamental:\n%s\n%!" (Region.to_string p f);
+  Printf.printf "fundamental normalized:\n%s\n%!" (Region.to_string p f);
+  let f = Region.compl p f in
+  Printf.printf "forbidden:\n%s\n%!" (Region.to_string p f);
+  Printf.printf "forbidden normalized:\n%s\n%!" (Region.to_string p (Region.normalize p f));
