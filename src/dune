@@ -1,11 +1,19 @@
 (menhir
-  (modules parser)
+ (modules parser)
 )
 
 (ocamllex
-  (modules lexer)
+ (modules lexer)
+)
+
+(library
+ (name sparkling)
+ (modules common prog lang parser lexer frontend)
+ (wrapped false)
 )
 
 (executable
-  (name sparkling)
+ (name sparkling)
+ (modules sparkling)
+ (libraries sparkling)
 )

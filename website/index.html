@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Sparkling</title>
+    <link rel="stylesheet" type="text/css" href="sparkling.css">
+    <script type="text/javascript" src="sparkling.js"></script>
+  </head>
+
+  <body>
+    <h1>Sparkling</h1>
+
+    <p>
+      Online demonstration of computations on <em>syntactic regions</em> of programs.
+    </p>
+
+    <h2>Program</h2>
+    <p>
+      Please enter your prgoram below:
+    </p>
+
+    <p>
+      <textarea id="prog" style="width: 100%; font-family: monospace;" rows=17 oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'>
+void main()
+{
+  mutex a;
+  mutex b;
+
+  {
+    lock(a);
+    lock(b);
+    unlock(b);
+    unlock(a);
+  }|{
+    lock(b);
+    lock(a);
+    unlock(a);
+    unlock(b);
+  };
+}
+      </textarea>
+    </p>
+    <p>
+      <input id="go" type="submit" value="GO"/>
+    </p>
+
+    <h2>Results</h2>
+    <p id="status"></p>
+
+    <h3>Parsed program</h3>
+    <p id="parsed" class="output"></p>
+
+    <h3>Brackets</h3>
+    <p id="brackets" class="output"></p>
+
+    <h3>Forbidden</h3>
+    <p id="forbidden" class="output"></p>
+    <p>Normalized:</p>
+    <p id="forbidden-normalized" class="output"></p>
+
+    <h3>Fundamental</h3>
+    <p id="fundamental" class="output"></p>
+    <p>Normalized:</p>
+    <p id="fundamental-normalized" class="output"></p>
+
+    <h3>Deadlocks</h3>
+    <p id="deadlocks" class="output"></p>
+</div>
+</body>
+</html>
