@@ -54,13 +54,13 @@ val inline : declaration list -> t -> t
 (** Intervals where a mutex is taken. *)
 val brackets : t -> (string * Prog.Int.t) list
 
-(** Forbidden area. *)
-val forbidden : t -> Prog.Area.t
+(** Forbidden region. *)
+val forbidden : t -> Prog.Region.t
 
-(** Allowed area. *)
-val allowed : t -> Prog.Area.t
+(** Allowed region. *)
+val allowed : t -> Prog.Region.t
 
 (*
 (** Components. *)
-val components : t -> Prog.Area.t * Prog.CArea.t
+val components : t -> Prog.Region.t * Prog.CRegion.t
 *)

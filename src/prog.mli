@@ -80,12 +80,12 @@ sig
   val realize : 'a prog -> t -> 'a prog
 end
 
-(** Operations on areas, which are lists of intervals of a program. For
-  * efficiency we mostly manipulated normalized areas in which the intervals are
+(** Operations on regions, which are lists of intervals of a program. For
+  * efficiency we mostly manipulated normalized regions in which the intervals are
   * all maximal. *)
-module Area :
+module Region :
 sig
-  (** An area. *)
+  (** An region. *)
   type t = Int.t list
 
   val create : unit -> t
@@ -98,10 +98,10 @@ sig
 
   val to_string : 'a prog -> t -> string
 
-  (** Ouput area in dot graph format. *)
+  (** Ouput region in dot graph format. *)
   val to_dot : 'a prog -> t -> string
 
-  (** Complement of an area. *)
+  (** Complement of an region. *)
   val compl : 'a prog -> t -> t
 
   (** [difference a b] computes [a] where the "complement" of [b] has been
@@ -125,7 +125,7 @@ module Flow_graph :
 sig
   type 'a t
 
-  val of_area : 'a prog -> ?no_squares:bool -> ?diagonals:bool -> Area.t -> 'a t
+  val of_region : 'a prog -> ?no_squares:bool -> ?diagonals:bool -> Region.t -> 'a t
 
   val to_dot : 'a prog -> 'a t -> string
 
@@ -133,19 +133,19 @@ sig
 end
 
 (*
-(** Components area. *)
-module CArea :
+(** Components region. *)
+module CRegion :
 sig
   type t
 
   val everything : t
 
-  val of_tiling : Area.t -> Int.t list -> t
+  val of_tiling : Region.t -> Int.t list -> t
 
   val to_string : 'a prog -> t -> string
 
   (* val to_dot : 'a prog -> t -> string *)
 
-  val meet : Area.t -> t -> t -> t
+  val meet : Region.t -> t -> t -> t
 end
 *)

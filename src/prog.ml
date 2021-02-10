@@ -605,7 +605,7 @@ struct
   *)
 end
 
-module Area =
+module Region =
 struct
   type t = Int.t list
 
@@ -660,7 +660,7 @@ struct
            Printf.sprintf "%s\n    \"%s\" -> \"%s\";" s (Pos.to_string p t1) (Pos.to_string p t2)
         ) "" a
     in
-      Printf.sprintf "digraph area {%s\n}\n" ans
+      Printf.sprintf "digraph region {%s\n}\n" ans
 
   (* Positions are intervals and [a,b]->[c,d] means c in [a,b]. *)
   let to_dot p a =
@@ -676,7 +676,7 @@ struct
              Printf.sprintf "%s\n    \"%s\" -> \"%s\";" s (Int.to_string p i) (Int.to_string p j)
           ) "" !ans
       in
-        Printf.sprintf "digraph area {%s\n}\n" ans
+        Printf.sprintf "digraph region {%s\n}\n" ans
 
   let meet p a b =
     List.fold_left
@@ -709,7 +709,7 @@ struct
   let difference p a b =
     let ans = difference p a b in
       if !debug_difference then
-        debug (Printf.sprintf "Area.difference:\n%sminus\n%sis\n%s" (to_string_simple a) (to_string_simple b) (to_string_simple ans));
+        debug (Printf.sprintf "Region.difference:\n%sminus\n%sis\n%s" (to_string_simple a) (to_string_simple b) (to_string_simple ans));
       ans
 
   (* TODO: normalize a? *)
@@ -751,13 +751,13 @@ struct
   type 'a t = 'a vertex
 
   (* TODO: we suppose that we don't have intricated loops. *)
-  let of_area prog ?(no_squares=false) ?(diagonals=false) a =
+  let of_region prog ?(no_squares=false) ?(diagonals=false) a =
     (*
-      let a = (Area.while_regions prog)@a in
-      Printf.printf "* while regions:\n%s\n\n%!" (Area.to_string prog (Area.while_regions prog));
+      let a = (Region.while_regions prog)@a in
+      Printf.printf "* while regions:\n%s\n\n%!" (Region.to_string prog (Region.while_regions prog));
     *)
-    let g = Area.ginsu a in
-    (* Printf.printf "* gigiginsu:\n%s\n\n%!" (Area.to_string prog g); *)
+    let g = Region.ginsu a in
+    (* Printf.printf "* gigiginsu:\n%s\n\n%!" (Region.to_string prog g); *)
     let leq i (t, _) = Int.belongs prog t i && t <> fst i in
     (* Transitions removed thanks to homotopy. *)
     let removed = ref [] in
@@ -795,7 +795,7 @@ struct
         ) g
     in
     let succ = !terminal @ succ in
-    (* Printf.printf "* ginsuted:\n%s\n\n%!" (Area.to_string prog (List.map fst succ)); *)
+    (* Printf.printf "* ginsuted:\n%s\n\n%!" (Region.to_string prog (List.map fst succ)); *)
     (* Find the initial position. *)
     let init = List.may_map (fun (t1,t2) -> if t1 = Pos.bot prog then Some t2 else None) g in
     let init = List.fold_left (fun m t -> if Pos.le t m then t else m) (List.hd init) (List.tl init) in
@@ -881,7 +881,7 @@ struct
   let to_dot p g =
     let ans = ref "" in
     iter_breadth (*iter_depth*) (fun t1 _ t2 -> ans := Printf.sprintf "%s\n    \"%s\" -> \"%s\";" !ans (Pos.to_string p t1) (Pos.to_string p t2)) g;
-      Printf.sprintf "digraph area {%s\n}\n" !ans
+      Printf.sprintf "digraph region {%s\n}\n" !ans
 
 (*
     let explored = ref [] in
@@ -913,7 +913,7 @@ struct
 end
 
 (*
-module CArea =
+module CRegion =
 struct
   type component =
       {
@@ -950,7 +950,7 @@ struct
   let to_string p a =
     let ans = ref "" in
     let print i a =
-      ans := Printf.sprintf "%s %d\n%s" !ans i (Area.to_string p a)
+      ans := Printf.sprintf "%s %d\n%s" !ans i (Region.to_string p a)
     in
     (*
     let print1 a =
@@ -996,7 +996,7 @@ struct
       g.components <-
         List.may_map
           (fun i ->
-             if Area.belongs i f then
+             if Region.belongs i f then
                None
              else
                Some (create_component i)
@@ -1009,7 +1009,7 @@ struct
               match Int.meet i1 i2 with
                 (* TODO: really handle lists *)
                 | [i] ->
-                    if Area.belongs i f then
+                    if Region.belongs i f then
                       None
                     else
                       let source, target =
@@ -1063,7 +1063,7 @@ struct
              match Int.meet c1.component c2.component with
                (* TODO *)
                | [i] ->
-                   if Area.belongs i f then
+                   if Region.belongs i f then
                      None
                    else
                      Some (create_component i)
@@ -1077,7 +1077,7 @@ struct
              match Int.meet c.component m.morphism with
                (* TODO *)
                | [i] ->
-                   if Area.belongs i f then
+                   if Region.belongs i f then
                      None
                    else
                      Some
@@ -1100,7 +1100,7 @@ struct
              match Int.meet c.component r.relation with
                (* TODO *)
                | [i] ->
-                   if Area.belongs i f then
+                   if Region.belongs i f then
                      None
                    else
                      Some
@@ -1123,7 +1123,7 @@ struct
              match Int.meet m1.morphism m2.morphism with
                (* TODO *)
                | [i] ->
-                   if Area.belongs i f then
+                   if Region.belongs i f then
                      None
                    else
                      Some

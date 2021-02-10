@@ -327,8 +327,8 @@ let forbidden p =
       List.iter (fun (m, _) -> ans := List.add_uniq m !ans) brackets;
       !ans
   in
-  let ans = ref (Area.create ()) in
-    let push i = ans := Area.add p i !ans in
+  let ans = ref (Region.create ()) in
+    let push i = ans := Region.add p i !ans in
     let push = List.iter push in
       List.iter
         (fun m ->
@@ -340,7 +340,7 @@ let forbidden p =
       !ans
 
 let allowed p =
-  Area.compl p (forbidden p)
+  Region.compl p (forbidden p)
 
 (*
 let components p =
@@ -350,8 +350,8 @@ let components p =
       List.iter (fun (m, _) -> ans := List.add_uniq m !ans) brackets;
       !ans
   in
-  let forbidden = ref (Area.create ()) in
-  let a = ref CArea.everything in
+  let forbidden = ref (Region.create ()) in
+  let a = ref CRegion.everything in
     let push (x1,x2,x1',x2') (y1,y2,y1',y2') =
       let x = Int.make (x1,x2') in
       let y = Int.make (y1,y2') in
@@ -360,10 +360,10 @@ let components p =
           | [i] ->
               assert false
               (*
-              forbidden := Area.add i !forbidden;
-              let ai = CArea.of_tiling [i] [Int.make (x1,y2'); Int.make (y1,x2'); Int.make (Pos.sup x2 y2,Pos.top); Int.make (Pos.bot,Pos.inf x1' y1')] in
-                a := CArea.meet !forbidden ai !a;
-                (* Printf.printf "a:\n%s\n%!" (CArea.to_string p !a) *)
+              forbidden := Region.add i !forbidden;
+              let ai = CRegion.of_tiling [i] [Int.make (x1,y2'); Int.make (y1,x2'); Int.make (Pos.sup x2 y2,Pos.top); Int.make (Pos.bot,Pos.inf x1' y1')] in
+                a := CRegion.meet !forbidden ai !a;
+                (* Printf.printf "a:\n%s\n%!" (CRegion.to_string p !a) *)
              *)
           | [] -> ()
     in
