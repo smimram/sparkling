@@ -1,7 +1,7 @@
 (executable
  (name web)
  (modes js)
- (libraries js_of_ocaml sparkling)
+ (libraries js_of_ocaml sparkling str)
  (preprocess (pps js_of_ocaml-ppx))
  (modules web)
 )    

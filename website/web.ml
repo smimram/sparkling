@@ -14,12 +14,8 @@ let debug s = Firebug.console##debug (Js.string s)
 let jsget x = Js.Opt.get x (fun () -> assert false)
 
 (** Replace [c] by [t] in [s]. *)
-let rec replace c t s =
-  try
-    let n = String.index s c in
-    replace c t (String.sub s 0 n ^ t ^ String.sub s (n+1) (String.length s-(n+1)))
-  with
-  | Not_found -> s
+let replace c t s =
+  String.concat t (String.split_on_char c s)
 
 open Prog
 
@@ -34,36 +30,46 @@ let run _ =
     let s = replace '\n' "<br/>" s in
     p##.innerHTML := Js.string s
   in
+  let set_region id r =
+    let r = String.split_on_char '\n' r in
+    let r = List.map
+        (fun tr ->
+           let tr = Str.split (Str.regexp "—") tr |> List.map (fun td -> "<td>"^td^"</td>") |> String.concat "<td>—</td>" in
+           "<tr>"^tr^"</tr>"
+        ) r
+    in
+    let r = String.concat "" r in
+    let r = "<table>"^r^"</table>" in
+    set id r
+  in
 
-  go##.onclick :=
-    Html.handler
-      (fun _ ->
-         try
-           status "Parsing program...";
-           let prog = Js.to_string prog##.value in
-           let prog = Frontend.parse prog in
-           ignore prog;
-           (jsget (doc##getElementById(Js.string "parsed")))##.innerHTML := Js.string (Prog.to_string prog);
-           status "Computing brackets...";
-           let b = Lang.brackets prog in
-           let bs = ref "" in
-           List.iter
-             (fun (m,i) ->
-                bs := Printf.sprintf "%s  %s: %s\n%!" !bs m (Int.to_string prog i)
-             ) b;
-           set "brackets" !bs;
-           status "Computing forbidden region...";
-           let forbidden = Lang.forbidden prog in
-           set "forbidden" (Region.to_string prog forbidden);
-           status "Computing fundamental region...";
-           let fundamental = Region.compl prog forbidden in
-           set "fundamental" (Region.to_string prog fundamental);
-           status "Computing normalized regions...";
-           set "forbidden-normalized" (Region.to_string prog (Region.normalize prog forbidden));
-           set "fundamental-normalized" (Region.to_string prog (Region.normalize prog fundamental));
-           status "Computing deadlocks...";
-           let deadlocks = "  " ^ String.concat ", " (List.map (Pos.to_string prog) (Region.deadlocks prog fundamental)) ^ "\n" in
-           set "deadlocks" deadlocks;
+  let handler _ =
+    try
+      status "Parsing program...";
+      let prog = Js.to_string prog##.value in
+      let prog = Frontend.parse prog in
+      ignore prog;
+      (jsget (doc##getElementById(Js.string "parsed")))##.innerHTML := Js.string (Prog.to_string prog);
+      status "Computing brackets...";
+      let b = Lang.brackets prog in
+      let bs = ref "" in
+      List.iter
+        (fun (m,i) ->
+           bs := Printf.sprintf "%s  %s: %s\n%!" !bs m (Int.to_string prog i)
+        ) b;
+      set "brackets" !bs;
+      status "Computing forbidden region...";
+      let forbidden = Lang.forbidden prog in
+      set "forbidden" (Region.to_string prog forbidden);
+      status "Computing fundamental region...";
+      let fundamental = Region.compl prog forbidden in
+      set_region "fundamental" (Region.to_string prog fundamental);
+      status "Computing normalized regions...";
+      set_region "forbidden-normalized" (Region.to_string prog (Region.normalize prog forbidden));
+      set_region "fundamental-normalized" (Region.to_string prog (Region.normalize prog fundamental));
+      status "Computing deadlocks...";
+      let deadlocks = "  " ^ String.concat ", " (List.map (Pos.to_string prog) (Region.deadlocks prog fundamental)) ^ "\n" in
+      set "deadlocks" deadlocks;
            (*
   Printf.printf "* Deadlocks:\n%s\n%!" deadlocks;
   let deadlocks =
@@ -75,19 +81,20 @@ let run _ =
   in
   Printf.printf "* Deadlock realizers:\n%s\n%!" deadlocks;
   *)
-           status "Finished.";
-           Js._true
-         with
-         | Exit ->
-           Js._false
-         | Failure s ->
-           error ("Error: " ^ s);
-           Js._false
-         | e ->
-           error (Printexc.to_string e);
-           Js._false
-      );
-
+      status "Finished.";
+      Js._true
+    with
+    | Exit ->
+      Js._false
+    | Failure s ->
+      error ("Error: " ^ s);
+      Js._false
+    | e ->
+      error (Printexc.to_string e);
+      Js._false
+  in
+  go##.onclick := Html.handler handler;
+  (* ignore (handler ()); *)
   Js._true
 
 let () =
