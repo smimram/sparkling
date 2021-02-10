@@ -138,6 +138,7 @@ open Prog
 let rec inline decls p =
   let resolve f a =
     (* TODO: replace arguments *)
+    ignore a;
     let ans = ref None in
       List.iter
         (fun (_, name, _, prog) ->
@@ -188,115 +189,115 @@ type 'a bracket_state =
  * variables *)
 let rec brackets s = function
   | Action (Cmd (ENew_var (TMutex, m))) ->
-      (* TODO: cleanly handle name clashes *)
-      assert (not (List.mem m s.bs_defined_m));
-      {s with bs_defined_m = m::s.bs_defined_m}
+    (* TODO: cleanly handle name clashes *)
+    assert (not (List.mem m s.bs_defined_m));
+    {s with bs_defined_m = m::s.bs_defined_m}
   | Action (P m) ->
-      if not (List.mem m s.bs_defined_m) then
-        failwith (Printf.sprintf "Mutex %s was not declared." m);
-      (* Not really necessary but cannot hurt. *)
-      if List.mem_assoc m s.bs_opened_m then
-        failwith (Printf.sprintf "Mutex %s taken twice in a row." m);
-        {s with bs_opened_m = (m, (s.bs_context false Pos.PTop, s.bs_context true Pos.PTop))::s.bs_opened_m}
+    if not (List.mem m s.bs_defined_m) then
+      failwith (Printf.sprintf "Mutex %s was not declared." m);
+    (* Not really necessary but cannot hurt. *)
+    if List.mem_assoc m s.bs_opened_m then
+      failwith (Printf.sprintf "Mutex %s taken twice in a row." m);
+    {s with bs_opened_m = (m, (s.bs_context false Pos.PTop, s.bs_context true Pos.PTop))::s.bs_opened_m}
   | Action (V m) ->
-      if not (List.mem m s.bs_defined_m) then
-        failwith (Printf.sprintf "Mutex %s was not declared." m);
-      (
-        try
-          let t1, t2 = List.assoc m s.bs_opened_m in
-            {s with
-            bs_opened_m = List.remove_assoc m s.bs_opened_m;
-            bs_taken_m = (m, (t1, s.bs_context false Pos.PBot, t2, s.bs_context true Pos.PBot))::s.bs_taken_m
-            }
-              with
-                | Not_found ->
-                    failwith (Printf.sprintf "Mutex %s released without having been taken." m)
-      )
+    if not (List.mem m s.bs_defined_m) then
+      failwith (Printf.sprintf "Mutex %s was not declared." m);
+    (
+      try
+        let t1, t2 = List.assoc m s.bs_opened_m in
+        {s with
+         bs_opened_m = List.remove_assoc m s.bs_opened_m;
+         bs_taken_m = (m, (t1, s.bs_context false Pos.PBot, t2, s.bs_context true Pos.PBot))::s.bs_taken_m
+        }
+      with
+      | Not_found ->
+        failwith (Printf.sprintf "Mutex %s released without having been taken." m)
+    )
   | Action _ -> s
   | Seq l ->
-      let n = ref (-1) in
-      let context = s.bs_context in
-        List.fold_left
-          (fun s p ->
-             incr n;
-             brackets {s with bs_context = (fun max p -> context max (Pos.PSeq (!n,p)))} p
-          ) s l
+    let n = ref (-1) in
+    let context = s.bs_context in
+    List.fold_left
+      (fun s p ->
+         incr n;
+         brackets {s with bs_context = (fun max p -> context max (Pos.PSeq (!n,p)))} p
+      ) s l
   | Par l ->
-      let l = Array.of_list l in
-      let ss =
-        Array.mapi
-          (fun n p ->
-             brackets
-               {
-                 s with
-                     bs_taken_m = [];
-                     bs_context =
-                       (fun max pp ->
-                          s.bs_context max
-                            (
-                              Pos.PPar
-                                (List.init
-                                   (Array.length l)
-                                   (fun i ->
-                                      if i = n then
-                                        pp
-                                      else if max then
-                                        Pos.top l.(i)
-                                      else
-                                        Pos.bot l.(i))
-                                )
-                            )
-                       )
-               } p
-          ) l
-      in
-        (* TODO: consistency checks *)
-        {
-          bs_defined_m = s.bs_defined_m;
-          bs_opened_m = s.bs_opened_m; (* TODO: we might want to open mutexes in pars *)
-          bs_taken_m = Array.fold_left (fun tk s -> s.bs_taken_m@tk) s.bs_taken_m ss;
-          bs_context = s.bs_context; (* TODO: is it ok? *)
-        }
- | If (e,p1,p2) ->
-     let s1 =
-       brackets
-         {s with
-              bs_taken_m = [];
-              bs_context = (fun max p -> s.bs_context max (Pos.PIf (true,p)))
-         } p1
-     in
-     let s2 =
-       brackets
-         {s with
-              bs_taken_m = [];
-              bs_context = (fun max p -> s.bs_context max (Pos.PIf (false,p)))
-         } p2
-     in
-       (* TODO: remove this restriction. *)
-       assert (s1.bs_opened_m = s.bs_opened_m);
-       assert (s2.bs_opened_m = s.bs_opened_m);
-       {
-         bs_defined_m = s.bs_defined_m;
-         bs_opened_m = s.bs_opened_m;
-         bs_taken_m = s1.bs_taken_m@s2.bs_taken_m;
-         bs_context = s.bs_context; (*TODO: is it ok? *)
-       }
- | While (e, p) ->
-     let s' =
-       brackets
-         {s with
-              bs_context = (fun max p -> s.bs_context max (Pos.PWhile p))
-         } p
-     in
-       assert (s'.bs_opened_m = s.bs_opened_m);
-       {
-         bs_defined_m = s.bs_defined_m;
-         bs_opened_m = s.bs_opened_m;
-         bs_taken_m = s'.bs_taken_m;
-         bs_context = s.bs_context; (*TODO: is it ok? *)
-       }
- | Call _ ->
-     assert false
+    let l = Array.of_list l in
+    let ss =
+      Array.mapi
+        (fun n p ->
+           brackets
+             {
+               s with
+               bs_taken_m = [];
+               bs_context =
+                 (fun max pp ->
+                    s.bs_context max
+                      (
+                        Pos.PPar
+                          (List.init
+                             (Array.length l)
+                             (fun i ->
+                                if i = n then
+                                  pp
+                                else if max then
+                                  Pos.top l.(i)
+                                else
+                                  Pos.bot l.(i))
+                          )
+                      )
+                 )
+             } p
+        ) l
+    in
+    (* TODO: consistency checks *)
+    {
+      bs_defined_m = s.bs_defined_m;
+      bs_opened_m = s.bs_opened_m; (* TODO: we might want to open mutexes in pars *)
+      bs_taken_m = Array.fold_left (fun tk s -> s.bs_taken_m@tk) s.bs_taken_m ss;
+      bs_context = s.bs_context; (* TODO: is it ok? *)
+    }
+  | If (e,p1,p2) ->
+    let s1 =
+      brackets
+        {s with
+         bs_taken_m = [];
+         bs_context = (fun max p -> s.bs_context max (Pos.PIf (true,p)))
+        } p1
+    in
+    let s2 =
+      brackets
+        {s with
+         bs_taken_m = [];
+         bs_context = (fun max p -> s.bs_context max (Pos.PIf (false,p)))
+        } p2
+    in
+    (* TODO: remove this restriction. *)
+    assert (s1.bs_opened_m = s.bs_opened_m);
+    assert (s2.bs_opened_m = s.bs_opened_m);
+    {
+      bs_defined_m = s.bs_defined_m;
+      bs_opened_m = s.bs_opened_m;
+      bs_taken_m = s1.bs_taken_m@s2.bs_taken_m;
+      bs_context = s.bs_context; (*TODO: is it ok? *)
+    }
+  | While (e, p) ->
+    let s' =
+      brackets
+        {s with
+         bs_context = (fun max p -> s.bs_context max (Pos.PWhile p))
+        } p
+    in
+    assert (s'.bs_opened_m = s.bs_opened_m);
+    {
+      bs_defined_m = s.bs_defined_m;
+      bs_opened_m = s.bs_opened_m;
+      bs_taken_m = s'.bs_taken_m;
+      bs_context = s.bs_context; (*TODO: is it ok? *)
+    }
+  | Call _ ->
+    assert false
 
 let brackets p =
   let s =
