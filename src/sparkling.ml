@@ -89,12 +89,12 @@ let () =
         close_out fo
     );*)
     *)
-  Printf.printf "* Ginsu:\n%s\n%!" (Region.to_string prog (Region.ginsu fundamental));
-  let fg = Flow_graph.of_region (* ~no_squares:true *) ~diagonals:true prog fundamental in
-  let fo = open_out_bin "ginsu.dot" in
+  (* Printf.printf "* Ginsu:\n%s\n%!" (Region.to_string prog (Region.ginsu fundamental)); *)
+  (* let fg = Flow_graph.of_region (\* ~no_squares:true *\) ~diagonals:true prog fundamental in *)
+  (* let fo = open_out_bin "ginsu.dot" in *)
   (* output_string fo (Region.to_dot prog (Region.ginsu fundamental)); *)
-  output_string fo (Flow_graph.to_dot prog fg);
-  close_out fo;
-  Printf.printf "* Flowing graph\n\n%!";
+  (* output_string fo (Flow_graph.to_dot prog fg); *)
+  (* close_out fo; *)
+  (* Printf.printf "* Flowing graph\n\n%!"; *)
 
   (* AI.flow prog fg *)
