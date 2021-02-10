@@ -44,10 +44,10 @@ val to_string : t -> string
 
 (** A program consists of a list of declarations of functions and variables. *)
 type declaration =
-  type_expr (** type *)
-  * string (** name *)
-  * ((type_expr * string) list) option (** arguments, [None] means variable *)
-  * t (** the program *)
+  type_expr (* type *)
+  * string (* name *)
+  * ((type_expr * string) list) option (* arguments, [None] means variable *)
+  * t (* the program *)
 
 val inline : declaration list -> t -> t
 

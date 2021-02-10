@@ -1,19 +1,19 @@
 open Common
 
 let debug s = Printf.printf "[DD] %s\n%!" s
-let error s = Printf.printf "[EE] %s\n%!" s
-let debug_le = false
-let debug_int = true
+(* let error s = Printf.printf "[EE] %s\n%!" s *)
+(* let debug_le = false *)
+(* let debug_int = true *)
 let debug_meet = ref false
 let debug_meet_full = ref false
-let debug_belongs = ref false
-let debug_inf = ref false
-let debug_supinf = ref false
+(* let debug_belongs = ref false *)
+(* let debug_inf = ref false *)
+(* let debug_supinf = ref false *)
 let debug_compl = ref false
 let debug_compl_full = ref false
 let debug_difference = ref false
-let debug_components = ref false
-let debug_realize = ref false
+(* let debug_components = ref false *)
+(* let debug_realize = ref false *)
 
 (* For now, we assume that there is no par in while. *)
 type 'a t =
@@ -53,7 +53,7 @@ let rec to_string p =
     "W(" ^ to_string p ^ ")"
   | Call _ -> "C"
 
-let prog_to_string = to_string
+(* let prog_to_string = to_string *)
 
 module Pos =
 struct
@@ -697,7 +697,7 @@ struct
   let contains p a i =
     List.exists (Int.included p i) a
 
-  let rec difference p a b =
+  let difference p a b =
     meet p a (compl p b)
 
   let nondegenerated a = a
@@ -845,6 +845,7 @@ struct
     );
     ans
 
+  (*
   let iter_depth f v =
     let visited = ref [] in
     let rec aux v =
@@ -859,6 +860,7 @@ struct
         )
     in
     aux v
+  *)
 
   let iter_breadth f g =
     let visited = ref [] in

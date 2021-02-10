@@ -5,7 +5,6 @@ type 'a t =
   | Par of 'a t list
   | If of 'a * 'a t * 'a t
   | While of 'a * 'a t
-  (** Call a function (and optionally put the result in a given variable). *)
   | Call of string * 'a list * (string option)
 and 'a action =
   | P of string

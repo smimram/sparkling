@@ -68,7 +68,7 @@ let () =
   let deadlocks = "  " ^ String.concat ", " (List.map (Pos.to_string prog) (Region.deadlocks prog fundamental)) ^ "\n" in
   Printf.printf "* Deadlocks:\n%s\n%!" deadlocks;
   let deadlocks =
-    let print t =
+    let print _ =
       (* List.fold_left (fun s e -> Printf.sprintf "%s  %s\n" s (Lang.string_of_action e)) "" (Pos.realize prog t) *)
       "" (* TODO *) (* Printf.sprintf "  %s\n" (Prog.to_string (Pos.realize prog t)) *)
     in
