@@ -57,7 +57,7 @@ sig
   val everything : 'a prog -> t
 
   (** Ensure that an interval is valid (for debugging purposes since this should
-    * always be [true]). *)
+      always be [true]). *)
   val valid : t -> bool
 
   val make : Pos.t * Pos.t -> t

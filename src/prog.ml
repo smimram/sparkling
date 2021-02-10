@@ -78,11 +78,11 @@ struct
     | Seq l, PSeq (n, t) ->
       (* TODO: enhance this *)
       let ans = ref "" in
-      for i = 0 to n - 1 do
+      for _ = 0 to n - 1 do
         ans := !ans ^ "X;"
       done;
       ans := !ans ^ to_string (List.ith l n) t;
-      for i = 0 to (List.length l) - (n+1) - 1 do
+      for _ = 0 to (List.length l) - (n+1) - 1 do
         ans := !ans ^ ";_"
       done;
       !ans
@@ -113,9 +113,7 @@ struct
         "...;" ^ (to_string t)
       else
         let ans = ref "" in
-        for i = 0 to n - 1 do
-          ans := !ans ^ "X;"
-        done;
+        for _ = 0 to n - 1 do ans := !ans ^ "X;" done;
         ans := !ans ^ to_string t;
         !ans ^ ";"
     | PPar l ->
@@ -170,8 +168,7 @@ struct
   let to_string_simple (t1,t2) =
     Pos.to_string_simple t1 ^ " -- " ^ Pos.to_string_simple t2
 
-  let rec valid (t1,t2) =
-    le t1 t2
+  let valid (t1,t2) = le t1 t2
 
   let make i =
     let valid = valid i in
@@ -229,9 +226,9 @@ struct
       meet p (PSeq (n,PBot),t2) (t1',t2')
     | p,PSeq (n,_),_,PBot,_ ->
       meet p (t1,t2) (PSeq (n,PBot),t2')
-    | Seq l,_,PTop,_,PSeq (n,_) ->
+    | Seq _,_,PTop,_,PSeq (n,_) ->
       meet p (t1,PSeq (n,PTop)) (t1',t2')
-    | Seq l,_,PSeq (n,_),_,PTop _ ->
+    | Seq _,_,PSeq (n,_),_,PTop ->
       meet p (t1,t2) (t1',PSeq (n,PTop))
     | Seq l,PSeq(n1,t1),PSeq(n2,t2),PSeq(n1',t1'),PSeq(n2',t2') ->
       if n2 < n1' || n1 > n2' then
@@ -372,7 +369,8 @@ struct
   let belongs p x i =
     included p (x,x) i
 
-  let rec compl p ((t1,t2) as i) =
+  let rec compl p i =
+    let t1,t2 = i in
     let compl p i =
       if !debug_compl_full then
         Printf.printf "C: %s\n%!" (to_string p i);
@@ -515,10 +513,7 @@ struct
       debug (Printf.sprintf "Int.compl: %s is %s." (to_string p i) (String.concat " , " (List.map (to_string p) ans)));
     ans
 
-  let realize p (i:t) = assert false
-
-
-
+  let realize (_:'a prog) (_:t) = assert false
 
 (*
   (** Checks whether an interval is degenerated, which means that it is thin or
@@ -636,11 +631,9 @@ struct
       add i a
 *)
 
-  let join p a b =
-    List.fold_left (fun ans i -> add p i ans) b a
+  let join p a b = List.fold_left (fun ans i -> add p i ans) b a
 
-  let make a =
-    join a (create ())
+  (* let make a = join a (create ()) *)
 
   let to_string p a =
     List.fold_left
@@ -655,6 +648,7 @@ struct
       ) "" a
 
   (* Positions are positions and arrows are intervals. *)
+  (*
   let to_dot p a =
     let ans =
       List.fold_left
@@ -663,12 +657,13 @@ struct
         ) "" a
     in
     Printf.sprintf "digraph region {%s\n}\n" ans
+  *)
 
   (* Positions are intervals and [a,b]->[c,d] means c in [a,b]. *)
   let to_dot p a =
     let ans = ref [] in
     List.iter_ctxt
-      (fun h ((t1,t2) as j) t ->
+      (fun h ((t1,_) as j) t ->
          let src = List.filter (fun i -> Int.belongs p t1 i && t1 <> (fst i)) (h@t) in
          ans := (List.map (fun i -> i,j) src) @ !ans
       ) a;
@@ -690,17 +685,13 @@ struct
     let a = List.map (Int.compl p) a in
     List.fold_left (fun ans a -> meet p a ans) (everything p) a
 
-  let normalize p a =
-    compl p (compl p a)
+  let normalize p a = compl p (compl p a)
 
-  let boundary p a =
-    meet p a (compl p a)
+  (* let boundary p a = meet p a (compl p a) *)
 
-  let contains p a i =
-    List.exists (Int.included p i) a
+  (* let contains p a i = List.exists (Int.included p i) a *)
 
-  let difference p a b =
-    meet p a (compl p b)
+  let difference p a b = meet p a (compl p b)
 
   let nondegenerated a = a
 (*
@@ -716,11 +707,9 @@ struct
 
   (* TODO: normalize a? *)
   (* TODO: correct ?? *)
-  let belongs p i a =
-    List.exists (Int.included p i) a
+  (* let belongs p i a = List.exists (Int.included p i) a *)
 
-  let included p a b =
-    List.for_all (fun i -> belongs p i b) a
+  (* let included p a b = List.for_all (fun i -> belongs p i b) a *)
 
   (* TODO: better complexity?... *)
   let deadlocks p a =
@@ -732,7 +721,7 @@ struct
       ) a;
     !ans
 
-  let ginsu a = assert false
+  let ginsu (_:t) = assert false
 end
 
 module Flow_graph =

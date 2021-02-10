@@ -35,37 +35,37 @@ let string_of_type_expr = function
 let rec string_of_expr e =
   let string_of_expr e =
     match e with
-      | EVar _ | EInt _ -> string_of_expr e
-      | _ -> "(" ^ string_of_expr e ^ ")"
+    | EVar _ | EInt _ -> string_of_expr e
+    | _ -> "(" ^ string_of_expr e ^ ")"
   in
-    match e with
-      | EAssign (s,e) -> Printf.sprintf "%s = %s" s (string_of_expr e)
-      | ENew_var (t,v) -> Printf.sprintf "%s %s" (string_of_type_expr t) v
-      | EVar v -> v
-      | EInt n -> string_of_int n
-      | EBool b -> if b then "true" else "false"
-      | EAdd (e1, e2) -> Printf.sprintf "%s+%s" (string_of_expr e1) (string_of_expr e2)
-      | ESub (e1, e2) -> Printf.sprintf "%s-%s" (string_of_expr e1) (string_of_expr e2)
-      | EMult (e1, e2) -> Printf.sprintf "%s*%s" (string_of_expr e1) (string_of_expr e2)
-      | EDiv (e1, e2) -> Printf.sprintf "%s/%s" (string_of_expr e1) (string_of_expr e2)
-      | ELe (e1, e2) -> Printf.sprintf "%s <= %s" (string_of_expr e1) (string_of_expr e2)
-      | ELt (e1, e2) -> Printf.sprintf "%s < %s" (string_of_expr e1) (string_of_expr e2)
-      | EIs_eq (e1, e2) -> Printf.sprintf "%s == %s" (string_of_expr e1) (string_of_expr e2)
-      | ENot e -> Printf.sprintf "!%s" (string_of_expr e)
-      | EAnd (e1, e2) -> Printf.sprintf "%s && %s" (string_of_expr e1) (string_of_expr e2)
-      | EOr (e1, e2) -> Printf.sprintf "%s || %s" (string_of_expr e1) (string_of_expr e2)
-      | EReturn e -> Printf.sprintf "return %s" (string_of_expr e)
-      | EAssert e -> Printf.sprintf "assert(%s)" (string_of_expr e)
+  match e with
+  | EAssign (s,e) -> Printf.sprintf "%s = %s" s (string_of_expr e)
+  | ENew_var (t,v) -> Printf.sprintf "%s %s" (string_of_type_expr t) v
+  | EVar v -> v
+  | EInt n -> string_of_int n
+  | EBool b -> if b then "true" else "false"
+  | EAdd (e1, e2) -> Printf.sprintf "%s+%s" (string_of_expr e1) (string_of_expr e2)
+  | ESub (e1, e2) -> Printf.sprintf "%s-%s" (string_of_expr e1) (string_of_expr e2)
+  | EMult (e1, e2) -> Printf.sprintf "%s*%s" (string_of_expr e1) (string_of_expr e2)
+  | EDiv (e1, e2) -> Printf.sprintf "%s/%s" (string_of_expr e1) (string_of_expr e2)
+  | ELe (e1, e2) -> Printf.sprintf "%s <= %s" (string_of_expr e1) (string_of_expr e2)
+  | ELt (e1, e2) -> Printf.sprintf "%s < %s" (string_of_expr e1) (string_of_expr e2)
+  | EIs_eq (e1, e2) -> Printf.sprintf "%s == %s" (string_of_expr e1) (string_of_expr e2)
+  | ENot e -> Printf.sprintf "!%s" (string_of_expr e)
+  | EAnd (e1, e2) -> Printf.sprintf "%s && %s" (string_of_expr e1) (string_of_expr e2)
+  | EOr (e1, e2) -> Printf.sprintf "%s || %s" (string_of_expr e1) (string_of_expr e2)
+  | EReturn e -> Printf.sprintf "return %s" (string_of_expr e)
+  | EAssert e -> Printf.sprintf "assert(%s)" (string_of_expr e)
 
 type t = expr Prog.t
 
 let string_of_action = function
   | Prog.P m ->
-      Printf.sprintf "lock(%s);" m
+    Printf.sprintf "lock(%s);" m
   | Prog.V m ->
-      Printf.sprintf "unlock(%s);" m
+    Printf.sprintf "unlock(%s);" m
   | Prog.Cmd e ->
-      Printf.sprintf "%s;" (string_of_expr e)
+    Printf.sprintf "%s;" (string_of_expr e)
 
 let rec normalize_constr = function
   | ENot (ENot (e)) -> normalize_constr e
@@ -105,25 +105,25 @@ let disjunctive_normal_form e =
     | e -> [e]
   in
   let e = normalize_constr e in
-    List.map conj (disj e)
+  List.map conj (disj e)
 
 let rec to_string ?(indent=0) p =
   let to_string ?(indent=indent+1) p = to_string ~indent p in
   let i = String.make (2*indent) ' ' in
   match p with
-    | Prog.Seq l ->
-        String.concat "\n" (List.map (to_string ~indent) l)
-    | Prog.Par l ->
-        i ^ "{\n" ^ String.concat "\n}|{\n" (List.map to_string l) ^ "\n};"
-    | Prog.If (e,p1,p2) ->
-        Printf.sprintf "%sif (%s) {\n%s\n}\nelse\n{\n%s\n}" i (string_of_expr e) (to_string p1) (to_string p2)
-    | Prog.While (e,p) ->
-        Printf.sprintf "%swhile (%s) {\n%s\n%s}" i (string_of_expr e) (to_string p) i
-    | Prog.Action a ->
-        i ^ string_of_action a
-    | Prog.Call _ ->
-        (* TODO *)
-        assert false
+  | Prog.Seq l ->
+    String.concat "\n" (List.map (to_string ~indent) l)
+  | Prog.Par l ->
+    i ^ "{\n" ^ String.concat "\n}|{\n" (List.map to_string l) ^ "\n};"
+  | Prog.If (e,p1,p2) ->
+    Printf.sprintf "%sif (%s) {\n%s\n}\nelse\n{\n%s\n}" i (string_of_expr e) (to_string p1) (to_string p2)
+  | Prog.While (e,p) ->
+    Printf.sprintf "%swhile (%s) {\n%s\n%s}" i (string_of_expr e) (to_string p) i
+  | Prog.Action a ->
+    i ^ string_of_action a
+  | Prog.Call _ ->
+    (* TODO *)
+    assert false
 
 let to_string p = to_string p
 
@@ -140,50 +140,50 @@ let rec inline decls p =
     (* TODO: replace arguments *)
     ignore a;
     let ans = ref None in
-      List.iter
-        (fun (_, name, _, prog) ->
-           if name = f then
-             ans := Some prog
-        ) decls;
-      match !ans with
-        | Some ans -> ans
-        | None ->
-            failwith (Printf.sprintf "Reference to undefined function \"%s\"." f)
+    List.iter
+      (fun (_, name, _, prog) ->
+         if name = f then
+           ans := Some prog
+      ) decls;
+    match !ans with
+    | Some ans -> ans
+    | None ->
+      failwith (Printf.sprintf "Reference to undefined function \"%s\"." f)
   in
   (* TODO: generic iterator... *)
   let rec return x p =
     let return = return x in
-      match p with
-        | Action (Cmd (EReturn e)) -> Action (Cmd (EAssign (x,e)))
-        | Action _ | Call _ -> p
-        | Seq l -> Seq (List.map return l)
-        | Par l -> Par (List.map return l)
-        | If (b,p1,p2) -> If (b, return p1, return p2)
-        | While (e,p) -> While(e, return p)
+    match p with
+    | Action (Cmd (EReturn e)) -> Action (Cmd (EAssign (x,e)))
+    | Action _ | Call _ -> p
+    | Seq l -> Seq (List.map return l)
+    | Par l -> Par (List.map return l)
+    | If (b,p1,p2) -> If (b, return p1, return p2)
+    | While (e,p) -> While(e, return p)
   in
   let inline = inline decls in
-    match p with
-      | Action _ -> p
-      | Seq l -> Seq (List.map inline l)
-      | Par l -> Par (List.map inline l)
-      | If (b, p1, p2) -> If (b, inline p1, inline p2)
-      | While (e, p) -> While (e, inline p)
-      | Call (f,a,x) ->
-          (
-            match x with
-              | Some x ->
-                  return x (inline (resolve f a))
-              | None ->
-                  inline (resolve f a)
-          )
+  match p with
+  | Action _ -> p
+  | Seq l -> Seq (List.map inline l)
+  | Par l -> Par (List.map inline l)
+  | If (b, p1, p2) -> If (b, inline p1, inline p2)
+  | While (e, p) -> While (e, inline p)
+  | Call (f,a,x) ->
+    (
+      match x with
+      | Some x ->
+        return x (inline (resolve f a))
+      | None ->
+        inline (resolve f a)
+    )
 
 type 'a bracket_state =
-    {
-      bs_defined_m : string list; (* Defined mutexes. *)
-      bs_opened_m : (string * (Pos.t * Pos.t)) list; (* Opened mutexes. *)
-      bs_taken_m : (string * (Pos.t * Pos.t * Pos.t * Pos.t)) list; (* Intervals where mutexes are taken (the two faces of the forbidden interval). *)
-      bs_context : bool -> Pos.t -> Pos.t; (* The current context for positions. The boolean indicate wheter we want the maximal context (used for parallels). *)
-    }
+  {
+    bs_defined_m : string list; (* Defined mutexes. *)
+    bs_opened_m : (string * (Pos.t * Pos.t)) list; (* Opened mutexes. *)
+    bs_taken_m : (string * (Pos.t * Pos.t * Pos.t * Pos.t)) list; (* Intervals where mutexes are taken (the two faces of the forbidden interval). *)
+    bs_context : bool -> Pos.t -> Pos.t; (* The current context for positions. The boolean indicate wheter we want the maximal context (used for parallels). *)
+  }
 
 (* TODO: also check for definition of variables and access conflicts of
  * variables *)
@@ -258,7 +258,7 @@ let rec brackets s = function
       bs_taken_m = Array.fold_left (fun tk s -> s.bs_taken_m@tk) s.bs_taken_m ss;
       bs_context = s.bs_context; (* TODO: is it ok? *)
     }
-  | If (e,p1,p2) ->
+  | If (_,p1,p2) ->
     let s1 =
       brackets
         {s with
@@ -282,7 +282,7 @@ let rec brackets s = function
       bs_taken_m = s1.bs_taken_m@s2.bs_taken_m;
       bs_context = s.bs_context; (*TODO: is it ok? *)
     }
-  | While (e, p) ->
+  | While (_, p) ->
     let s' =
       brackets
         {s with
@@ -306,14 +306,12 @@ let brackets p =
         bs_defined_m = [];
         bs_opened_m = [];
         bs_taken_m = [];
-        bs_context = (fun max -> id);
+        bs_context = (fun _ -> id);
       } p
   in
-    if List.length s.bs_opened_m <> 0 then
-      failwith (Printf.sprintf "The following mutexes are not released: %s." (String.concat ", " (List.map fst s.bs_opened_m)));
-    s.bs_taken_m
-
-let brackets_with_faces p = brackets p
+  if List.length s.bs_opened_m <> 0 then
+    failwith (Printf.sprintf "The following mutexes are not released: %s." (String.concat ", " (List.map fst s.bs_opened_m)));
+  s.bs_taken_m
 
 let brackets p =
   List.map
@@ -325,52 +323,19 @@ let forbidden p =
   let brackets = brackets p in
   let mutexes =
     let ans = ref [] in
-      List.iter (fun (m, _) -> ans := List.add_uniq m !ans) brackets;
-      !ans
+    List.iter (fun (m, _) -> ans := List.add_uniq m !ans) brackets;
+    !ans
   in
   let ans = ref (Region.create ()) in
-    let push i = ans := Region.add p i !ans in
-    let push = List.iter push in
-      List.iter
-        (fun m ->
-           List.iter_tail
-             (fun x t ->
-                List.iter (fun y -> push (Int.meet p x y)) t
-             ) (List.assoc_all m brackets)
-        ) mutexes;
-      !ans
+  let push i = ans := Region.add p i !ans in
+  let push = List.iter push in
+  List.iter
+    (fun m ->
+       List.iter_tail
+         (fun x t ->
+            List.iter (fun y -> push (Int.meet p x y)) t
+         ) (List.assoc_all m brackets)
+    ) mutexes;
+  !ans
 
-let allowed p =
-  Region.compl p (forbidden p)
-
-(*
-let components p =
-  let brackets = brackets_with_faces p in
-  let mutexes =
-    let ans = ref [] in
-      List.iter (fun (m, _) -> ans := List.add_uniq m !ans) brackets;
-      !ans
-  in
-  let forbidden = ref (Region.create ()) in
-  let a = ref CRegion.everything in
-    let push (x1,x2,x1',x2') (y1,y2,y1',y2') =
-      let x = Int.make (x1,x2') in
-      let y = Int.make (y1,y2') in
-        match Int.meet x y with
-          (* TODO: really handle lists *)
-          | [i] ->
-              assert false
-              (*
-              forbidden := Region.add i !forbidden;
-              let ai = CRegion.of_tiling [i] [Int.make (x1,y2'); Int.make (y1,x2'); Int.make (Pos.sup x2 y2,Pos.top); Int.make (Pos.bot,Pos.inf x1' y1')] in
-                a := CRegion.meet !forbidden ai !a;
-                (* Printf.printf "a:\n%s\n%!" (CRegion.to_string p !a) *)
-             *)
-          | [] -> ()
-    in
-      List.iter
-        (fun m ->
-           List.iter_pairs push (List.assoc_all m brackets)
-        ) mutexes;
-      !forbidden, !a
-*)
+let allowed p = Region.compl p (forbidden p)

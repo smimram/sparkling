@@ -16,6 +16,7 @@ let () =
     try
       Parser.main Lexer.token lexbuf
     with
+    (*
     | Failure "lexing: empty token" ->
       let pos = (Lexing.lexeme_end_p lexbuf) in
       let err =
@@ -24,6 +25,7 @@ let () =
           (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
       in
       failwith err
+    *)
     | Parsing.Parse_error ->
       let pos = (Lexing.lexeme_end_p lexbuf) in
       let err =
