@@ -12,6 +12,7 @@ philosophers:
 	./philosophers 4 > philo.sparkling
 	rm philosophers
 	dune exec ./sparkling.exe philo.sparkling
+	rm philo.sparkling
 
 ci:
 	svn ci -m "Worked on sparkling."
