@@ -10,7 +10,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Install packages
         run: sudo apt-get install ocaml menhir js-of-ocaml dune
-      - name: Build
+      - name: Run tests
+        run: make -C test
+      - name: Build website
         run: make -C website
       - name: Generate pages
         run: |

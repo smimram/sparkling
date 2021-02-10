@@ -9,4 +9,3 @@ all: sparkling
 
 sparkling:
 	@$(MAKE) -C ../src
-
