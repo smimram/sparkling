@@ -15,7 +15,7 @@ jobs:
       - name: Generate pages
         run: |
           mkdir public
-          cp website/index.html website/*.js website/*.css public/
+          cp website/*.html website/*.js website/*.css public/
       - name: Deploy to GitHub Pages
         if: success()
         uses: crazy-max/ghaction-github-pages@v2
