@@ -8,9 +8,7 @@ kiss: all
 	dune exec ./sparkling.exe kiss.sparkling
 
 philosophers:
-	ocamlopt philosophers.ml -o philosophers
-	./philosophers 4 > philo.sparkling
-	rm philosophers
+	dune exec ./philosophers.exe 4 > philo.sparkling
 	dune exec ./sparkling.exe philo.sparkling
 	rm philo.sparkling
 

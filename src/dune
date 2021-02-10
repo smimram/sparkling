@@ -17,3 +17,8 @@
  (modules sparkling)
  (libraries sparkling)
 )
+
+(executable
+ (name philosophers)
+ (modules philosophers)
+)
