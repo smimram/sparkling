@@ -499,7 +499,7 @@ struct
           let eb = List.map_pairs2 pair e' b in
           [PWhile PBot],eb@m@m',[PWhile PBot]
 
-  let compl p i =
+  let compl p (i:t) =
     let b,m,e = compl p i in
     let b = List.map (fun t -> PBot, t) b in
     let e = List.map (fun t -> t, PTop) e in
