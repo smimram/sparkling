@@ -9,7 +9,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install packages
-        run: apt install ocaml menhir js-of-ocaml dune
+        run: sudo apt-get install ocaml menhir js-of-ocaml dune
       - name: Build
         run: make
       - name: Gen dummy page
@@ -26,8 +26,7 @@ jobs:
             </body>
           </html>
           EOL
-      -
-        name: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
         if: success()
         uses: crazy-max/ghaction-github-pages@v2
         with:
