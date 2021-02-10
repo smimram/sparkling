@@ -1,6 +1,8 @@
 open Js_of_ocaml
 module Html = Dom_html
 
+open Helper
+
 let doc = Html.document
 let button txt action =
   let button_type = Js.string "button" in
@@ -14,8 +16,12 @@ let debug s = Firebug.console##debug (Js.string s)
 let jsget x = Js.Opt.get x (fun () -> assert false)
 
 (** Replace [c] by [t] in [s]. *)
-let replace c t s =
+let replace_char c t s =
   String.concat t (String.split_on_char c s)
+
+(** Replace [o] by [n] in [s]. *)
+let replace o n s =
+  String.concat n (String.split_on_string o s)
 
 open Prog
 
@@ -27,14 +33,14 @@ let run _ =
   let error s = status ("<em style=\"color:red\">" ^ s ^ "</em>") in
   let set id s =
     let p = jsget (doc##getElementById(Js.string id)) in
-    let s = replace '\n' "<br/>" s in
+    let s = replace_char '\n' "<br/>" s in
     p##.innerHTML := Js.string s
   in
   let set_region id r =
     let r = String.split_on_char '\n' r in
     let r = List.map
         (fun tr ->
-           let tr = Str.split (Str.regexp "—") tr |> List.map (fun td -> "<td>"^td^"</td>") |> String.concat "<td>—</td>" in
+           let tr = String.split_on_string "—" tr |> List.map (fun td -> "<td>"^td^"</td>") |> String.concat "<td>—</td>" in
            "<tr>"^tr^"</tr>"
         ) r
     in
