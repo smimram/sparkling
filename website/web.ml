@@ -4,12 +4,6 @@ module Html = Dom_html
 open Helper
 
 let doc = Html.document
-let button txt action =
-  let button_type = Js.string "button" in
-  let b = Html.createInput ~_type:button_type doc in
-  b##.value := Js.string txt;
-  b##.onclick := Dom_html.handler (fun _ -> action (); Js._true);
-  b
 
 let debug s = Firebug.console##debug (Js.string s)
 
@@ -24,6 +18,11 @@ let replace o n s =
   String.concat n (String.split_on_string o s)
 
 open Prog
+
+let examples () =
+  let select = jsget (doc##getElementById(Js.string "ex-prog")) in
+  let select = jsget (Html.CoerceTo.select select) in
+  ignore select
 
 let run _ =
   let prog = jsget (Html.CoerceTo.textarea (jsget (doc##getElementById(Js.string "prog")))) in
@@ -99,6 +98,7 @@ let run _ =
       error (Printexc.to_string e);
       Js._false
   in
+  examples ();
   go##.onclick := Html.handler handler;
   (* ignore (handler ()); *)
   Js._true

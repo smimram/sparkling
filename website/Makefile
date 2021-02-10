@@ -1,5 +1,15 @@
 all: sparkling.js
 
+examples.ml:
+	echo "let list = [" > $@
+	for i in $(wildcard ../test/*.sparkling); do \
+	  echo "\"`basename $$i`\", " >> $@; \
+	  echo "\"" >> $@; \
+	  echo "`cat $$i`" >> $@; \
+	  echo "\";" >> $@; \
+	done; \
+	echo "]" >> $@
+
 sparkling.js:
 	@rm -f $@
 	@dune build

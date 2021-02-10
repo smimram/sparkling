@@ -3,5 +3,10 @@
  (modes js)
  (libraries js_of_ocaml sparkling)
  (preprocess (pps js_of_ocaml-ppx))
- (modules helper web)
+ (modules examples helper web)
+)
+
+(rule
+ (target examples.ml)
+ (action (run make examples.ml))
 )
