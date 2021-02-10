@@ -20,14 +20,23 @@ let replace o n s =
 open Prog
 
 let examples () =
+  let prog = jsget (Html.CoerceTo.textarea (jsget (doc##getElementById(Js.string "prog")))) in
   let select = jsget (doc##getElementById(Js.string "ex-prog")) in
   let select = jsget (Html.CoerceTo.select select) in
-  ignore select
+  let () =
+    let options = ref "" in
+    List.iter
+      (fun (fname, _) ->
+         options := !options ^ "<option>" ^ fname ^ "</option>"
+      ) Examples.list;
+    select##.innerHTML := Js.string !options;
+  in
+  select##.onchange := Html.handler (fun _ -> prog##.innerHTML := Js.string (List.assoc (Js.to_string select##.value) Examples.list); Js._true)
 
 let run _ =
   let prog = jsget (Html.CoerceTo.textarea (jsget (doc##getElementById(Js.string "prog")))) in
-  let go = jsget (doc##getElementById(Js.string "go")) in
-  let status = jsget (doc##getElementById(Js.string "status")) in
+  let go = jsget (doc##getElementById (Js.string "go")) in
+  let status = jsget (doc##getElementById (Js.string "status")) in
   let status s = status##.innerHTML := Js.string s in
   let error s = status ("<em style=\"color:red\">" ^ s ^ "</em>") in
   let set id s =
@@ -75,17 +84,6 @@ let run _ =
       status "Computing deadlocks...";
       let deadlocks = "  " ^ String.concat ", " (List.map (Pos.to_string prog) (Region.deadlocks prog fundamental)) ^ "\n" in
       set "deadlocks" deadlocks;
-           (*
-  Printf.printf "* Deadlocks:\n%s\n%!" deadlocks;
-  let deadlocks =
-    let print _ =
-      (* List.fold_left (fun s e -> Printf.sprintf "%s  %s\n" s (Lang.string_of_action e)) "" (Pos.realize prog t) *)
-      "" (* TODO *) (* Printf.sprintf "  %s\n" (Prog.to_string (Pos.realize prog t)) *)
-    in
-    String.concat "\n" (List.map print (Region.deadlocks prog fundamental))
-  in
-  Printf.printf "* Deadlock realizers:\n%s\n%!" deadlocks;
-  *)
       status "Finished.";
       Js._true
     with
@@ -98,7 +96,7 @@ let run _ =
       error (Printexc.to_string e);
       Js._false
   in
-  examples ();
+  (* examples (); *)
   go##.onclick := Html.handler handler;
   (* ignore (handler ()); *)
   Js._true

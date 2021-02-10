@@ -9,4 +9,5 @@
 (rule
  (target examples.ml)
  (action (run make examples.ml))
+ (deps (glob_files ../test/*.sparkling))
 )
