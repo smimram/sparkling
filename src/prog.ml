@@ -158,12 +158,12 @@ module Int = struct
   let rec meet p ((t1,t2) as i) ((t1',t2') as i') =
     let meet p i j = meet p i j in
     if !debug_meet_full then
-      debug (Printf.sprintf "Int.meet: %s /\\ %s." (to_string p i) (to_string p i'));
+      debug (Printf.sprintf "Int.meet: %s ∧ %s." (to_string p i) (to_string p i'));
     let meet p i j =
       let m = meet p i j in
       if !debug_meet_full then
         (
-          debug (Printf.sprintf "Int.meet: %s /\\ %s = %s." (to_string p i) (to_string p j) (String.concat " , " (List.map (to_string p) m)));
+          debug (Printf.sprintf "Int.meet: %s ∨ %s = %s." (to_string p i) (to_string p j) (String.concat " , " (List.map (to_string p) m)));
           List.iter (fun i -> assert (valid i)) m
         );
       m
@@ -335,7 +335,7 @@ module Int = struct
 
   let meet p i j =
     let m = meet p i j in
-    if !debug_meet then debug (Printf.sprintf "Int.meet: %s /\\ %s = %s." (to_string p i) (to_string p j) (String.concat " , " (List.map (to_string p) m)));
+    if !debug_meet then debug (Printf.sprintf "Int.meet: %s ∧ %s = %s." (to_string p i) (to_string p j) (String.concat " , " (List.map (to_string p) m)));
     m
 
   let included p i j = meet p i j = [i]
