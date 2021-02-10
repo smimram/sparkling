@@ -1,5 +1,6 @@
 (lang dune 2.1)
 (name sparkling)
+(allow_approximate_merlin)
 
 (generate_opam_files true)
 
