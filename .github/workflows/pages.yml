@@ -11,21 +11,11 @@ jobs:
       - name: Install packages
         run: sudo apt-get install ocaml menhir js-of-ocaml dune
       - name: Build
-        run: make
-      - name: Gen dummy page
+        run: make -C website
+      - name: Generate pages
         run: |
           mkdir public
-          cat > public/index.html <<EOL
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <title>GitHub Pages deployed!</title>
-            </head>
-            <body>
-              <p>GitHub Pages with <strong>${{ github.sha }}</strong> commit ID has been deployed through <a href="https://github.com/marketplace/actions/github-pages">GitHub Pages action</a> successfully.</p>
-            </body>
-          </html>
-          EOL
+          cp website/index.html website/*.js website/*.css public/
       - name: Deploy to GitHub Pages
         if: success()
         uses: crazy-max/ghaction-github-pages@v2
