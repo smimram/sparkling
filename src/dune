@@ -22,3 +22,9 @@
  (name philosophers)
  (modules philosophers)
 )
+
+(test
+ (name test_prog)
+ (modules test_prog)
+ (libraries sparkling)
+)

@@ -1,6 +1,9 @@
 all:
 	@dune build
 
+runtest:
+	dune runtest
+
 test: all
 	OCAMLRUNPARAM=b dune exec ./sparkling.exe
 
