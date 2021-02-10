@@ -8,7 +8,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name Install packages
+      - name: Install packages
         run: apt install ocaml menhir js-of-ocaml dune
       - name: Build
         run: make
