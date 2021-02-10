@@ -64,12 +64,12 @@ module Pos = struct
       | t -> "(" ^ to_string p t ^ ")"
     in
     match (p, t) with
-    | _, PBot -> "."
-    | _, PTop -> "!"
+    | _, PBot -> "⊥"
+    | _, PTop -> "⊤"
     | Seq l, PSeq (n, t) ->
       (* TODO: enhance this *)
       let ans = ref "" in
-      for _ = 0 to n - 1 do ans := !ans ^ "X;" done;
+      for _ = 0 to n - 1 do ans := !ans ^ "□;" done;
       ans := !ans ^ to_string (List.ith l n) t;
       for _ = 0 to (List.length l) - (n+1) - 1 do ans := !ans ^ ";_" done;
       !ans
@@ -81,7 +81,7 @@ module Pos = struct
       if b then to_string p t ^ "+_"
       else "_+" ^ to_string p t
     | _, PIf _ -> assert false
-    | While (_, p), PWhile t -> "W" ^ to_string p t
+    | While (_, p), PWhile t -> (to_string p t) ^ "*"
     | _, PWhile _ -> assert false
 
   let rec to_string_simple t =
@@ -90,12 +90,12 @@ module Pos = struct
       | t -> "(" ^ to_string_simple t ^ ")"
     in
     match t with
-    | PBot -> "."
-    | PTop -> "!"
+    | PBot -> "⊥"
+    | PTop -> "⊤"
     | PSeq (n, t) ->
       if n = max_int then "...;" ^ (to_string t) else
         let ans = ref "" in
-        for _ = 0 to n - 1 do ans := !ans ^ "X;" done;
+        for _ = 0 to n - 1 do ans := !ans ^ "□;" done;
         ans := !ans ^ to_string t;
         !ans ^ ";"
     | PPar l ->
@@ -103,7 +103,7 @@ module Pos = struct
     | PIf (b,t) ->
       if b then to_string t ^ "+_"
       else "_+" ^ to_string t
-    | PWhile t -> "W(" ^ to_string_simple t ^ ")"
+    | PWhile t -> "(" ^ to_string_simple t ^ ")*"
 
   let bot (_ : 'a prog) = PBot
 
