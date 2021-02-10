@@ -11,4 +11,7 @@ h1 {
 
 p.output {
     font-family: monospace;
+    background-color: azure;
+    padding: 2ex;
+    border-radius: 10px;
 }
