@@ -12,5 +12,7 @@
 *.cmxa
 *.o
 *.agdai
+.merlin
 ._d
 ._ncdi
+_build
