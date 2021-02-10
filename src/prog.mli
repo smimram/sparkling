@@ -130,21 +130,3 @@ sig
 
   val iter_breadth : (Pos.t -> 'a prog -> Pos.t -> unit) -> 'a t -> unit
 end
-
-(*
-(** Components region. *)
-module CRegion :
-sig
-  type t
-
-  val everything : t
-
-  val of_tiling : Region.t -> Int.t list -> t
-
-  val to_string : 'a prog -> t -> string
-
-  (* val to_dot : 'a prog -> t -> string *)
-
-  val meet : Region.t -> t -> t -> t
-end
-*)

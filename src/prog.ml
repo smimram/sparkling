@@ -127,9 +127,9 @@ struct
         "_+" ^ to_string t
     | PWhile t -> "W(" ^ to_string_simple t ^ ")"
 
-  let bot p = PBot
+  let bot (_ : 'a prog) = PBot
 
-  let top p = PTop
+  let top (_ : 'a prog) = PTop
 
   (* TODO: we should check for imbricated loops! (in which case it is always le) *)
   let rec le t1 t2 =
@@ -358,6 +358,7 @@ struct
           let m2 = meet p (PBot,t2) (PBot,t2') in
           List.map_pairs2 (fun (t1,t2) (t1',t2') -> assert (t2 = PTop && t1' = PBot); k (t1, t2')) m1 m2
       )
+    | _ -> assert false
 
   let meet p i j =
     let m = meet p i j in
@@ -498,6 +499,7 @@ struct
         let e' = List.map k e' in
         let eb = List.map_pairs2 pair e' b in
         [PWhile PBot],eb@m@m',[PWhile PBot]
+    | _ -> assert false
 
   let compl p (i:t) =
     let b,m,e = compl p i in
@@ -913,255 +915,3 @@ struct
       succ Pos.bot
  *)
 end
-
-(*
-module CRegion =
-struct
-  type component =
-      {
-        component : Int.t;
-        (* Cofaces, they are filled later on. *)
-        mutable succ : morphism list; (* morphisms starting from here *)
-        mutable pred : morphism list; (* morphisms going here *)
-      }
-  and morphism =
-      {
-        morphism : Int.t;
-        source : component;
-        target : component;
-        (* Cofaces, they are filled later on. *)
-        mutable after : relation list; (* relations after this *)
-        mutable before : relation list;
-      }
-  and relation =
-      {
-        relation : Int.t;
-        down  : morphism;
-        up    : morphism;
-        left  : morphism;
-        right : morphism;
-      }
-
-  type t =
-      {
-        mutable components : component list;
-        mutable morphisms  : morphism list;
-        mutable relations  : relation list;
-      }
-
-  let to_string p a =
-    let ans = ref "" in
-    let print i a =
-      ans := Printf.sprintf "%s %d\n%s" !ans i (Region.to_string p a)
-    in
-    (*
-    let print1 a =
-      let s =
-        List.fold_left
-          (fun s m ->
-             Printf.sprintf "%s  %s\t%s\t-->\t%s\n" s
-               (Int.to_string p m.morphism)
-               (Int.to_string p m.source.component)
-               (Int.to_string p m.target.component)
-          ) "" a
-      in
-        ans := Printf.sprintf "%s %d\n%s" !ans 1 s
-    in
-    *)
-      print 0 (List.map (fun c -> c.component) a.components);
-      print 1 (List.map (fun c -> c.morphism) a.morphisms);
-      (* print1 a.morphisms; *)
-      print 2 (List.map (fun r -> r.relation) a.relations);
-      !ans
-
-  let create () =
-    {
-      components = [];
-      morphisms  = [];
-      relations  = [];
-    }
-
-  let create_component i =
-    {
-      component = i;
-      pred = [];
-      succ = [];
-    }
-
-  let everything =
-    let ans = create () in
-      ans.components <- [create_component Int.everything];
-      ans
-
-  let of_tiling f a =
-    let g = create () in
-      g.components <-
-        List.may_map
-          (fun i ->
-             if Region.belongs i f then
-               None
-             else
-               Some (create_component i)
-          ) a;
-      g.morphisms <-
-        List.may_map_pairs
-         (fun c1 c2 ->
-            let i1 = c1.component in
-            let i2 = c2.component in
-              match Int.meet i1 i2 with
-                (* TODO: really handle lists *)
-                | [i] ->
-                    if Region.belongs i f then
-                      None
-                    else
-                      let source, target =
-                        let s1, t1 = Int.bounds i1 in
-                        let s2, t2 = Int.bounds i2 in
-                          (* TODO: is this really ok? *)
-                          if Pos.le s1 s2 then
-                            c1, c2
-                          else
-                            c2, c1
-                      in
-                      let morph =
-                        {
-                          morphism = i;
-                          source = source;
-                          target = target;
-                          after = [];
-                          before = [];
-                        }
-                      in
-                        Some morph
-                | [] -> None
-         ) g.components;
-      (* TODO: we suppose that there are no relations! *)
-      g.relations <- [];
-      g
-
-  let assoc_component i a =
-    List.find (fun c -> c.component = i) a.components
-
-  let assoc_morphism i a =
-    List.find (fun c -> c.morphism = i) a.morphisms
-
-  let meet f a b =
-    (* TODO: really handle lists *)
-    let get_some = function
-      | [x] -> x
-      | _ -> assert false
-    in
-    let ans = create () in
-    let inter_cc c1 c2 =
-      assoc_component (get_some (Int.meet c1.component c2.component)) ans
-    in
-    let inter_cm c m =
-      assoc_morphism (get_some (Int.meet c.component m.morphism)) ans
-    in
-    let add_components () =
-      ans.components <-
-        List.may_map_pairs2
-          (fun c1 c2 ->
-             match Int.meet c1.component c2.component with
-               (* TODO *)
-               | [i] ->
-                   if Region.belongs i f then
-                     None
-                   else
-                     Some (create_component i)
-               | [] -> None
-          ) a.components b.components
-    in
-    let add_morphisms01 c m =
-      let m =
-        List.may_map_pairs2
-          (fun c m ->
-             match Int.meet c.component m.morphism with
-               (* TODO *)
-               | [i] ->
-                   if Region.belongs i f then
-                     None
-                   else
-                     Some
-                       {
-                         morphism = i;
-                         source = inter_cc c m.source;
-                         target = inter_cc c m.target;
-                         after = [];
-                         before = [];
-                       }
-               | [] -> None
-          ) c m
-      in
-        ans.morphisms <- m @ ans.morphisms
-    in
-    let add_relations02 c r =
-      let r =
-        List.may_map_pairs2
-          (fun c r ->
-             match Int.meet c.component r.relation with
-               (* TODO *)
-               | [i] ->
-                   if Region.belongs i f then
-                     None
-                   else
-                     Some
-                       {
-                         relation = i;
-                         down = inter_cm c r.down;
-                         up = inter_cm c r.up;
-                         left = inter_cm c r.left;
-                         right = inter_cm c r.right;
-                       }
-               | [] -> None
-          ) c r
-      in
-        ans.relations <- r @ ans.relations
-    in
-    let add_relations11 m1 m2 =
-      let r =
-        List.may_map_pairs2
-          (fun m1 m2 ->
-             match Int.meet m1.morphism m2.morphism with
-               (* TODO *)
-               | [i] ->
-                   if Region.belongs i f then
-                     None
-                   else
-                     Some
-                       {
-                         relation = i;
-                         down = inter_cm m1.source m2;
-                         up = inter_cm m1.target m2;
-                         left = inter_cm m2.source m1;
-                         right = inter_cm m2.target m1;
-                       }
-               | [] -> None
-          ) m1 m2
-      in
-        ans.relations <- r @ ans.relations
-    in
-      add_components ();
-      add_morphisms01 a.components b.morphisms;
-      add_morphisms01 b.components a.morphisms;
-      add_relations02 a.components b.relations;
-      add_relations02 b.components a.relations;
-      add_relations11 a.morphisms b.morphisms;
-      ans
-
-  (** Fill in the cofaces. *)
-  let coface a =
-    List.iter
-      (fun r ->
-         r.down.after <- r :: r.down.after;
-         r.up.before <- r :: r.up.before;
-         r.left.after <- r :: r.left.after;
-         r.right.before <- r :: r.right.before
-      ) a.relations;
-    List.iter
-      (fun m ->
-         m.source.succ <- m :: m.source.succ;
-         m.target.pred <- m :: m.target.pred
-      ) a.morphisms
-end
-*)
