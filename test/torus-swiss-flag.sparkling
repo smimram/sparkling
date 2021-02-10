@@ -1,0 +1,23 @@
+void main()
+{
+  mutex a;
+  mutex b;
+
+  {
+    while(true)
+      {
+        lock(a);
+        lock(b);
+        unlock(b);
+        unlock(a);
+      };
+  }|{
+    while(true)
+      {
+        lock(b);
+        lock(a);
+        unlock(a);
+        unlock(b);
+      };
+  };
+}
