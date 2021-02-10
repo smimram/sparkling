@@ -38,20 +38,20 @@ let rec to_string p =
     | p -> "(" ^ to_string p ^ ")"
   in
   match p with
-    | Seq l ->
-      String.concat ";" (List.map to_string l)
-    | Par l ->
-      String.concat "|" (List.map to_string l)
-    | Action (P m) ->
-      "P(" ^ m ^ ")"
-    | Action (V m) ->
-      "V(" ^ m ^ ")"
-    | Action (Cmd _) -> "?"
-    | If (_,p1,p2) ->
-      Printf.sprintf "(%s)+(%s)" (to_string p1) (to_string p2)
-    | While (_,p) ->
-      "W(" ^ to_string p ^ ")"
-    | Call _ -> "C"
+  | Seq l ->
+    String.concat ";" (List.map to_string l)
+  | Par l ->
+    String.concat "|" (List.map to_string l)
+  | Action (P m) ->
+    "P(" ^ m ^ ")"
+  | Action (V m) ->
+    "V(" ^ m ^ ")"
+  | Action (Cmd _) -> "?"
+  | If (_,p1,p2) ->
+    Printf.sprintf "(%s)+(%s)" (to_string p1) (to_string p2)
+  | While (_,p) ->
+    "W(" ^ to_string p ^ ")"
+  | Call _ -> "C"
 
 let prog_to_string = to_string
 
@@ -73,32 +73,32 @@ struct
       | t -> "(" ^ to_string p t ^ ")"
     in
     match (p, t) with
-      | _, PBot -> "."
-      | _, PTop -> "!"
-      | Seq l, PSeq (n, t) ->
-        (* TODO: enhance this *)
-        let ans = ref "" in
-        for i = 0 to n - 1 do
-          ans := !ans ^ "X;"
-        done;
-        ans := !ans ^ to_string (List.ith l n) t;
-        for i = 0 to (List.length l) - (n+1) - 1 do
-          ans := !ans ^ ";_"
-        done;
-        !ans
-      | _, PSeq _ -> assert false
-      | Par ll, PPar l ->
-        String.concat "|" (List.map2 to_string ll l)
-      | _, PPar _ -> assert false
-      | If (_, p, _), PIf (b,t) ->
-        if b then
-          to_string p t ^ "+_"
-        else
-          "_+" ^ to_string p t
-      | _, PIf _ -> assert false
-      | While (_, p), PWhile t ->
-        "W" ^ to_string p t
-      | _, PWhile _ -> assert false
+    | _, PBot -> "."
+    | _, PTop -> "!"
+    | Seq l, PSeq (n, t) ->
+      (* TODO: enhance this *)
+      let ans = ref "" in
+      for i = 0 to n - 1 do
+        ans := !ans ^ "X;"
+      done;
+      ans := !ans ^ to_string (List.ith l n) t;
+      for i = 0 to (List.length l) - (n+1) - 1 do
+        ans := !ans ^ ";_"
+      done;
+      !ans
+    | _, PSeq _ -> assert false
+    | Par ll, PPar l ->
+      String.concat "|" (List.map2 to_string ll l)
+    | _, PPar _ -> assert false
+    | If (_, p, _), PIf (b,t) ->
+      if b then
+        to_string p t ^ "+_"
+      else
+        "_+" ^ to_string p t
+    | _, PIf _ -> assert false
+    | While (_, p), PWhile t ->
+      "W" ^ to_string p t
+    | _, PWhile _ -> assert false
 
   let rec to_string_simple t =
     let to_string = function
@@ -106,26 +106,26 @@ struct
       | t -> "(" ^ to_string_simple t ^ ")"
     in
     match t with
-      | PBot -> "."
-      | PTop -> "!"
-      | PSeq (n, t) ->
-        if n = max_int then
-          "...;" ^ (to_string t)
-        else
-          let ans = ref "" in
-          for i = 0 to n - 1 do
-            ans := !ans ^ "X;"
-          done;
-          ans := !ans ^ to_string t;
-          !ans ^ ";"
-      | PPar l ->
-        String.concat "|" (List.map to_string l)
-      | PIf (b,t) ->
-        if b then
-          to_string t ^ "+_"
-        else
-          "_+" ^ to_string t
-      | PWhile t -> "W(" ^ to_string_simple t ^ ")"
+    | PBot -> "."
+    | PTop -> "!"
+    | PSeq (n, t) ->
+      if n = max_int then
+        "...;" ^ (to_string t)
+      else
+        let ans = ref "" in
+        for i = 0 to n - 1 do
+          ans := !ans ^ "X;"
+        done;
+        ans := !ans ^ to_string t;
+        !ans ^ ";"
+    | PPar l ->
+      String.concat "|" (List.map to_string l)
+    | PIf (b,t) ->
+      if b then
+        to_string t ^ "+_"
+      else
+        "_+" ^ to_string t
+    | PWhile t -> "W(" ^ to_string_simple t ^ ")"
 
   let bot p = PBot
 
@@ -134,24 +134,24 @@ struct
   (* TODO: we should check for imbricated loops! (in which case it is always le) *)
   let rec le t1 t2 =
     match (t1, t2) with
-      | PBot, _ -> true
-      | _, PBot -> false
-      | _, PTop -> true
-      | PTop, _ -> false
-      | PSeq (n1, t1), PSeq (n2, t2) ->
-        n1 < n2 || (n1 = n2 && le t1 t2)
-      | PPar l1, PPar l2 ->
-        List.for_all2 le l1 l2
-      | PIf (b1,t1), PIf (b2,t2) ->
-        if b1 <> b2 then raise Incompatible;
-        le t1 t2
-      | PWhile t1, PWhile t2 ->
-        (* Check for incompatibility. *)
-        ignore (le t1 t2 || le t2 t1);
-        true
-      | _ ->
-        debug (Printf.sprintf "le: cannot compare %s with %s." (to_string_simple t1) (to_string_simple t2));
-        assert false
+    | PBot, _ -> true
+    | _, PBot -> false
+    | _, PTop -> true
+    | PTop, _ -> false
+    | PSeq (n1, t1), PSeq (n2, t2) ->
+      n1 < n2 || (n1 = n2 && le t1 t2)
+    | PPar l1, PPar l2 ->
+      List.for_all2 le l1 l2
+    | PIf (b1,t1), PIf (b2,t2) ->
+      if b1 <> b2 then raise Incompatible;
+      le t1 t2
+    | PWhile t1, PWhile t2 ->
+      (* Check for incompatibility. *)
+      ignore (le t1 t2 || le t2 t1);
+      true
+    | _ ->
+      debug (Printf.sprintf "le: cannot compare %s with %s." (to_string_simple t1) (to_string_simple t2));
+      assert false
 
   let ge t1 t2 = le t2 t1
 end
@@ -196,168 +196,168 @@ struct
       m
     in
     match p,t1,t2,t1',t2' with
-      (* bot and top *)
-      | _,PBot,PBot,PBot,_ -> [t1,t2]
-      | _,PBot,PBot,_,_ -> []
-      | _,PTop,PTop,_,PTop -> [t1,t2]
-      | _,PTop,PTop,_,_ -> []
-      | _,PBot,_,PBot,PBot -> [t1',t2']
-      | _,_,_,PBot,PBot -> []
-      |_, _,PTop,PTop,PTop -> [t1',t2']
-      | _,_,_,PTop,PTop -> []
-      | _,PTop,PBot,_,_ -> []
-      | _,t1,t2,PBot,PTop -> [t1,t2]
-      | _,PBot,PTop,t1,t2 -> [t1,t2]
-      (* sequences *)
-      | Seq l,PBot,PSeq(n2,t2),PBot,PSeq(n2',t2') ->
-        if n2 < n2' then
-          [PBot,PSeq(n2,t2)]
-        else if n2 > n2' then
-          [PBot,PSeq(n2',t2')]
-        else
-          let p = List.nth l n2 in
-          List.map (fun (_,t) -> PBot,PSeq(n2,t)) (meet p (PBot,t2) (PBot,t2'))
-      | Seq l,PSeq(n1,t1),PTop,PSeq(n1',t1'),PTop ->
-        if n1 < n1' then
-          [PSeq(n1',t1'),PTop]
-        else if n1 > n1' then
-          [PSeq(n1,t1),PTop]
-        else
+    (* bot and top *)
+    | _,PBot,PBot,PBot,_ -> [t1,t2]
+    | _,PBot,PBot,_,_ -> []
+    | _,PTop,PTop,_,PTop -> [t1,t2]
+    | _,PTop,PTop,_,_ -> []
+    | _,PBot,_,PBot,PBot -> [t1',t2']
+    | _,_,_,PBot,PBot -> []
+    |_, _,PTop,PTop,PTop -> [t1',t2']
+    | _,_,_,PTop,PTop -> []
+    | _,PTop,PBot,_,_ -> []
+    | _,t1,t2,PBot,PTop -> [t1,t2]
+    | _,PBot,PTop,t1,t2 -> [t1,t2]
+    (* sequences *)
+    | Seq l,PBot,PSeq(n2,t2),PBot,PSeq(n2',t2') ->
+      if n2 < n2' then
+        [PBot,PSeq(n2,t2)]
+      else if n2 > n2' then
+        [PBot,PSeq(n2',t2')]
+      else
+        let p = List.nth l n2 in
+        List.map (fun (_,t) -> PBot,PSeq(n2,t)) (meet p (PBot,t2) (PBot,t2'))
+    | Seq l,PSeq(n1,t1),PTop,PSeq(n1',t1'),PTop ->
+      if n1 < n1' then
+        [PSeq(n1',t1'),PTop]
+      else if n1 > n1' then
+        [PSeq(n1,t1),PTop]
+      else
+        let p = List.nth l n1 in
+        List.map (fun (t,_) -> PSeq(n1,t),PTop) (meet p (t1,PTop) (t1',PTop))
+    | p,PBot,_,PSeq (n,_),_ ->
+      meet p (PSeq (n,PBot),t2) (t1',t2')
+    | p,PSeq (n,_),_,PBot,_ ->
+      meet p (t1,t2) (PSeq (n,PBot),t2')
+    | Seq l,_,PTop,_,PSeq (n,_) ->
+      meet p (t1,PSeq (n,PTop)) (t1',t2')
+    | Seq l,_,PSeq (n,_),_,PTop _ ->
+      meet p (t1,t2) (t1',PSeq (n,PTop))
+    | Seq l,PSeq(n1,t1),PSeq(n2,t2),PSeq(n1',t1'),PSeq(n2',t2') ->
+      if n2 < n1' || n1 > n2' then
+        []
+      else if n1 = n1' && n2 = n2' then
+        if n1 = n2 then
           let p = List.nth l n1 in
-          List.map (fun (t,_) -> PSeq(n1,t),PTop) (meet p (t1,PTop) (t1',PTop))
-      | p,PBot,_,PSeq (n,_),_ ->
-        meet p (PSeq (n,PBot),t2) (t1',t2')
-      | p,PSeq (n,_),_,PBot,_ ->
-        meet p (t1,t2) (PSeq (n,PBot),t2')
-      | Seq l,_,PTop,_,PSeq (n,_) ->
-        meet p (t1,PSeq (n,PTop)) (t1',t2')
-      | Seq l,_,PSeq (n,_),_,PTop _ ->
-        meet p (t1,t2) (t1',PSeq (n,PTop))
-      | Seq l,PSeq(n1,t1),PSeq(n2,t2),PSeq(n1',t1'),PSeq(n2',t2') ->
-        if n2 < n1' || n1 > n2' then
-          []
-        else if n1 = n1' && n2 = n2' then
-          if n1 = n2 then
-            let p = List.nth l n1 in
-            let m = meet p (t1,t2) (t1',t2') in
-            List.map (fun (t1,t2) -> PSeq (n1,t1), PSeq (n1,t2)) m
-          else
-            let m1 = meet (List.nth l n1) (t1,PTop) (t1',PTop) in
-            let m2 = meet (List.nth l n2) (PBot,t2) (PBot,t2') in
-            List.map_pairs2 (fun (t1,t1') (t2',t2) -> assert (t1' = PTop && t2' = PBot); PSeq (n1,t1), PSeq (n2,t2)) m1 m2
-        else
-          let t1,t1' =
-            if n1 < n1' then
-              PBot, PSeq(n1',t1')
-            else if n1 > n1' then
-              PSeq(n1,t1), PBot
-            else
-              PSeq(n1,t1), PSeq(n1',t1')
-          in
-          let t2,t2' =
-            if n2 < n2' then
-              PSeq(n2,t2), PTop
-            else if n2 > n2' then
-              PTop, PSeq(n2',t2')
-            else
-              PSeq(n2,t2), PSeq(n2',t2')
-          in
-          meet p (t1,t2) (t1',t2')
-      (* parallels *)
-      | Par l,PBot,_,PBot,_ ->
-        let bot = PPar (List.map (fun _ -> PBot) l) in
-        let m = meet p (bot,t2) (bot,t2') in
-        List.map (fun (t1,t2) -> assert (t1 = bot); PBot, t2) m
-      | Par l,_,PTop,_,PTop ->
-        let top = PPar (List.map (fun _ -> PTop) l) in
-        let m = meet p (t1,top) (t1',top) in
-        List.map (fun (t1,t2) -> assert (t2 = top); t1, PTop) m
-      | Par _,PBot,_,PPar tt1',_ ->
-        let bot = PPar (List.map (fun _ -> PBot) tt1') in
-        meet p (bot,t2) (t1',t2')
-      | Par _,PPar tt1,_,PBot,_ ->
-        let bot = PPar (List.map (fun _ -> PBot) tt1) in
-        meet p (t1,t2) (bot,t2')
-      | Par _,_,PPar tt2,_,PTop ->
-        let top = PPar (List.map (fun _ -> PTop) tt2) in
-        meet p (t1,t2) (t1',top)
-      | Par _,_,PTop,_,PPar tt2' ->
-        let top = PPar (List.map (fun _ -> PTop) tt2') in
-        meet p (t1,top) (t1',t2')
-      | Par l,PPar tt1,PPar tt2,PPar tt1',PPar tt2' ->
-        let ans = List.map5 (fun p t1 t2 t1' t2' -> meet p (t1,t2) (t1',t2')) l tt1 tt2 tt1' tt2' in
-        let ans = List.unsum ans in
-        List.map (fun tt -> PPar (List.map fst tt), PPar (List.map snd tt)) ans
-      (* if *)
-      | If _, PBot, PIf (b1,_), PBot, PIf (b2, _) ->
-        if b1 <> b2 then
-          [PBot,PBot]
-        else
-          let m = meet p (PIf(b1,PBot),t2) (PIf(b2,PBot),t2') in
-          List.map (fun (t1,t2) -> assert (t1 = PIf(b1,PBot)); PBot,t2) m
-      | If _, PBot, PIf (b, _), _, _ ->
-        meet p (PIf(b,PBot),t2) (t1',t2')
-      | If _, _, _, PBot, PIf (b, _) ->
-        meet p (t1,t2) (PIf(b,PBot),t2')
-      | If _, PIf (b1,_), PTop, PIf (b2,_), PTop ->
-        if b1 <> b2 then
-          [PTop,PTop]
-        else
-          let m = meet p (t1,PIf(b1,PTop)) (t1',PIf(b2,PTop)) in
-          List.map (fun (t1,t2) -> assert (t2 = PIf(b1,PTop)); t1,PTop) m
-      | If _, PIf (b,_), PTop, _, _ ->
-        meet p (t1,PIf(b,PTop)) (t1',t2')
-      | If _, _, _, PIf (b,_), PTop ->
-        meet p (t1,t2) (t1',PIf(b,PTop))
-      | If (_,p1,p2), PIf (b1,t1), PIf (b2,t2), PIf (b1',t1'), PIf (b2', t2') ->
-        assert (b1 = b2 && b1' = b2');
-        if b1 <> b2 then
-          []
-        else
-          let p = if b1 then p1 else p2 in
-          let k t = PIf (b1, t) in
           let m = meet p (t1,t2) (t1',t2') in
-          List.map (diag k) m
-      (* while and bot *)
-      | While _, PBot, _, PBot, _ ->
-        let m = meet p (PWhile PBot, t2) (PWhile PBot, t2') in
-        List.map (fun (t1,t2) -> assert (t1 = PWhile PBot); PBot, t2) m
-      | While _, PBot, _, _, _ ->
-        meet p (PWhile PBot, t2) (t1', t2')
-      | While _, _, _, PBot, _ ->
-        meet p (t1,t2) (PWhile PBot, t2')
-      (* while and top *)
-      | While _, PWhile _, PTop, PWhile _, PTop ->
-        let m = meet p (t1, PWhile PTop) (t1', PWhile PTop) in
-        List.map (fun (t1,t2) -> assert (t2 = PWhile PTop); t1, PTop) m
-      | While _, PWhile _, PTop, PWhile _, PWhile _ ->
-        meet p (t1,PWhile PTop) (t1',t2')
-      | While _, PWhile _, PWhile _, PWhile _, PTop ->
-        meet p (t1,t2) (t1',PWhile PTop)
-      (* while and while *)
-      | While (_,p), PWhile t1, PWhile t2, PWhile t1', PWhile t2' ->
-        let le' = le t1' t2' in
-        let le = le t1 t2 in
-        let k t = PWhile t in
-        let k = diag k in
-        (
-          match le,le' with
-            | true, true ->
-              let m = meet p (t1,t2) (t1',t2') in
-              List.map k m
-            | true, false ->
-              let m1 = meet p (t1,t2) (t2',PTop) in
-              let m2 = meet p (t1,t2) (PBot,t1') in
-              List.map k (m1@m2)
-            | false, true ->
-              let m1 = meet p (t2,PTop) (t1',t2') in
-              let m2 = meet p (PBot,t1) (t1',t2') in
-              List.map k (m1@m2)
-            | false, false ->
-              let m1 = meet p (t1,PTop) (t1',PTop) in
-              let m2 = meet p (PBot,t2) (PBot,t2') in
-              List.map_pairs2 (fun (t1,t2) (t1',t2') -> assert (t2 = PTop && t1' = PBot); k (t1, t2')) m1 m2
-        )
+          List.map (fun (t1,t2) -> PSeq (n1,t1), PSeq (n1,t2)) m
+        else
+          let m1 = meet (List.nth l n1) (t1,PTop) (t1',PTop) in
+          let m2 = meet (List.nth l n2) (PBot,t2) (PBot,t2') in
+          List.map_pairs2 (fun (t1,t1') (t2',t2) -> assert (t1' = PTop && t2' = PBot); PSeq (n1,t1), PSeq (n2,t2)) m1 m2
+      else
+        let t1,t1' =
+          if n1 < n1' then
+            PBot, PSeq(n1',t1')
+          else if n1 > n1' then
+            PSeq(n1,t1), PBot
+          else
+            PSeq(n1,t1), PSeq(n1',t1')
+        in
+        let t2,t2' =
+          if n2 < n2' then
+            PSeq(n2,t2), PTop
+          else if n2 > n2' then
+            PTop, PSeq(n2',t2')
+          else
+            PSeq(n2,t2), PSeq(n2',t2')
+        in
+        meet p (t1,t2) (t1',t2')
+    (* parallels *)
+    | Par l,PBot,_,PBot,_ ->
+      let bot = PPar (List.map (fun _ -> PBot) l) in
+      let m = meet p (bot,t2) (bot,t2') in
+      List.map (fun (t1,t2) -> assert (t1 = bot); PBot, t2) m
+    | Par l,_,PTop,_,PTop ->
+      let top = PPar (List.map (fun _ -> PTop) l) in
+      let m = meet p (t1,top) (t1',top) in
+      List.map (fun (t1,t2) -> assert (t2 = top); t1, PTop) m
+    | Par _,PBot,_,PPar tt1',_ ->
+      let bot = PPar (List.map (fun _ -> PBot) tt1') in
+      meet p (bot,t2) (t1',t2')
+    | Par _,PPar tt1,_,PBot,_ ->
+      let bot = PPar (List.map (fun _ -> PBot) tt1) in
+      meet p (t1,t2) (bot,t2')
+    | Par _,_,PPar tt2,_,PTop ->
+      let top = PPar (List.map (fun _ -> PTop) tt2) in
+      meet p (t1,t2) (t1',top)
+    | Par _,_,PTop,_,PPar tt2' ->
+      let top = PPar (List.map (fun _ -> PTop) tt2') in
+      meet p (t1,top) (t1',t2')
+    | Par l,PPar tt1,PPar tt2,PPar tt1',PPar tt2' ->
+      let ans = List.map5 (fun p t1 t2 t1' t2' -> meet p (t1,t2) (t1',t2')) l tt1 tt2 tt1' tt2' in
+      let ans = List.unsum ans in
+      List.map (fun tt -> PPar (List.map fst tt), PPar (List.map snd tt)) ans
+    (* if *)
+    | If _, PBot, PIf (b1,_), PBot, PIf (b2, _) ->
+      if b1 <> b2 then
+        [PBot,PBot]
+      else
+        let m = meet p (PIf(b1,PBot),t2) (PIf(b2,PBot),t2') in
+        List.map (fun (t1,t2) -> assert (t1 = PIf(b1,PBot)); PBot,t2) m
+    | If _, PBot, PIf (b, _), _, _ ->
+      meet p (PIf(b,PBot),t2) (t1',t2')
+    | If _, _, _, PBot, PIf (b, _) ->
+      meet p (t1,t2) (PIf(b,PBot),t2')
+    | If _, PIf (b1,_), PTop, PIf (b2,_), PTop ->
+      if b1 <> b2 then
+        [PTop,PTop]
+      else
+        let m = meet p (t1,PIf(b1,PTop)) (t1',PIf(b2,PTop)) in
+        List.map (fun (t1,t2) -> assert (t2 = PIf(b1,PTop)); t1,PTop) m
+    | If _, PIf (b,_), PTop, _, _ ->
+      meet p (t1,PIf(b,PTop)) (t1',t2')
+    | If _, _, _, PIf (b,_), PTop ->
+      meet p (t1,t2) (t1',PIf(b,PTop))
+    | If (_,p1,p2), PIf (b1,t1), PIf (b2,t2), PIf (b1',t1'), PIf (b2', t2') ->
+      assert (b1 = b2 && b1' = b2');
+      if b1 <> b2 then
+        []
+      else
+        let p = if b1 then p1 else p2 in
+        let k t = PIf (b1, t) in
+        let m = meet p (t1,t2) (t1',t2') in
+        List.map (diag k) m
+    (* while and bot *)
+    | While _, PBot, _, PBot, _ ->
+      let m = meet p (PWhile PBot, t2) (PWhile PBot, t2') in
+      List.map (fun (t1,t2) -> assert (t1 = PWhile PBot); PBot, t2) m
+    | While _, PBot, _, _, _ ->
+      meet p (PWhile PBot, t2) (t1', t2')
+    | While _, _, _, PBot, _ ->
+      meet p (t1,t2) (PWhile PBot, t2')
+    (* while and top *)
+    | While _, PWhile _, PTop, PWhile _, PTop ->
+      let m = meet p (t1, PWhile PTop) (t1', PWhile PTop) in
+      List.map (fun (t1,t2) -> assert (t2 = PWhile PTop); t1, PTop) m
+    | While _, PWhile _, PTop, PWhile _, PWhile _ ->
+      meet p (t1,PWhile PTop) (t1',t2')
+    | While _, PWhile _, PWhile _, PWhile _, PTop ->
+      meet p (t1,t2) (t1',PWhile PTop)
+    (* while and while *)
+    | While (_,p), PWhile t1, PWhile t2, PWhile t1', PWhile t2' ->
+      let le' = le t1' t2' in
+      let le = le t1 t2 in
+      let k t = PWhile t in
+      let k = diag k in
+      (
+        match le,le' with
+        | true, true ->
+          let m = meet p (t1,t2) (t1',t2') in
+          List.map k m
+        | true, false ->
+          let m1 = meet p (t1,t2) (t2',PTop) in
+          let m2 = meet p (t1,t2) (PBot,t1') in
+          List.map k (m1@m2)
+        | false, true ->
+          let m1 = meet p (t2,PTop) (t1',t2') in
+          let m2 = meet p (PBot,t1) (t1',t2') in
+          List.map k (m1@m2)
+        | false, false ->
+          let m1 = meet p (t1,PTop) (t1',PTop) in
+          let m2 = meet p (PBot,t2) (PBot,t2') in
+          List.map_pairs2 (fun (t1,t2) (t1',t2') -> assert (t2 = PTop && t1' = PBot); k (t1, t2')) m1 m2
+      )
 
   let meet p i j =
     let m = meet p i j in
@@ -392,112 +392,112 @@ struct
       b,m,e
     in
     match p,t1,t2 with
-      | _,PBot,PTop -> [PBot],[],[PTop]
-      | _,PBot,PBot -> [PBot],[],[PBot]
-      | _,PTop,PTop -> [PTop],[],[PTop]
-      | Seq _,PBot,PSeq (n2,t2) ->
-        let b,m,e = compl p (PSeq (n2,PBot),PSeq (n2,t2)) in
-        let b = List.map (fun t -> if t = PSeq (0,PBot) then PBot else t) b in
-        b,m,e
-      | Seq l,PSeq (n1,t1),PTop ->
-        let b,m,e = compl p (PSeq (n1,t1),PSeq (n1,PTop)) in
-        let e = List.map (fun t -> if t = PSeq (List.length l - 1,PTop) then PTop else t) e in
-        b,m,e
-      | Seq l,PSeq (n1,t1),PSeq (n2,t2) ->
-        if n1 = n2 then
-          let p = List.nth l n1 in
-          let k t = PSeq (n1,t) in
-          bme_map k (compl p (t1,t2))
-        else
-          (
-            assert (n1 < n2);
-            (* [PSeq (n1,t1)],[],[PSeq (n2,t2)] *)
-            let b,_,_ = compl p (PSeq (n1,t1),PSeq (n1,PTop)) in
-            let _,_,e = compl p (PSeq (n2,PBot),PSeq (n2,t2)) in
-            b,[],e
-          )
-      (* par *)
-      | Par _,PBot,PPar tt2 ->
-        let bot = PPar (List.map (fun _ -> PBot) tt2) in
-        let b,m,e = compl p (bot, PPar tt2) in
-        let b = List.map (fun t -> if t = bot then PBot else t) b in
-        b,m,e
-      | Par _,PPar tt1,PTop ->
-        let top = PPar (List.map (fun _ -> PTop) tt1) in
-        let b,m,e = compl p (PPar tt1, top) in
-        let e = List.map (fun t -> if t = top then PTop else t) e in
-        b,m,e
-      | Par l,PPar tt1,PPar tt2 ->
-        let bme = List.map3 (fun p t1 t2 -> compl p (t1,t2)) l tt1 tt2 in
-        let b = List.map fst3 bme in
-        let m = List.map snd3 bme in
-        let e = List.map thd3 bme in
-        let choose_one def l =
-          let ans = ref [] in
-          let l = Array.of_list l in
-          let n = Array.length l in
-          for i = 0 to n - 1 do
-            List.iter
-              (fun t ->
-                let c = List.init n (fun j -> if j = i then t else def) in
-                ans := c :: !ans
-              ) l.(i)
-          done;
-          !ans
-        in
-        let b = choose_one PTop b in
-        let e = choose_one PBot e in
-        let m = choose_one (PBot,PTop) m in
-        let k tt = PPar tt in
+    | _,PBot,PTop -> [PBot],[],[PTop]
+    | _,PBot,PBot -> [PBot],[],[PBot]
+    | _,PTop,PTop -> [PTop],[],[PTop]
+    | Seq _,PBot,PSeq (n2,t2) ->
+      let b,m,e = compl p (PSeq (n2,PBot),PSeq (n2,t2)) in
+      let b = List.map (fun t -> if t = PSeq (0,PBot) then PBot else t) b in
+      b,m,e
+    | Seq l,PSeq (n1,t1),PTop ->
+      let b,m,e = compl p (PSeq (n1,t1),PSeq (n1,PTop)) in
+      let e = List.map (fun t -> if t = PSeq (List.length l - 1,PTop) then PTop else t) e in
+      b,m,e
+    | Seq l,PSeq (n1,t1),PSeq (n2,t2) ->
+      if n1 = n2 then
+        let p = List.nth l n1 in
+        let k t = PSeq (n1,t) in
+        bme_map k (compl p (t1,t2))
+      else
+        (
+          assert (n1 < n2);
+          (* [PSeq (n1,t1)],[],[PSeq (n2,t2)] *)
+          let b,_,_ = compl p (PSeq (n1,t1),PSeq (n1,PTop)) in
+          let _,_,e = compl p (PSeq (n2,PBot),PSeq (n2,t2)) in
+          b,[],e
+        )
+    (* par *)
+    | Par _,PBot,PPar tt2 ->
+      let bot = PPar (List.map (fun _ -> PBot) tt2) in
+      let b,m,e = compl p (bot, PPar tt2) in
+      let b = List.map (fun t -> if t = bot then PBot else t) b in
+      b,m,e
+    | Par _,PPar tt1,PTop ->
+      let top = PPar (List.map (fun _ -> PTop) tt1) in
+      let b,m,e = compl p (PPar tt1, top) in
+      let e = List.map (fun t -> if t = top then PTop else t) e in
+      b,m,e
+    | Par l,PPar tt1,PPar tt2 ->
+      let bme = List.map3 (fun p t1 t2 -> compl p (t1,t2)) l tt1 tt2 in
+      let b = List.map fst3 bme in
+      let m = List.map snd3 bme in
+      let e = List.map thd3 bme in
+      let choose_one def l =
+        let ans = ref [] in
+        let l = Array.of_list l in
+        let n = Array.length l in
+        for i = 0 to n - 1 do
+          List.iter
+            (fun t ->
+               let c = List.init n (fun j -> if j = i then t else def) in
+               ans := c :: !ans
+            ) l.(i)
+        done;
+        !ans
+      in
+      let b = choose_one PTop b in
+      let e = choose_one PBot e in
+      let m = choose_one (PBot,PTop) m in
+      let k tt = PPar tt in
+      let b = List.map k b in
+      let e = List.map k e in
+      let m =
+        List.map
+          (fun tt ->
+             let tt1, tt2 = List.split tt in
+             k tt1, k tt2) m
+      in
+      b,m,e
+    (* conditional branching *)
+    | If _, PBot, PIf (bool,_) ->
+      let b,m,e = compl p (PIf(bool,PBot),t2) in
+      let b = List.map (fun t -> if t = PIf(bool,PBot) then PBot else t) b in
+      b,m,e
+    | If _, PIf (bool,_), PTop ->
+      let b,m,e = compl p (t1,PIf(bool,PTop)) in
+      let e = List.map (fun t -> if t = PIf(bool,PTop) then PTop else t) e in
+      b,m,e
+    | If (_,p1,p2), PIf (b1,t1), PIf (b2,t2) ->
+      assert (b1 = b2);
+      let p = if b1 then p1 else p2 in
+      let k t = PIf (b1, t) in
+      let b,m,e = bme_map k (compl p (t1,t2)) in
+      (PIf(not b1,PTop))::b,m,(PIf(not b1,PBot))::e
+    (* while *)
+    | While _, PBot, PWhile _ ->
+      let b,m,e = compl p (PWhile PBot, t2) in
+      let b = List.map (fun t -> if t = PWhile PBot then PBot else t) b in
+      b,m,e
+    | While _, PWhile _, PTop ->
+      let b,m,e = compl p (t1,PWhile PTop) in
+      let e = List.map (fun t -> if t = PWhile PTop then PTop else t) e in
+      b,m,e
+    | While (_, pp), PWhile t1, PWhile t2 ->
+      let k t = PWhile t in
+      if le t1 t2 then
+        let b,m,e = compl pp (t1,t2) in
         let b = List.map k b in
         let e = List.map k e in
-        let m =
-          List.map
-            (fun tt ->
-              let tt1, tt2 = List.split tt in
-              k tt1, k tt2) m
-        in
-        b,m,e
-      (* conditional branching *)
-      | If _, PBot, PIf (bool,_) ->
-        let b,m,e = compl p (PIf(bool,PBot),t2) in
-        let b = List.map (fun t -> if t = PIf(bool,PBot) then PBot else t) b in
-        b,m,e
-      | If _, PIf (bool,_), PTop ->
-        let b,m,e = compl p (t1,PIf(bool,PTop)) in
-        let e = List.map (fun t -> if t = PIf(bool,PTop) then PTop else t) e in
-        b,m,e
-      | If (_,p1,p2), PIf (b1,t1), PIf (b2,t2) ->
-        assert (b1 = b2);
-        let p = if b1 then p1 else p2 in
-        let k t = PIf (b1, t) in
-        let b,m,e = bme_map k (compl p (t1,t2)) in
-        (PIf(not b1,PTop))::b,m,(PIf(not b1,PBot))::e
-      (* while *)
-      | While _, PBot, PWhile _ ->
-        let b,m,e = compl p (PWhile PBot, t2) in
-        let b = List.map (fun t -> if t = PWhile PBot then PBot else t) b in
-        b,m,e
-      | While _, PWhile _, PTop ->
-        let b,m,e = compl p (t1,PWhile PTop) in
-        let e = List.map (fun t -> if t = PWhile PTop then PTop else t) e in
-        b,m,e
-      | While (_, pp), PWhile t1, PWhile t2 ->
-        let k t = PWhile t in
-        if le t1 t2 then
-          let b,m,e = compl pp (t1,t2) in
-          let b = List.map k b in
-          let e = List.map k e in
-          let m = List.map (diag k) m in
-          let eb = List.map_pairs2 pair e b in
-          b,eb@m,e
-        else
-          let b,m,_ = compl pp (t1,PTop) in
-          let _,m',e' = compl pp (PBot,t2) in
-          let b = List.map k b in
-          let e' = List.map k e' in
-          let eb = List.map_pairs2 pair e' b in
-          [PWhile PBot],eb@m@m',[PWhile PBot]
+        let m = List.map (diag k) m in
+        let eb = List.map_pairs2 pair e b in
+        b,eb@m,e
+      else
+        let b,m,_ = compl pp (t1,PTop) in
+        let _,m',e' = compl pp (PBot,t2) in
+        let b = List.map k b in
+        let e' = List.map k e' in
+        let eb = List.map_pairs2 pair e' b in
+        [PWhile PBot],eb@m@m',[PWhile PBot]
 
   let compl p (i:t) =
     let b,m,e = compl p i in
@@ -619,12 +619,12 @@ struct
       List.filter
         (fun j ->
            let ninc_ji = not (Int.included p j i) in
-             if Int.included p i j && ninc_ji then
-               i_included := true;
-             ninc_ji
+           if Int.included p i j && ninc_ji then
+             i_included := true;
+           ninc_ji
         ) a
     in
-      if !i_included then a else (i::a)
+    if !i_included then a else (i::a)
 
 (*
   let add i a =
@@ -660,23 +660,23 @@ struct
            Printf.sprintf "%s\n    \"%s\" -> \"%s\";" s (Pos.to_string p t1) (Pos.to_string p t2)
         ) "" a
     in
-      Printf.sprintf "digraph region {%s\n}\n" ans
+    Printf.sprintf "digraph region {%s\n}\n" ans
 
   (* Positions are intervals and [a,b]->[c,d] means c in [a,b]. *)
   let to_dot p a =
     let ans = ref [] in
-      List.iter_ctxt
-        (fun h ((t1,t2) as j) t ->
-           let src = List.filter (fun i -> Int.belongs p t1 i && t1 <> (fst i)) (h@t) in
-             ans := (List.map (fun i -> i,j) src) @ !ans
-        ) a;
-      let ans =
-        List.fold_left
-          (fun s (i,j) ->
-             Printf.sprintf "%s\n    \"%s\" -> \"%s\";" s (Int.to_string p i) (Int.to_string p j)
-          ) "" !ans
-      in
-        Printf.sprintf "digraph region {%s\n}\n" ans
+    List.iter_ctxt
+      (fun h ((t1,t2) as j) t ->
+         let src = List.filter (fun i -> Int.belongs p t1 i && t1 <> (fst i)) (h@t) in
+         ans := (List.map (fun i -> i,j) src) @ !ans
+      ) a;
+    let ans =
+      List.fold_left
+        (fun s (i,j) ->
+           Printf.sprintf "%s\n    \"%s\" -> \"%s\";" s (Int.to_string p i) (Int.to_string p j)
+        ) "" !ans
+    in
+    Printf.sprintf "digraph region {%s\n}\n" ans
 
   let meet p a b =
     List.fold_left
@@ -686,7 +686,7 @@ struct
 
   let compl p a =
     let a = List.map (Int.compl p) a in
-      List.fold_left (fun ans a -> meet p a ans) (everything p) a
+    List.fold_left (fun ans a -> meet p a ans) (everything p) a
 
   let normalize p a =
     compl p (compl p a)
@@ -708,9 +708,9 @@ struct
 
   let difference p a b =
     let ans = difference p a b in
-      if !debug_difference then
-        debug (Printf.sprintf "Region.difference:\n%sminus\n%sis\n%s" (to_string_simple a) (to_string_simple b) (to_string_simple ans));
-      ans
+    if !debug_difference then
+      debug (Printf.sprintf "Region.difference:\n%sminus\n%sis\n%s" (to_string_simple a) (to_string_simple b) (to_string_simple ans));
+    ans
 
   (* TODO: normalize a? *)
   (* TODO: correct ?? *)
@@ -723,12 +723,12 @@ struct
   (* TODO: better complexity?... *)
   let deadlocks p a =
     let ans = ref [] in
-      List.iter_ctxt
-        (fun b (_,x) c ->
-           if not (List.exists (Int.belongs p x) (b@c)) then
-             ans := x :: !ans
-        ) a;
-      !ans
+    List.iter_ctxt
+      (fun b (_,x) c ->
+         if not (List.exists (Int.belongs p x) (b@c)) then
+           ans := x :: !ans
+      ) a;
+    !ans
 
   let ginsu a = assert false
 end
@@ -736,17 +736,17 @@ end
 module Flow_graph =
 struct
   type 'a edge =
-      {
-        mutable source : 'a vertex;
-        target : 'a vertex;
-        path : 'a prog;
-      }
+    {
+      mutable source : 'a vertex;
+      target : 'a vertex;
+      path : 'a prog;
+    }
   and 'a vertex =
-      {
-        pos : Pos.t;
-        succ : 'a edge list;
-        mutable pred : 'a edge list;
-      }
+    {
+      pos : Pos.t;
+      succ : 'a edge list;
+      mutable pred : 'a edge list;
+    }
 
   type 'a t = 'a vertex
 
@@ -767,31 +767,31 @@ struct
     let succ =
       List.map_ctxt
         (fun g1 i g2 ->
-          let isucc = List.filter (leq i) (g1@g2) in
-          (* Remove transitive edges. *)
-          let isucc =
-            List.filter_ctxt
-              (fun s1 j s2 ->
-                let dominated = List.filter (fun k -> leq k j) (s1@s2) in
-                let n = List.length dominated in
-                (* There is a commutative square so we remove one
-                 * transition. *)
-                if n >= 2 then
-                  removed := (List.hd dominated, j) :: !removed;
-                (* Was not marked for deletion. *)
-                (not no_squares || not (List.mem (i, j) !removed))
-                &&
+           let isucc = List.filter (leq i) (g1@g2) in
+           (* Remove transitive edges. *)
+           let isucc =
+             List.filter_ctxt
+               (fun s1 j s2 ->
+                  let dominated = List.filter (fun k -> leq k j) (s1@s2) in
+                  let n = List.length dominated in
+                  (* There is a commutative square so we remove one
+                   * transition. *)
+                  if n >= 2 then
+                    removed := (List.hd dominated, j) :: !removed;
+                  (* Was not marked for deletion. *)
+                  (not no_squares || not (List.mem (i, j) !removed))
+                  &&
                   (* Isn't a transitive edge. *)
                   (diagonals || n = 0)
-              ) isucc
-          in
-          if isucc = [] then
-            (* Add terminal positions. *)
-            let t = snd i in
-            terminal := ((t,t),[]) :: !terminal;
-            i, [t,t]
-          else
-            i, isucc
+               ) isucc
+           in
+           if isucc = [] then
+             (* Add terminal positions. *)
+             let t = snd i in
+             terminal := ((t,t),[]) :: !terminal;
+             i, [t,t]
+           else
+             i, isucc
         ) g
     in
     let succ = !terminal @ succ in
@@ -807,16 +807,16 @@ struct
       try
         List.assoc i !vertices
       with
-        | Not_found ->
-          let v =
-            {
-              pos = fst i;
-              succ = List.map (edge i) (List.assoc i succ);
-              pred = []; (* Fake pred *)
-            }
-          in
-          vertices := (i,v) :: !vertices;
-          v
+      | Not_found ->
+        let v =
+          {
+            pos = fst i;
+            succ = List.map (edge i) (List.assoc i succ);
+            pred = []; (* Fake pred *)
+          }
+        in
+        vertices := (i,v) :: !vertices;
+        v
     and edge i j =
       (* Printf.printf "E: %s        %s\n%!" (Int.to_string prog i) (Int.to_string prog j); *)
       {
@@ -835,9 +835,9 @@ struct
             visited := v :: !visited;
             List.iter
               (fun e ->
-                e.source <- v;
-                e.target.pred <- e :: e.target.pred;
-                aux e.target
+                 e.source <- v;
+                 e.target.pred <- e :: e.target.pred;
+                 aux e.target
               ) v.succ
           )
       in
@@ -858,30 +858,30 @@ struct
             ) v.succ
         )
     in
-      aux v
+    aux v
 
   let iter_breadth f g =
     let visited = ref [] in
     let todo = ref g.succ in
-      while !todo <> [] do
-        (* Find a transition such that all the predecessors of the source have
-         * been visited. *)
-        let e, td =
-          List.find_and_remove
-            (fun e ->
-              List.for_all (fun e -> List.mem e !visited) e.source.pred
-            ) !todo
-        in
-        todo := td;
-        visited := e :: !visited;
-        List.iter (fun e -> if not (List.mem e !visited || List.mem e !todo) then todo := e :: !todo) e.target.succ;
-        f e.source.pos e.path e.target.pos
-      done
+    while !todo <> [] do
+      (* Find a transition such that all the predecessors of the source have
+       * been visited. *)
+      let e, td =
+        List.find_and_remove
+          (fun e ->
+             List.for_all (fun e -> List.mem e !visited) e.source.pred
+          ) !todo
+      in
+      todo := td;
+      visited := e :: !visited;
+      List.iter (fun e -> if not (List.mem e !visited || List.mem e !todo) then todo := e :: !todo) e.target.succ;
+      f e.source.pos e.path e.target.pos
+    done
 
   let to_dot p g =
     let ans = ref "" in
     iter_breadth (*iter_depth*) (fun t1 _ t2 -> ans := Printf.sprintf "%s\n    \"%s\" -> \"%s\";" !ans (Pos.to_string p t1) (Pos.to_string p t2)) g;
-      Printf.sprintf "digraph region {%s\n}\n" !ans
+    Printf.sprintf "digraph region {%s\n}\n" !ans
 
 (*
     let explored = ref [] in
