@@ -141,9 +141,9 @@ module Int = struct
 
   let everything p = bot p, top p
 
-  let to_string p (t1,t2) = Pos.to_string p t1 ^ " -- " ^ Pos.to_string p t2
+  let to_string p (t1,t2) = Pos.to_string p t1 ^ " — " ^ Pos.to_string p t2
 
-  let to_string_simple (t1,t2) = Pos.to_string_simple t1 ^ " -- " ^ Pos.to_string_simple t2
+  let to_string_simple (t1,t2) = Pos.to_string_simple t1 ^ " — " ^ Pos.to_string_simple t2
 
   let valid (t1,t2) = le t1 t2
 
