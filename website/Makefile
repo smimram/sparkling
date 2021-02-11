@@ -1,9 +1,9 @@
 all: sparkling.js
 
 examples.ml:
-	echo "let list = [" > $@
+	echo "let list = List.sort compare [" > $@
 	for i in $(wildcard ../test/*.sparkling); do \
-	  echo "\"`basename $$i`\", " >> $@; \
+	  echo "\"`basename $$i .sparkling`\", " >> $@; \
 	  echo "\"" >> $@; \
 	  echo "`cat $$i`" >> $@; \
 	  echo "\";" >> $@; \
