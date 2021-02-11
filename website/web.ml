@@ -96,7 +96,7 @@ let run _ =
       error (Printexc.to_string e);
       Js._false
   in
-  (* examples (); *)
+  examples ();
   go##.onclick := Html.handler handler;
   (* ignore (handler ()); *)
   Js._true
