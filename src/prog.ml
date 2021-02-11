@@ -341,12 +341,18 @@ module Int = struct
   let included p i j = meet p i j = [i]
 
   let belongs p x i = included p (x,x) i
-
+  
+  let rec only_edge l =
+      match l with 
+      | [] -> true
+      | PBot::q -> only_edge q 
+      | PTop::q -> only_edge q
+      | _ -> false
+    
   let clean l =
     let rec aux lst acc =
       match lst with
-      | PPar([PBot;PTop])::q -> aux q acc
-      | PPar([PTop;PBot])::q -> aux q acc
+      | PPar(l)::q when (only_edge l)-> aux q acc
       | x::q -> aux q (x::acc)
       | _ -> acc
     in aux l [] 

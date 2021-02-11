@@ -1,24 +1,17 @@
-
 void main()
 {
-  mutex a;
-  mutex b;
+  mutex m;
+  mutex n;
 
   {
-    while(true)
-      {
-        lock(a);
-        lock(b);
-        unlock(b);
-        unlock(a);
-      };
+    lock(m);
+    lock(n);
+    unlock(n);
+    unlock(m);
   }|{
-    while(true)
-      {
-        lock(b);
-        lock(a);
-        unlock(a);
-        unlock(b);
-      };
+    lock(n);
+    lock(m);
+    unlock(m);
+    unlock(n);
   };
 }
