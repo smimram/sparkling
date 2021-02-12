@@ -672,19 +672,14 @@ struct
   let compl p a =
     let a = List.map (Int.compl p) a in
     List.fold_left (fun ans a -> meet p a ans) (everything p) a
-  
-  let rec included_list p l i =
-      match l with
-      | [] -> false
-      | x::q -> Int.included p i x || included_list p q i
-    ;;
 
   let clean p lst =
+    let included_list p i l = List.exists (Int.included p i) l in
     let rec aux l acc =
       match l with 
       | [] -> acc
-      | x::q when (included_list p q x) -> aux q acc
-      | x::q when (included_list p acc x) -> aux q acc
+      | x::q when (included_list p x q) -> aux q acc
+      | x::q when (included_list p x acc) -> aux q acc
       | x::q -> aux q (x::acc)
     in aux lst []
 
@@ -768,8 +763,7 @@ struct
                (fun s1 j s2 ->
                   let dominated = List.filter (fun k -> leq k j) (s1@s2) in
                   let n = List.length dominated in
-                  (* There is a commutative square so we remove one
-                   * transition. *)
+                  (* There is a commutative square so we remove one transition. *)
                   if n >= 2 then
                     removed := (List.hd dominated, j) :: !removed;
                   (* Was not marked for deletion. *)
