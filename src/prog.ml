@@ -339,6 +339,16 @@ module Int = struct
     m
 
   let included p i j = meet p i j = [i]
+      (* let included _ _ _ = false  *)
+  
+  (* When meet generates more than one interval, this implies that there was an intersection between 
+  two intervals in parallel loops that  *)
+  let clean_meet p i j =
+    let meet_ij = meet p i j in
+      match meet_ij with
+      | [] -> []
+      | [x] -> [x]
+      | _ -> []
 
   let belongs p x i = included p (x,x) i
   
@@ -656,7 +666,7 @@ struct
   let meet p a b =
     List.fold_left
       (fun c i ->
-         join p (List.flatten (List.map (Int.meet p i) b)) c
+         join p (List.flatten (List.map (Int.clean_meet p i) b)) c
       ) (create ()) a
 
   let compl p a =
