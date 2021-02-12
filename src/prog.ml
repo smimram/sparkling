@@ -339,8 +339,33 @@ module Int = struct
     m
 
   let included p i j = meet p i j = [i]
+      (* let included _ _ _ = false  *)
+  
+  (* When meet generates more than one interval, this implies that there was an intersection between 
+  two intervals in parallel loops that  *)
+  let clean_meet p i j =
+    let meet_ij = meet p i j in
+      match meet_ij with
+      | [] -> []
+      | [x] -> [x]
+      | _ -> []
 
   let belongs p x i = included p (x,x) i
+  
+  let rec only_edge l =
+      match l with 
+      | [] -> true
+      | PBot::q -> only_edge q 
+      | PTop::q -> only_edge q
+      | _ -> false
+    
+  let clean l =
+    let rec aux lst acc =
+      match lst with
+      | PPar(l)::q when (only_edge l)-> aux q acc
+      | x::q -> aux q (x::acc)
+      | _ -> acc
+    in aux l [] 
 
   let rec compl p i =
     let t1,t2 = i in
@@ -367,13 +392,13 @@ module Int = struct
     | _,PBot,PBot -> [PBot],[],[PBot]
     | _,PTop,PTop -> [PTop],[],[PTop]
     | Seq _,PBot,PSeq (n2,t2) ->
-      let b,m,e = compl p (PSeq (n2,PBot),PSeq (n2,t2)) in
-      let b = List.map (fun t -> if t = PSeq (0,PBot) then PBot else t) b in
-      b,m,e
-    | Seq l,PSeq (n1,t1),PTop ->
-      let b,m,e = compl p (PSeq (n1,t1),PSeq (n1,PTop)) in
-      let e = List.map (fun t -> if t = PSeq (List.length l - 1,PTop) then PTop else t) e in
-      b,m,e
+      let _,m,e = compl p (PSeq (n2,PBot),PSeq (n2,t2)) in
+      (* let b = List.map (fun t -> if t = PSeq (0,PBot) then PBot else t) b in *)
+      [],m,e
+    | Seq _,PSeq (n1,t1),PTop ->
+      let b,m,_ = compl p (PSeq (n1,t1),PSeq (n1,PTop)) in
+      (* let e = List.map (fun t -> if t = PSeq (List.length l - 1,PTop) then PTop else t) e in *)
+      b,m,[]
     | Seq l,PSeq (n1,t1),PSeq (n2,t2) ->
       if n1 = n2 then
         let p = List.nth l n1 in
@@ -382,7 +407,6 @@ module Int = struct
       else
         (
           assert (n1 < n2);
-          (* [PSeq (n1,t1)],[],[PSeq (n2,t2)] *)
           let b,_,_ = compl p (PSeq (n1,t1),PSeq (n1,PTop)) in
           let _,_,e = compl p (PSeq (n2,PBot),PSeq (n2,t2)) in
           b,[],e
@@ -391,13 +415,13 @@ module Int = struct
     | Par _,PBot,PPar tt2 ->
       let bot = PPar (List.map (fun _ -> PBot) tt2) in
       let b,m,e = compl p (bot, PPar tt2) in
-      let b = List.map (fun t -> if t = bot then PBot else t) b in
-      b,m,e
+      let b = clean (List.map (fun t -> if t = bot then PBot else t) b) in
+      clean b, m, clean e
     | Par _,PPar tt1,PTop ->
       let top = PPar (List.map (fun _ -> PTop) tt1) in
       let b,m,e = compl p (PPar tt1, top) in
-      let e = List.map (fun t -> if t = top then PTop else t) e in
-      b,m,e
+      let e = clean (List.map (fun t -> if t = top then PTop else t) e) in
+      clean b, m, clean e
     | Par l,PPar tt1,PPar tt2 ->
       let bme = List.map3 (fun p t1 t2 -> compl p (t1,t2)) l tt1 tt2 in
       let b = List.map fst3 bme in
@@ -428,7 +452,7 @@ module Int = struct
              let tt1, tt2 = List.split tt in
              k tt1, k tt2) m
       in
-      b,m,e
+      b, m, e
     (* conditional branching *)
     | If _, PBot, PIf (bool,_) ->
       let b,m,e = compl p (PIf(bool,PBot),t2) in
@@ -642,14 +666,29 @@ struct
   let meet p a b =
     List.fold_left
       (fun c i ->
-         join p (List.flatten (List.map (Int.meet p i) b)) c
+         join p (List.flatten (List.map (Int.clean_meet p i) b)) c
       ) (create ()) a
 
   let compl p a =
     let a = List.map (Int.compl p) a in
     List.fold_left (fun ans a -> meet p a ans) (everything p) a
+  
+  let rec included_list p l i =
+      match l with
+      | [] -> false
+      | x::q -> Int.included p i x || included_list p q i
+    ;;
 
-  let normalize p a = compl p (compl p a)
+  let clean p lst =
+    let rec aux l acc =
+      match l with 
+      | [] -> acc
+      | x::q when (included_list p q x) -> aux q acc
+      | x::q when (included_list p acc x) -> aux q acc
+      | x::q -> aux q (x::acc)
+    in aux lst []
+
+  let normalize p a = clean p (compl p (compl p a))
 
   (* let boundary p a = meet p a (compl p a) *)
 

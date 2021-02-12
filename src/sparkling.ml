@@ -1,4 +1,4 @@
-let fname = ref "test.sparkling"
+let fname = ref "swiss-flag.sparkling"
 
 open Prog
 
