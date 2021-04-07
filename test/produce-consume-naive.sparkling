@@ -1,0 +1,30 @@
+int item;
+
+void main()
+{
+  mutex a;
+  item = 0;
+  {
+    while(true)
+      {
+        lock(a);
+        if (item==0)
+        {
+            item = item + 1;
+        }
+        else {};
+        unlock(a);
+      };
+  }|{
+    while(true)
+      {
+        lock(a);
+        if (item==1)
+        {
+            item = item - 1;
+        }
+        else {};
+        unlock(a);
+      };
+  };
+}

@@ -1,4 +1,4 @@
-let fname = ref "swiss-flag.sparkling"
+let fname = ref "test.sparkling"
 
 open Prog
 
@@ -9,9 +9,9 @@ let () =
   (* let region_f, comp = Lang.components prog in *)
   Printf.printf "* Program:\n  %s\n\n%!" (Prog.to_string prog);
   Printf.printf "* Brackets:\n%!";
+  let f = Region.forget (List.map (fun (_,i) -> i) b) in 
   List.iter
-    (fun (m,i) ->
-       Printf.printf "  %s: %s\n%!" m (Int.to_string prog i)
+    (fun (m,i) -> List.iter (fun j -> if j = i then (Printf.printf "  %s: %s\n%!" m (Int.to_string prog i))) f
     ) b;
   Printf.printf "\n%!";
   let forbidden = Lang.forbidden prog in
@@ -20,7 +20,7 @@ let () =
   Printf.printf "* Fundamental:\n%s\n%!" (Region.to_string prog fundamental);
   Printf.printf "* Forbidden (normalized):\n%s\n%!" (Region.to_string prog (Region.compl prog fundamental));
   Printf.printf "* Fundamental (normalized):\n%s\n%!" (Region.to_string prog (Region.normalize prog fundamental));
-  let deadlocks = "  " ^ String.concat ", " (List.map (Pos.to_string prog) (Region.deadlocks prog fundamental)) ^ "\n" in
+  let deadlocks = "  " ^ String.concat ", " (List.map (BPos.to_string prog) (Region.deadlocks prog fundamental)) ^ "\n" in
   Printf.printf "* Deadlocks:\n%s\n%!" deadlocks;
   let deadlocks =
     let print _ =
