@@ -1,6 +1,5 @@
 open Common
 
-
 type type_expr =
   | TVoid
   | TBool
