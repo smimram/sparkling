@@ -443,19 +443,6 @@ struct
   let compl p a =
     let a = List.map (Int.compl p) a in
     List.fold_left (fun ans a -> meet p a ans) (everything p) a
-<<<<<<< HEAD
-=======
-
-  let clean p lst =
-    let included_list p i l = List.exists (Int.included p i) l in
-    let rec aux l acc =
-      match l with 
-      | [] -> acc
-      | x::q when (included_list p x q) -> aux q acc
-      | x::q when (included_list p x acc) -> aux q acc
-      | x::q -> aux q (x::acc)
-    in aux lst []
->>>>>>> origin/master
 
   let normalize p a = compl p (compl p a)
 
