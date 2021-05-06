@@ -1,4 +1,45 @@
+int item;
+
 void main()
+{
+  mutex a;
+  mutex q;
+  item = 0;
+  {
+    while(true)
+      {
+        lock(a);
+        item = item + 1;
+        unlock(a);
+      };
+  }|{
+    while(true)
+      { 
+        lock(q);
+        if (item)
+        {          
+          lock(a);
+          item = item - 1;
+          unlock(a);
+        }
+        else {};
+        unlock(q);
+      };
+  }|{
+    while(true)
+      { 
+        lock(q);
+        if (item)
+        {          
+          lock(a);
+          item = item - 1;
+          unlock(a);
+        }
+        else {};
+        unlock(q);
+      };
+  };
+}void main()
 {
   mutex m;
   mutex n;

@@ -47,6 +47,51 @@ sig
   (* val realize : 'a prog -> t -> 'a prog *)
 end
 
+module BPos :
+sig
+  (** A position. *)
+  type t =
+    | BPBot
+    | BPTop
+    | BPSeq of int * t * int
+    | BPPar of t list 
+    | BPIf of bool * t
+    | BPWhile of int * t
+
+  val to_string : 'a prog -> t -> string
+  val to_string_simple : t -> string
+
+  (** The minimal position. *)
+  val bot : 'a prog -> t
+
+  (** The maximal position. *)
+  val top : 'a prog -> t
+  
+  val conversion : 'a prog -> Pos.t -> t list
+
+  (*Return the position t1 v t2 *)
+  val meet : t -> t -> t
+
+  (*Return the position t1 ∧ t2 *)
+  val up_meet : t -> t -> t
+
+  (*Returns the maximal elements not greater than t*)
+  val not_sup : t -> t list
+
+  (*Returns the minimal elements not smaller than t*)
+  val not_inf : t -> t list
+
+  (** Less or equal. *)
+  val le : t -> t -> bool
+
+  (** Greater or equal. *)
+  val ge : t -> t -> bool
+
+  (** Construct a subprogram of the program whose terminal position is the
+    * specified position. *)
+  (* val realize : 'a prog -> t -> 'a prog *)
+end
+
 (** Operations on intervals of a progam. *)
 module Int :
 sig
@@ -60,9 +105,9 @@ sig
       always be [true]). *)
   val valid : t -> bool
 
-  val make : Pos.t * Pos.t -> t
+  val make : BPos.t * BPos.t -> t
 
-  val bounds : t -> Pos.t * Pos.t
+  val bounds : t -> BPos.t * BPos.t
 
   val to_string : 'a prog -> t -> string
   val to_string_simple : t -> string
@@ -71,10 +116,10 @@ sig
   val included : 'a prog -> t -> t -> bool
 
   (** Is a position within an interval? *)
-  val belongs : 'a prog -> Pos.t -> t -> bool
+  val belongs : 'a prog -> BPos.t -> t -> bool
 
   (** Intersection of two intervals. *)
-  val meet : 'a prog -> t -> t -> t list
+  val meet : 'a prog -> t -> t -> t
 
   val realize : 'a prog -> t -> 'a prog
 end
@@ -95,6 +140,8 @@ sig
 
   val join : 'a prog -> t -> t -> t
 
+  val forget : t -> t
+
   val to_string : 'a prog -> t -> string
 
   (** Ouput region in dot graph format. *)
@@ -113,7 +160,7 @@ sig
 
   val normalize : 'a prog -> t -> t
 
-  val deadlocks : 'a prog -> t -> Pos.t list
+  val deadlocks : 'a prog -> t -> BPos.t list
 
   val ginsu : t -> t
 
@@ -128,5 +175,5 @@ sig
 
   val to_dot : 'a prog -> 'a t -> string
 
-  val iter_breadth : (Pos.t -> 'a prog -> Pos.t -> unit) -> 'a t -> unit
+  val iter_breadth : (BPos.t -> 'a prog -> BPos.t -> unit) -> 'a t -> unit
 end

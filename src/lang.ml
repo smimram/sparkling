@@ -312,11 +312,13 @@ let brackets p =
     failwith (Printf.sprintf "The following mutexes are not released: %s." (String.concat ", " (List.map fst s.bs_opened_m)));
   s.bs_taken_m
 
-let brackets p =
-  List.map
-    (fun (m, (t, _, _, u)) ->
-       (m, Int.make (t, u))
-    ) (brackets p)
+  let brackets p =
+    (* Added step to convert to BPos for next steps. Creates redundancy*)
+    List.flatten (
+      List.map (fun (m, (t, _, _, u)) -> 
+          List.map (fun x -> (m, x)) (List.map2 (fun a b -> Int.make (a, b)) 
+          (BPos.conversion p t) (BPos.conversion p u))  
+      ) (brackets p))
 
 let forbidden p =
   let brackets = brackets p in
@@ -332,7 +334,8 @@ let forbidden p =
     (fun m ->
        List.iter_tail
          (fun x t ->
-            List.iter (fun y -> push (Int.meet p x y)) t
+            List.iter (fun y -> let j = Int.meet p x y in if (Int.valid j) then (push ([j])) else (push([])) ) t
+        (* Only push valid intervals. Might be a better way to do this, but i'd have to understand the rest of the code*)
          ) (List.assoc_all m brackets)
     ) mutexes;
   !ans
