@@ -1,10 +1,10 @@
 all: sparkling.js
 
-examples.ml:
+examples.ml: ../test/*.sparkling
 	echo "let list = List.sort compare [" > $@
 	for i in $(wildcard ../test/*.sparkling); do \
 	  echo "\"`basename $$i .sparkling`\", " >> $@; \
-	  echo "\"" >> $@; \
+	  echo -n "\"" >> $@; \
 	  echo "`cat $$i`" >> $@; \
 	  echo "\";" >> $@; \
 	done; \

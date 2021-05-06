@@ -20,7 +20,7 @@ let replace o n s =
 open Prog
 
 let examples () =
-  let prog = jsget (Html.CoerceTo.textarea (jsget (doc##getElementById(Js.string "prog")))) in
+  let prog = jsget (Html.CoerceTo.textarea (jsget (doc##getElementById (Js.string "prog")))) in
   let select = jsget (doc##getElementById(Js.string "ex-prog")) in
   let select = jsget (Html.CoerceTo.select select) in
   let () =
@@ -34,7 +34,7 @@ let examples () =
   select##.onchange := Html.handler (fun _ -> prog##.innerHTML := Js.string (List.assoc (Js.to_string select##.value) Examples.list); Js._true)
 
 let run _ =
-  let prog = jsget (Html.CoerceTo.textarea (jsget (doc##getElementById(Js.string "prog")))) in
+  let prog = jsget (Html.CoerceTo.textarea (jsget (doc##getElementById (Js.string "prog")))) in
   let go = jsget (doc##getElementById (Js.string "go")) in
   let status = jsget (doc##getElementById (Js.string "status")) in
   let status s = status##.innerHTML := Js.string s in
