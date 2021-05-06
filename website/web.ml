@@ -82,7 +82,7 @@ let run _ =
       set_region "forbidden-normalized" (Region.to_string prog (Region.normalize prog forbidden));
       set_region "fundamental-normalized" (Region.to_string prog (Region.normalize prog fundamental));
       status "Computing deadlocks...";
-      let deadlocks = "  " ^ String.concat ", " (List.map (BPos.to_string prog) (Region.deadlocks prog fundamental)) ^ "\n" in
+      let deadlocks = String.concat "<br/>" (List.map (BPos.to_string prog) (Region.deadlocks prog fundamental)) ^ "\n" in
       set "deadlocks" deadlocks;
       status "Finished.";
       Js._true
