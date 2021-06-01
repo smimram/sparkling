@@ -1,0 +1,54 @@
+void main()
+{
+  int readers;
+  
+  mutex r;
+  mutex l;
+
+  readers = 0;
+
+  {
+    while(true)
+      {
+        lock(r);
+        if (readers == 0){
+            lock(l);
+
+
+            unlock(l);
+        }
+        else { };
+        unlock(r);
+      };
+  }|{
+    while(true)
+    {
+        lock(r);
+        lock(l);
+        readers = readers + 1;
+        unlock(l);
+        unlock(r);
+
+
+        lock(r);
+        readers = readers - 1;
+        unlock(r);
+
+      };
+  }|{
+    while(true)
+    {
+        lock(r);
+        lock(l);
+        readers = readers + 1;
+        unlock(l);
+        unlock(r);
+
+
+        lock(r);
+        readers = readers - 1;
+        unlock(r);
+
+      };
+  };
+}

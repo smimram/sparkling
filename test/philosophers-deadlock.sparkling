@@ -1,0 +1,22 @@
+void main()
+{
+  mutex a;
+  mutex b;
+  mutex c;
+  {
+    lock(a);
+    lock(b);
+    unlock(b);
+    unlock(a);
+  }|{
+    lock(b);
+    lock(c);
+    unlock(c);
+    unlock(b);
+  }|{
+    lock(c);
+    lock(a);
+    unlock(a);
+    unlock(c);
+  };
+}
