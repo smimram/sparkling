@@ -76,10 +76,10 @@ sig
   val up_meet : t -> t -> t
 
   (*Returns the maximal elements not greater than t*)
-  val not_sup : t -> t list
+  val not_sup : 'a prog -> t -> t list
 
   (*Returns the minimal elements not smaller than t*)
-  val not_inf : t -> t list
+  val not_inf : 'a prog -> t -> t list
 
   (** Less or equal. *)
   val le : t -> t -> bool
