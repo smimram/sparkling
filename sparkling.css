@@ -1,0 +1,17 @@
+body {
+    margin: 2% 10%;
+    text-align: justify;
+    font-family: helvetica;
+    font-weight: lighter;
+}
+
+h1 {
+    text-align: center;
+}
+
+p.output {
+    font-family: monospace;
+    background-color: azure;
+    padding: 2ex;
+    border-radius: 10px;
+}
