@@ -264,46 +264,72 @@ module BPos = struct
   let ge t1 t2 = le t2 t1
 
   (*Returns the maximal elements not greater than t*)
-  let rec not_sup t = 
-    match t with
-    | BPBot -> []
+  let rec not_sup p t = 
+    match t, p with
+    | BPBot, _ -> []
     (* | BPTop -> debug (Printf.sprintf "BPos.not_sup: Should not encouter lower-bound %s." (to_string_simple t));
       assert false  *)
-    | BPTop -> [BPTop]
-    | BPSeq(n,t, _) when (n,t) = (0,BPBot) -> [BPBot]
-    | BPSeq(n,t, m) when t = BPBot -> [BPSeq(n-1, BPTop, m)]
-    | BPSeq(n, t, m) -> List.map (fun x -> BPSeq(n, x, m)) (not_sup t)
-    | BPPar l -> let rec aux head l acc =
-      match l with
-      | [] -> acc
-      | h::tail -> aux (h::head) tail (List.map (fun x -> BPPar ((List.map (fun _ -> BPTop) head)@[x]@(List.map (fun _ -> BPTop) tail))) (not_sup h))@acc
-      in aux [] l [] 
-    | BPIf (b,t) when t = BPBot -> [BPIf(not b, BPTop)]
-    | BPIf (b,t) -> BPIf(not b, BPTop)::(List.map (fun (x) -> BPIf(b,x)) (not_sup t))
-    | BPWhile(n,t) when (n,t) = (0,BPBot) -> [BPBot]
-    | BPWhile(n,t) when t = BPBot -> [BPWhile(n-1,BPTop)]
-    | BPWhile(n,t) -> List.map (fun (x) -> BPWhile(n,x)) (not_sup t)
+    | BPTop, _ ->  let p_list = match p with
+        | Action _ -> [BPBot] (*Enorme problème ici!!!!!!!!!!!!!! TODO : faut retourner le précédent, a voir en fonction du programme associé!*)
+        | Seq lp -> [BPSeq((List.length lp)-1, BPTop, (List.length lp))]
+        | Par lp -> [BPPar(List.map (fun _ -> BPTop) (lp))]
+        | While _ -> debug (Printf.sprintf "BPos.not_sup: Should not encouter lower-bound %s." (to_string_simple t));
+        assert false
+        | If _ -> [BPIf(true, BPTop); BPIf(false, BPTop)]
+        | _ -> []
+      in p_list
+    | BPSeq(n,t, _), _ when (n,t) = (0,BPBot) -> [BPBot]
+    | BPSeq(n,t, m), _ when t = BPBot -> [BPSeq(n-1, BPTop, m)]
+    | BPSeq(n, t, m), Seq lp -> List.map (fun x -> BPSeq(n, x, m)) (not_sup (List.nth lp n) t)
+    | BPPar l, Par lp -> let rec aux head l l_pg acc =
+      match l, l_pg with
+      (*| [],_ -> acc*)
+      | h::tail, h_pg::t_pg -> aux (h::head) tail t_pg 
+              (List.map (fun x -> BPPar ((List.map (fun _ -> BPTop) head)@[x]@(List.map (fun _ -> BPTop) tail))) (not_sup h_pg h))@acc
+      | _,_ -> acc
+      in aux [] l lp [] 
+    | BPIf (b,t), _ when t = BPBot -> [BPIf(not b, BPTop)]
+    | BPIf (b,t), If(_,p1,p2) -> BPIf(not b, BPTop)::(List.map (fun (x) -> BPIf(b,x)) (not_sup (if b then p1 else p2) t))
+    | BPWhile(n,t), _ when (n,t) = (0,BPBot) -> [BPBot]
+    | BPWhile(n,t), _ when t = BPBot -> [BPWhile(n-1,BPTop)]
+    | BPWhile(n,t), While (_, p) -> List.map (fun (x) -> BPWhile(n,x)) (not_sup p t)
+    | _,_ -> debug (Printf.sprintf "not_sup : Position %s not valid for its program" (to_string_simple t));
+    assert false
   ;;
+  
   (*Returns the minimal elements not smaller than t*)
-  let rec not_inf t = 
-    match t with
+  let rec not_inf p t = 
+    match t, p with
     (* | BPBot -> debug (Printf.sprintf "BPos.not_inf: Should not encouter upper-bound %s." (to_string_simple t));
     assert false  *)
-    | BPBot -> [BPBot]
-    | BPTop -> []
-    | BPSeq(n, t, m) when (n,t) = (m,BPTop) -> [BPTop]  (*Alors là y'a un problème, on a pas la taille de la séquence*)
-    | BPSeq(n, t, m) when t = BPTop -> [BPSeq(n+1, BPBot, m)]
-    | BPSeq(n, t, m) -> List.map (fun x -> BPSeq(n, x, m)) (not_inf t)
-    | BPPar l -> let rec aux head l acc =
-      match l with
-      | [] -> acc
-      | h::tail -> aux (h::head) tail (List.map (fun x -> BPPar ((List.map (fun _ -> BPBot) head)@[x]@(List.map (fun _ -> BPBot) tail))) (not_inf h))@acc
-      in aux [] l [] 
-    | BPIf (b,t) when t = BPBot -> [BPIf(not b, BPBot)]
-    | BPIf (b,t) -> BPIf(not b, BPBot)::(List.map (fun (x) -> BPIf(b,x)) (not_inf t))
-    | BPWhile(n,t) when (n,t) = (1,BPTop) -> [BPTop]
-    | BPWhile(n,t) when t = BPTop -> [BPWhile(n+1,BPBot)]
-    | BPWhile(n,t) -> List.map (fun (x) -> BPWhile(n,x)) (not_inf t)
+    | BPTop, _ -> []
+    | BPSeq(n, t, m), _ when (n,t) = (m,BPTop) -> [BPTop]
+    | BPSeq(n, t, m), _ when t = BPTop -> [BPSeq(n+1, BPBot, m)]
+    | BPSeq(n, t, m), Seq lp -> List.map (fun x -> BPSeq(n, x, m)) (not_inf (List.nth lp n) t)
+    | BPPar l, Par lp -> let rec aux head l l_pg acc =
+      match l, l_pg with
+      (*| [],_ -> acc*)
+      | h::tail, h_pg::t_pg -> aux (h::head) tail t_pg 
+              (List.map (fun x -> BPPar ((List.map (fun _ -> BPBot) head)@[x]@(List.map (fun _ -> BPBot) tail))) (not_inf h_pg h))@acc
+      | _,_ -> acc
+      in aux [] l lp [] 
+    | BPIf (b,t), _ when t = BPBot -> [BPIf(not b, BPBot)]    
+    | BPIf(b,t), If(_,p1,p2) -> BPIf(not b, BPBot)::(List.map (fun (x) -> BPIf(b,x)) (not_inf (if b then p1 else p2) t ))  
+    | BPWhile(n,t), _ when (n,t) = (1,BPTop) -> [BPTop]
+    | BPWhile(n,t), _ when t = BPTop -> [BPWhile(n+1,BPBot)]
+    | BPWhile(n,t), While (_, p1) -> List.map (fun (x) -> BPWhile(n,x)) (not_inf p1 t)
+    | BPBot, _ -> let p_list = match p with
+        | Action _ -> [BPTop] (*Enorme problème ici!!!!!!!!!!!!!! TODO : faut retourner le précédent, a voir en fonction du programme associé!*)
+        | Seq lp -> [BPSeq(0, BPBot, (List.length lp))]
+        | Par lp -> [BPPar(List.map (fun _ -> BPBot) (lp))]
+        | While _ -> [BPWhile(0, BPBot)]
+        | If _ -> [BPIf(true, BPBot); BPIf(false, BPBot)]
+        | _ -> []
+      in p_list
+    | _,_ ->  debug (Printf.sprintf "not_inf : Position %s not valid for its program" (to_string_simple t));
+    assert false
+    ;;
+
 
   (*Checks if 2 positions correspond to the same position after forgetfullness*)
   let rec redundancy t1 t2 =
@@ -355,7 +381,7 @@ module Int = struct
 
   let compl p i =
     let x,y = i in
-    let ans = (List.map (fun t -> (BPBot, t)) (not_sup x))@(List.map (fun t -> (t, BPTop)) (not_inf y))
+    let ans = (List.map (fun t -> (BPBot, t)) (not_sup  p x))@(List.map (fun t -> (t, BPTop)) (not_inf p y))
      in
     if !debug_compl then
       debug (Printf.sprintf "Int.compl: %s is %s." (to_string p i) (String.concat " , " (List.map (to_string p) ans)));

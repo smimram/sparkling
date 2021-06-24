@@ -274,7 +274,7 @@ let rec brackets s = function
     in
     (* TODO: remove this restriction. *)
     assert (s1.bs_opened_m = s.bs_opened_m);
-    assert (s2.bs_opened_m = s.bs_opened_m);
+    assert (s2.bs_opened_m = s.bs_opened_m); 
     {
       bs_defined_m = s.bs_defined_m;
       bs_opened_m = s.bs_opened_m;

@@ -1,0 +1,52 @@
+void main()
+{
+    int seats;
+    int max;
+    bool barber_open;
+
+    mutex w;
+    mutex b;
+    mutex next;
+
+    max = 2;
+    seats = 0;
+    barber_open = true;
+    
+    {
+    while(true)
+        {
+        lock(w);
+        if(seats){
+            seats = seats - 1;
+            unlock(w);
+            lock(b);
+            barber_open = false;
+            unlock(b);
+        }
+        else{
+            unlock(w);
+            };
+        };
+    }|{
+    while(true)
+        {
+        lock(w);
+        if(seats < max){
+            seats = seats + 1;
+            unlock(w);
+            lock(next);
+            while(barber_open)
+                {
+                  max = max;
+                };
+            lock(b);
+            barber_open = true;
+            unlock(b);
+            unlock(next);
+        }
+        else{
+            unlock(w);
+            };
+        };
+    };
+}
