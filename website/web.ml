@@ -31,6 +31,7 @@ let examples () =
       ) Examples.list;
     select##.innerHTML := Js.string !options;
   in
+  select##.value := Js.string "swiss-flag";
   select##.onchange := Html.handler (fun _ -> prog##.innerHTML := Js.string (List.assoc (Js.to_string select##.value) Examples.list); Js._true)
 
 let run _ =
