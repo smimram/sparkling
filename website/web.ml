@@ -19,21 +19,6 @@ let replace o n s =
 
 open Prog
 
-let examples () =
-  let prog = jsget (Html.CoerceTo.textarea (jsget (doc##getElementById (Js.string "prog")))) in
-  let select = jsget (doc##getElementById(Js.string "ex-prog")) in
-  let select = jsget (Html.CoerceTo.select select) in
-  let () =
-    let options = ref "" in
-    List.iter
-      (fun (fname, _) ->
-         options := !options ^ "<option>" ^ fname ^ "</option>"
-      ) Examples.list;
-    select##.innerHTML := Js.string !options;
-  in
-  select##.value := Js.string "swiss-flag";
-  select##.onchange := Html.handler (fun _ -> prog##.innerHTML := Js.string (List.assoc (Js.to_string select##.value) Examples.list); Js._true)
-
 let run _ =
   let prog = jsget (Html.CoerceTo.textarea (jsget (doc##getElementById (Js.string "prog")))) in
   let go = jsget (doc##getElementById (Js.string "go")) in
@@ -99,6 +84,26 @@ let run _ =
       error (Printexc.to_string e);
       Js._false
   in
+
+  let examples () =
+    let prog = jsget (Html.CoerceTo.textarea (jsget (doc##getElementById (Js.string "prog")))) in
+    let select = jsget (doc##getElementById(Js.string "ex-prog")) in
+    let select = jsget (Html.CoerceTo.select select) in
+    let () =
+      let options = ref "" in
+      List.iter
+        (fun (fname, _) ->
+           options := !options ^ "<option>" ^ fname ^ "</option>"
+        ) Examples.list;
+      select##.innerHTML := Js.string !options;
+    in
+    select##.value := Js.string "swiss-flag";
+    select##.onchange := Html.handler (fun _ ->
+        prog##.innerHTML := Js.string (List.assoc (Js.to_string select##.value) Examples.list);
+        ignore (handler Js._true);
+        Js._true)
+  in
+
   examples ();
   go##.onclick := Html.handler handler;
   (* ignore (handler ()); *)
